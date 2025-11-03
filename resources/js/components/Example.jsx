@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function Example() {
+export default function Example() {
     const [count, setCount] = useState(0);
 
     return (
@@ -16,5 +16,3 @@ function Example() {
         </div>
     );
 }
-
-export default Example;

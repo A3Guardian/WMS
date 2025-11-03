@@ -1,14 +1,22 @@
 import React from 'react';
+import { createRoot } from 'react-dom/client';
 import Example from './components/Example';
 
 function App() {
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Welcome to Laravel + React</h1>
-            <p className="text-gray-600 mb-6">React is now set up and ready to use in your Laravel application!</p>
-            <Example />
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="container mx-auto px-4">
+                <h1 className="text-3xl font-bold mb-6 text-center">
+                    Welcome to Laravel + React
+                </h1>
+                <Example />
+            </div>
         </div>
     );
 }
 
 export default App;
+
+if (document.getElementById('app')) {
+    createRoot(document.getElementById('app')).render(<App />);
+}
