@@ -47,14 +47,14 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
-        $adminRole = Role::create(['name' => 'Admin']);
-        $adminRole->givePermissionTo(Permission::all());
+        $adminRole = Role::firstOrCreate(['name' => 'Admin']);
+        $adminRole->syncPermissions(Permission::all());
 
-        $employeeRole = Role::create(['name' => 'Employee']);
-        $employeeRole->givePermissionTo([
+        $employeeRole = Role::firstOrCreate(['name' => 'Employee']);
+        $employeeRole->syncPermissions([
             'view products',
             'create products',
             'edit products',
@@ -67,8 +67,8 @@ class RoleSeeder extends Seeder
             'view suppliers',
         ]);
 
-        $financialRole = Role::create(['name' => 'Financial']);
-        $financialRole->givePermissionTo([
+        $financialRole = Role::firstOrCreate(['name' => 'Financial']);
+        $financialRole->syncPermissions([
             'view products',
             'view inventory',
             'view orders',

@@ -9,12 +9,18 @@ export const useFetch = (queryKey, url, options = {}) => {
             return response.data;
         },
         enabled: !!url,
+        retry: (failureCount, error) => {
+            if (error?.response?.status === 403 || error?.response?.status === 401) {
+                return false;
+            }
+            return failureCount < 1;
+        },
     });
 
     return {
         data: query.data,
         loading: query.isLoading,
-        error: query.error?.response?.data?.message || query.error?.message || null,
+        error: query.error,
         refetch: query.refetch,
     };
 };

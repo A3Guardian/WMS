@@ -24,6 +24,11 @@ class User extends Authenticatable
         'password',
     ];
 
+    public function guardName(): string
+    {
+        return 'web';
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

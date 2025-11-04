@@ -20,10 +20,17 @@ class AuthController extends Controller
             $user = Auth::user();
             $token = $user->createToken('auth-token')->plainTextToken;
 
-            $user->load('roles', 'permissions');
+            $permissions = $user->getAllPermissions()->pluck('name')->toArray();
+            $roles = $user->roles->pluck('name')->toArray();
 
             return response()->json([
-                'user' => $user,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'roles' => $roles,
+                    'permissions' => $permissions,
+                ],
                 'token' => $token,
             ]);
         }
@@ -43,9 +50,17 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         $user = $request->user();
-        $user->load('roles', 'permissions');
         
-        return response()->json($user);
+        $permissions = $user->getAllPermissions()->pluck('name')->toArray();
+        $roles = $user->roles->pluck('name')->toArray();
+        
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $roles,
+            'permissions' => $permissions,
+        ]);
     }
 }
 

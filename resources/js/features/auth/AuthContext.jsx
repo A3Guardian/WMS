@@ -53,8 +53,12 @@ export function AuthProvider() {
         setUser(null);
     };
 
+    const refreshUser = async () => {
+        await fetchUser();
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
             <Outlet />
         </AuthContext.Provider>
     );

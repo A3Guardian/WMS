@@ -25,6 +25,8 @@ api.interceptors.response.use(
             localStorage.removeItem('auth_token');
             window.location.href = '/login';
         }
+        if (error.response?.status === 403) {
+        }
         return Promise.reject(error);
     }
 );

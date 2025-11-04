@@ -1,15 +1,29 @@
 import React from 'react';
 import { useFetch } from '../../hooks/useFetch';
 import DataTable from '../../components/DataTable';
+import { usePermissions } from '../../hooks/usePermissions';
 
-export default function SupplierList() {
-    const { data, loading, error } = useFetch('suppliers', '/suppliers');
+export default function UserList() {
+    const { hasPermission } = usePermissions();
+    const { data, loading, error } = useFetch('users', '/admin/users');
+
+    if (!hasPermission('view users')) {
+        return (
+            <div className="text-red-500 p-4">
+                You don't have permission to view users.
+            </div>
+        );
+    }
 
     const columns = [
+        { key: 'id', label: 'ID' },
         { key: 'name', label: 'Name' },
         { key: 'email', label: 'Email' },
-        { key: 'phone', label: 'Phone' },
-        { key: 'contact_person', label: 'Contact Person' },
+        { 
+            key: 'roles', 
+            label: 'Roles', 
+            render: (roles) => roles?.join(', ') || 'No roles' 
+        },
     ];
 
     if (error) {
@@ -28,10 +42,10 @@ export default function SupplierList() {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-6">Suppliers</h1>
+            <h1 className="text-3xl font-bold mb-6">Users</h1>
             <DataTable
                 columns={columns}
-                data={data?.data || []}
+                data={data || []}
                 loading={loading}
             />
         </div>

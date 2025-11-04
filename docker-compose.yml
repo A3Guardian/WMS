@@ -9,7 +9,7 @@ services:
     ports:
       - "${DB_PORT:-3306}:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - ./database/mysql:/var/lib/mysql
     networks:
       - wms_network
     healthcheck:
@@ -45,15 +45,11 @@ services:
     command: >
       sh -c "
         php artisan config:clear &&
-        php artisan cache:clear &&
         php artisan migrate --force &&
+        php artisan cache:clear || true &&
         php artisan serve --host=0.0.0.0 --port=8000 &
         npm run dev -- --host 0.0.0.0
       "
-
-volumes:
-  mysql_data:
-    driver: local
 
 networks:
   wms_network:

@@ -16,7 +16,17 @@ export default function OrderList() {
     ];
 
     if (error) {
-        return <div className="text-red-500">Error: {error}</div>;
+        const errorMessage = error?.response?.data?.message || error?.message || 'Unknown error';
+        const isPermissionError = error?.response?.status === 403;
+        
+        return (
+            <div className={`p-4 rounded ${isPermissionError ? 'bg-yellow-50 text-yellow-800' : 'bg-red-50 text-red-800'}`}>
+                <p className="font-semibold">
+                    {isPermissionError ? 'Permission Denied' : 'Error'}
+                </p>
+                <p>{errorMessage}</p>
+            </div>
+        );
     }
 
     return (

@@ -16,6 +16,8 @@ import ProductList from './features/products/ProductList';
 import InventoryPage from './features/inventory/InventoryPage';
 import OrderList from './features/orders/OrderList';
 import SupplierList from './features/suppliers/SupplierList';
+import UserList from './features/admin/UserList';
+import RoleList from './features/admin/RoleList';
 
 import { AuthProvider } from './features/auth/AuthContext';
 
@@ -40,6 +42,8 @@ const routes = createRoutesFromElements(
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/orders" element={<OrderList />} />
                 <Route path="/suppliers" element={<SupplierList />} />
+                <Route path="/admin/users" element={<UserList />} />
+                <Route path="/admin/roles" element={<RoleList />} />
             </Route>
         </Route>
     </Route>
