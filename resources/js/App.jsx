@@ -20,6 +20,8 @@ import SupplierList from './features/suppliers/SupplierList';
 import UserList from './features/admin/UserList';
 import UserForm from './features/admin/UserForm';
 import RoleList from './features/admin/RoleList';
+import TaskList from './features/tasks/TaskList';
+import TaskForm from './features/tasks/TaskForm';
 
 import { AuthProvider } from './features/auth/AuthContext';
 
@@ -44,6 +46,9 @@ const routes = createRoutesFromElements(
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/orders" element={<OrderList />} />
                 <Route path="/suppliers" element={<SupplierList />} />
+                <Route path="/tasks/create" element={<TaskForm />} />
+                <Route path="/tasks/:id/edit" element={<TaskForm />} />
+                <Route path="/tasks" element={<TaskList />} />
                 <Route path="/admin/users" element={<UserList />} />
                 <Route path="/admin/users/create" element={<UserForm />} />
                 <Route path="/admin/users/:id/edit" element={<UserForm />} />

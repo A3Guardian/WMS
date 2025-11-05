@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\TaskController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -44,6 +45,13 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::put('/suppliers/{supplier}', [SupplierController::class, 'update'])->middleware('permission:edit suppliers,web');
     Route::patch('/suppliers/{supplier}', [SupplierController::class, 'update'])->middleware('permission:edit suppliers,web');
     Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->middleware('permission:delete suppliers,web');
+
+    Route::get('/tasks', [TaskController::class, 'index'])->middleware('permission:view tasks,web');
+    Route::post('/tasks', [TaskController::class, 'store'])->middleware('permission:create tasks,web');
+    Route::get('/tasks/{task}', [TaskController::class, 'show'])->middleware('permission:view tasks,web');
+    Route::put('/tasks/{task}', [TaskController::class, 'update']);
+    Route::patch('/tasks/{task}', [TaskController::class, 'update']);
+    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->middleware('permission:delete tasks,web');
 
     Route::prefix('admin')->middleware('permission:view roles|view permissions|view users,web')->group(function () {
         Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:view roles,web');

@@ -25,6 +25,16 @@ class OrderController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('order_number', 'like', '%' . $search . '%')
+                  ->orWhereHas('supplier', function($supplierQuery) use ($search) {
+                      $supplierQuery->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
         if ($request->has('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }

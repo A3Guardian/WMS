@@ -11,6 +11,7 @@ storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
 !storage/.gitignore
+database/mysql
 Dockerfile
 Dockerfile.dev
 docker-compose.yml

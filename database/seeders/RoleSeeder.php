@@ -44,6 +44,11 @@ class RoleSeeder extends Seeder
             'assign roles',
             'view permissions',
             'manage permissions',
+            
+            'view tasks',
+            'create tasks',
+            'edit tasks',
+            'delete tasks',
         ];
 
         foreach ($permissions as $permission) {
@@ -65,6 +70,8 @@ class RoleSeeder extends Seeder
             'create orders',
             'edit orders',
             'view suppliers',
+            'view tasks',
+            'edit tasks',
         ]);
 
         $financialRole = Role::firstOrCreate(['name' => 'Financial']);
