@@ -9,28 +9,34 @@ export const formatCurrency = (amount, currency = 'USD') => {
 };
 
 /**
- * Format date
+ * Format date in Romanian timezone
  */
 export const formatDate = (date, options = {}) => {
+    if (!date) return '-';
+    
     const defaultOptions = {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
+        timeZone: 'Europe/Bucharest',
     };
     
-    return new Date(date).toLocaleDateString('en-US', { ...defaultOptions, ...options });
+    return new Date(date).toLocaleDateString('ro-RO', { ...defaultOptions, ...options });
 };
 
 /**
- * Format date and time
+ * Format date and time in Romanian timezone
  */
 export const formatDateTime = (date) => {
-    return new Date(date).toLocaleString('en-US', {
+    if (!date) return '-';
+    
+    return new Date(date).toLocaleString('ro-RO', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
+        timeZone: 'Europe/Bucharest',
     });
 };
 

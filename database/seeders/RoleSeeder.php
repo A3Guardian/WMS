@@ -49,6 +49,28 @@ class RoleSeeder extends Seeder
             'create tasks',
             'edit tasks',
             'delete tasks',
+            
+            'view employees',
+            'create employees',
+            'edit employees',
+            'delete employees',
+            
+            'view salaries',
+            'manage salaries',
+            
+            'view leave types',
+            'manage leave types',
+            
+            'view leaves',
+            'create leaves',
+            'edit leaves',
+            'delete leaves',
+            
+            'view attendance',
+            'manage attendance',
+            
+            'view payroll',
+            'manage payroll',
         ];
 
         foreach ($permissions as $permission) {
@@ -81,6 +103,20 @@ class RoleSeeder extends Seeder
             'view orders',
             'view suppliers',
             'edit orders',
+            'view employees',
+            'edit employees',
+            'view salaries',
+            'manage salaries',
+            'view leave types',
+            'manage leave types',
+            'view leaves',
+            'create leaves',
+            'edit leaves',
+            'delete leaves',
+            'view attendance',
+            'manage attendance',
+            'view payroll',
+            'manage payroll',
         ]);
     }
 }

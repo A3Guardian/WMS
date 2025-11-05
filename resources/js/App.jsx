@@ -22,6 +22,20 @@ import UserForm from './features/admin/UserForm';
 import RoleList from './features/admin/RoleList';
 import TaskList from './features/tasks/TaskList';
 import TaskForm from './features/tasks/TaskForm';
+import EmployeeList from './features/employees/EmployeeList';
+import EmployeeForm from './features/employees/EmployeeForm';
+import DepartmentList from './features/employees/DepartmentList';
+import DepartmentForm from './features/employees/DepartmentForm';
+import SalaryList from './features/financial/SalaryList';
+import SalaryForm from './features/financial/SalaryForm';
+import LeaveTypeList from './features/financial/LeaveTypeList';
+import LeaveTypeForm from './features/financial/LeaveTypeForm';
+import LeaveList from './features/financial/LeaveList';
+import LeaveForm from './features/financial/LeaveForm';
+import AttendanceList from './features/financial/AttendanceList';
+import AttendanceForm from './features/financial/AttendanceForm';
+import PayrollRecordList from './features/financial/PayrollRecordList';
+import PayrollRecordForm from './features/financial/PayrollRecordForm';
 
 import { AuthProvider } from './features/auth/AuthContext';
 
@@ -49,6 +63,27 @@ const routes = createRoutesFromElements(
                 <Route path="/tasks/create" element={<TaskForm />} />
                 <Route path="/tasks/:id/edit" element={<TaskForm />} />
                 <Route path="/tasks" element={<TaskList />} />
+                <Route path="/employees/create" element={<EmployeeForm />} />
+                <Route path="/employees/:id/edit" element={<EmployeeForm />} />
+                <Route path="/employees" element={<EmployeeList />} />
+                <Route path="/departments/create" element={<DepartmentForm />} />
+                <Route path="/departments/:id/edit" element={<DepartmentForm />} />
+                <Route path="/departments" element={<DepartmentList />} />
+                <Route path="/salaries/create" element={<SalaryForm />} />
+                <Route path="/salaries/:id/edit" element={<SalaryForm />} />
+                <Route path="/salaries" element={<SalaryList />} />
+                <Route path="/leave-types/create" element={<LeaveTypeForm />} />
+                <Route path="/leave-types/:id/edit" element={<LeaveTypeForm />} />
+                <Route path="/leave-types" element={<LeaveTypeList />} />
+                <Route path="/leaves/create" element={<LeaveForm />} />
+                <Route path="/leaves/:id/edit" element={<LeaveForm />} />
+                <Route path="/leaves" element={<LeaveList />} />
+                <Route path="/attendance/create" element={<AttendanceForm />} />
+                <Route path="/attendance/:id/edit" element={<AttendanceForm />} />
+                <Route path="/attendance" element={<AttendanceList />} />
+                <Route path="/payroll-records/create" element={<PayrollRecordForm />} />
+                <Route path="/payroll-records/:id/edit" element={<PayrollRecordForm />} />
+                <Route path="/payroll-records" element={<PayrollRecordList />} />
                 <Route path="/admin/users" element={<UserList />} />
                 <Route path="/admin/users/create" element={<UserForm />} />
                 <Route path="/admin/users/:id/edit" element={<UserForm />} />

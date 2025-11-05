@@ -9,6 +9,13 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\EmployeeController;
+use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\SalaryController;
+use App\Http\Controllers\Api\LeaveTypeController;
+use App\Http\Controllers\Api\LeaveController;
+use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\PayrollRecordController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -52,6 +59,55 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::put('/tasks/{task}', [TaskController::class, 'update']);
     Route::patch('/tasks/{task}', [TaskController::class, 'update']);
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->middleware('permission:delete tasks,web');
+
+    Route::get('/departments', [DepartmentController::class, 'index'])->middleware('permission:view employees,web');
+    Route::post('/departments', [DepartmentController::class, 'store'])->middleware('permission:create employees,web');
+    Route::get('/departments/{department}', [DepartmentController::class, 'show'])->middleware('permission:view employees,web');
+    Route::put('/departments/{department}', [DepartmentController::class, 'update'])->middleware('permission:edit employees,web');
+    Route::patch('/departments/{department}', [DepartmentController::class, 'update'])->middleware('permission:edit employees,web');
+    Route::delete('/departments/{department}', [DepartmentController::class, 'destroy'])->middleware('permission:delete employees,web');
+
+    Route::get('/employees', [EmployeeController::class, 'index'])->middleware('permission:view employees,web');
+    Route::post('/employees', [EmployeeController::class, 'store'])->middleware('permission:create employees,web');
+    Route::get('/employees/{employee}', [EmployeeController::class, 'show'])->middleware('permission:view employees,web');
+    Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->middleware('permission:edit employees,web');
+    Route::patch('/employees/{employee}', [EmployeeController::class, 'update'])->middleware('permission:edit employees,web');
+    Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->middleware('permission:delete employees,web');
+
+    Route::get('/salaries', [SalaryController::class, 'index'])->middleware('permission:view salaries,web');
+    Route::post('/salaries', [SalaryController::class, 'store'])->middleware('permission:manage salaries,web');
+    Route::get('/salaries/{salary}', [SalaryController::class, 'show'])->middleware('permission:view salaries,web');
+    Route::put('/salaries/{salary}', [SalaryController::class, 'update'])->middleware('permission:manage salaries,web');
+    Route::patch('/salaries/{salary}', [SalaryController::class, 'update'])->middleware('permission:manage salaries,web');
+    Route::delete('/salaries/{salary}', [SalaryController::class, 'destroy'])->middleware('permission:manage salaries,web');
+
+    Route::get('/leave-types', [LeaveTypeController::class, 'index'])->middleware('permission:view leave types,web');
+    Route::post('/leave-types', [LeaveTypeController::class, 'store'])->middleware('permission:manage leave types,web');
+    Route::get('/leave-types/{leaveType}', [LeaveTypeController::class, 'show'])->middleware('permission:view leave types,web');
+    Route::put('/leave-types/{leaveType}', [LeaveTypeController::class, 'update'])->middleware('permission:manage leave types,web');
+    Route::patch('/leave-types/{leaveType}', [LeaveTypeController::class, 'update'])->middleware('permission:manage leave types,web');
+    Route::delete('/leave-types/{leaveType}', [LeaveTypeController::class, 'destroy'])->middleware('permission:manage leave types,web');
+
+    Route::get('/leaves', [LeaveController::class, 'index'])->middleware('permission:view leaves,web');
+    Route::post('/leaves', [LeaveController::class, 'store'])->middleware('permission:create leaves,web');
+    Route::get('/leaves/{leave}', [LeaveController::class, 'show'])->middleware('permission:view leaves,web');
+    Route::put('/leaves/{leave}', [LeaveController::class, 'update'])->middleware('permission:edit leaves,web');
+    Route::patch('/leaves/{leave}', [LeaveController::class, 'update'])->middleware('permission:edit leaves,web');
+    Route::delete('/leaves/{leave}', [LeaveController::class, 'destroy'])->middleware('permission:delete leaves,web');
+
+    Route::get('/attendance', [AttendanceController::class, 'index'])->middleware('permission:view attendance,web');
+    Route::post('/attendance', [AttendanceController::class, 'store'])->middleware('permission:manage attendance,web');
+    Route::get('/attendance/{attendance}', [AttendanceController::class, 'show'])->middleware('permission:view attendance,web');
+    Route::put('/attendance/{attendance}', [AttendanceController::class, 'update'])->middleware('permission:manage attendance,web');
+    Route::patch('/attendance/{attendance}', [AttendanceController::class, 'update'])->middleware('permission:manage attendance,web');
+    Route::delete('/attendance/{attendance}', [AttendanceController::class, 'destroy'])->middleware('permission:manage attendance,web');
+
+    Route::get('/payroll-records', [PayrollRecordController::class, 'index'])->middleware('permission:view payroll,web');
+    Route::post('/payroll-records', [PayrollRecordController::class, 'store'])->middleware('permission:manage payroll,web');
+    Route::get('/payroll-records/{payrollRecord}', [PayrollRecordController::class, 'show'])->middleware('permission:view payroll,web');
+    Route::put('/payroll-records/{payrollRecord}', [PayrollRecordController::class, 'update'])->middleware('permission:manage payroll,web');
+    Route::patch('/payroll-records/{payrollRecord}', [PayrollRecordController::class, 'update'])->middleware('permission:manage payroll,web');
+    Route::delete('/payroll-records/{payrollRecord}', [PayrollRecordController::class, 'destroy'])->middleware('permission:manage payroll,web');
 
     Route::prefix('admin')->middleware('permission:view roles|view permissions|view users,web')->group(function () {
         Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:view roles,web');
