@@ -36,6 +36,12 @@ import AttendanceList from './features/financial/AttendanceList';
 import AttendanceForm from './features/financial/AttendanceForm';
 import PayrollRecordList from './features/financial/PayrollRecordList';
 import PayrollRecordForm from './features/financial/PayrollRecordForm';
+import FinancialDashboard from './features/financial/FinancialDashboard';
+import InvoiceList from './features/financial/InvoiceList';
+import InvoiceForm from './features/financial/InvoiceForm';
+import CostReports from './features/financial/CostReports';
+import SupplierPaymentList from './features/financial/SupplierPaymentList';
+import SupplierPaymentForm from './features/financial/SupplierPaymentForm';
 
 import { AuthProvider } from './features/auth/AuthContext';
 
@@ -84,6 +90,14 @@ const routes = createRoutesFromElements(
                 <Route path="/payroll-records/create" element={<PayrollRecordForm />} />
                 <Route path="/payroll-records/:id/edit" element={<PayrollRecordForm />} />
                 <Route path="/payroll-records" element={<PayrollRecordList />} />
+                <Route path="/financial/dashboard" element={<FinancialDashboard />} />
+                <Route path="/invoices/create" element={<InvoiceForm />} />
+                <Route path="/invoices/:id/edit" element={<InvoiceForm />} />
+                <Route path="/invoices" element={<InvoiceList />} />
+                <Route path="/cost-reports" element={<CostReports />} />
+                <Route path="/payments/create" element={<SupplierPaymentForm />} />
+                <Route path="/payments/:id/edit" element={<SupplierPaymentForm />} />
+                <Route path="/payments" element={<SupplierPaymentList />} />
                 <Route path="/admin/users" element={<UserList />} />
                 <Route path="/admin/users/create" element={<UserForm />} />
                 <Route path="/admin/users/:id/edit" element={<UserForm />} />

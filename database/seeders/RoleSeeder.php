@@ -71,6 +71,16 @@ class RoleSeeder extends Seeder
             
             'view payroll',
             'manage payroll',
+            
+            'view financial',
+            'view invoices',
+            'create invoices',
+            'edit invoices',
+            'delete invoices',
+            'view payments',
+            'create payments',
+            'edit payments',
+            'delete payments',
         ];
 
         foreach ($permissions as $permission) {
@@ -117,6 +127,15 @@ class RoleSeeder extends Seeder
             'manage attendance',
             'view payroll',
             'manage payroll',
+            'view financial',
+            'view invoices',
+            'create invoices',
+            'edit invoices',
+            'delete invoices',
+            'view payments',
+            'create payments',
+            'edit payments',
+            'delete payments',
         ]);
     }
 }

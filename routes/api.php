@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\LeaveTypeController;
 use App\Http\Controllers\Api\LeaveController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\PayrollRecordController;
+use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\FinancialDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -108,6 +111,23 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::put('/payroll-records/{payrollRecord}', [PayrollRecordController::class, 'update'])->middleware('permission:manage payroll,web');
     Route::patch('/payroll-records/{payrollRecord}', [PayrollRecordController::class, 'update'])->middleware('permission:manage payroll,web');
     Route::delete('/payroll-records/{payrollRecord}', [PayrollRecordController::class, 'destroy'])->middleware('permission:manage payroll,web');
+
+    Route::get('/financial/dashboard', [FinancialDashboardController::class, 'index'])->middleware('permission:view financial,web');
+    Route::get('/financial/export', [FinancialDashboardController::class, 'export'])->middleware('permission:view financial,web');
+
+    Route::get('/invoices', [InvoiceController::class, 'index'])->middleware('permission:view invoices,web');
+    Route::post('/invoices', [InvoiceController::class, 'store'])->middleware('permission:create invoices,web');
+    Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->middleware('permission:view invoices,web');
+    Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->middleware('permission:edit invoices,web');
+    Route::patch('/invoices/{invoice}', [InvoiceController::class, 'update'])->middleware('permission:edit invoices,web');
+    Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->middleware('permission:delete invoices,web');
+
+    Route::get('/payments', [PaymentController::class, 'index'])->middleware('permission:view payments,web');
+    Route::post('/payments', [PaymentController::class, 'store'])->middleware('permission:create payments,web');
+    Route::get('/payments/{payment}', [PaymentController::class, 'show'])->middleware('permission:view payments,web');
+    Route::put('/payments/{payment}', [PaymentController::class, 'update'])->middleware('permission:edit payments,web');
+    Route::patch('/payments/{payment}', [PaymentController::class, 'update'])->middleware('permission:edit payments,web');
+    Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->middleware('permission:delete payments,web');
 
     Route::prefix('admin')->middleware('permission:view roles|view permissions|view users,web')->group(function () {
         Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:view roles,web');
