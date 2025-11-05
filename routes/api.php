@@ -10,12 +10,6 @@ use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
-
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {

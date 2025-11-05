@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useForm } from '../../hooks/useForm';
 import { useAuth } from './useAuth';
 
@@ -10,8 +11,17 @@ export default function LoginPage() {
     const { values, errors, isSubmitting, handleChange, handleSubmit } = useForm(
         { email: '', password: '' },
         async (formValues) => {
-            await login(formValues.email, formValues.password);
-            navigate('/');
+            try {
+                await login(formValues.email, formValues.password);
+                toast.success('Login successful');
+                navigate('/');
+            } catch (error) {
+                const errorMessage = error.response?.data?.message || 'Login failed';
+                toast.error('Login failed', {
+                    description: errorMessage,
+                });
+                throw error;
+            }
         }
     );
 

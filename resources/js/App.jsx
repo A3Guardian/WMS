@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createRoutesFromElements, Route } from 'react-router';
+import { Toaster } from 'sonner';
 
 import AuthLayout from './layout/AuthLayout';
 import DashboardLayout from './layout/DashboardLayout';
@@ -17,6 +18,7 @@ import InventoryPage from './features/inventory/InventoryPage';
 import OrderList from './features/orders/OrderList';
 import SupplierList from './features/suppliers/SupplierList';
 import UserList from './features/admin/UserList';
+import UserForm from './features/admin/UserForm';
 import RoleList from './features/admin/RoleList';
 
 import { AuthProvider } from './features/auth/AuthContext';
@@ -43,6 +45,8 @@ const routes = createRoutesFromElements(
                 <Route path="/orders" element={<OrderList />} />
                 <Route path="/suppliers" element={<SupplierList />} />
                 <Route path="/admin/users" element={<UserList />} />
+                <Route path="/admin/users/create" element={<UserForm />} />
+                <Route path="/admin/users/:id/edit" element={<UserForm />} />
                 <Route path="/admin/roles" element={<RoleList />} />
             </Route>
         </Route>
@@ -54,6 +58,7 @@ const router = createBrowserRouter(routes);
 function App() {
     return (
         <QueryClientProvider client={queryClient}>
+            <Toaster position="bottom-right" richColors />
             <RouterProvider router={router} />
         </QueryClientProvider>
     );

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from 'sonner';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -25,7 +26,11 @@ api.interceptors.response.use(
             localStorage.removeItem('auth_token');
             window.location.href = '/login';
         }
-        if (error.response?.status === 403) {
+        if (error.response?.status === 403 && !error.config?.skipToast) {
+            const errorMessage = error.response?.data?.message || 'Permission denied';
+            toast.warning('Permission Denied', {
+                description: errorMessage,
+            });
         }
         return Promise.reject(error);
     }

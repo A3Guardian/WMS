@@ -8,11 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-
     public function index(Request $request): JsonResponse
     {
         if (!$request->user()->can('view users')) {
@@ -21,9 +19,20 @@ class UserController extends Controller
             );
         }
 
-        $users = User::with('roles', 'permissions')->get();
+        $query = User::with('roles', 'permissions');
 
-        return response()->json($users);
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        $perPage = $request->per_page ?? 20;
+        $perPage = min(max((int)$perPage, 1), 100);
+
+        return response()->json($query->paginate($perPage));
     }
 
     public function store(Request $request): JsonResponse
