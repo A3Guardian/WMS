@@ -146,10 +146,16 @@ export default function TaskForm() {
     };
 
     const getImageUrl = (imagePath) => {
+        if (!imagePath) return '';
         if (imagePath.startsWith('http')) {
             return imagePath;
         }
-        return `${import.meta.env.VITE_API_URL || '/api'}/storage/${imagePath}`;
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        if (imagePath.startsWith('/storage/') || imagePath.startsWith('storage/')) {
+            const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+            return `${apiUrl}${cleanPath}`;
+        }
+        return `${apiUrl}/storage/${imagePath}`;
     };
 
     if (isEdit && !canEditFull && !isEmployee) {

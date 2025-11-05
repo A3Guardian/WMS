@@ -61,11 +61,12 @@ export default function EmployeeTaskView() {
         if (imagePath.startsWith('http')) {
             return imagePath;
         }
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         if (imagePath.startsWith('/storage/') || imagePath.startsWith('storage/')) {
             const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-            return `${import.meta.env.VITE_API_URL || ''}${cleanPath}`;
+            return `${apiUrl}${cleanPath}`;
         }
-        return `${import.meta.env.VITE_API_URL || ''}/storage/${imagePath}`;
+        return `${apiUrl}/storage/${imagePath}`;
     };
 
     if (error) {
@@ -156,22 +157,32 @@ export default function EmployeeTaskView() {
                 <div className="mb-4">
                     <p className="text-sm font-medium text-gray-700 mb-2">Images:</p>
                     <div className="grid grid-cols-3 gap-2">
-                        {task.images.slice(0, 3).map((imagePath, index) => (
-                            <div key={index} className="relative aspect-square">
-                                <img
-                                    src={getImageUrl(imagePath)}
-                                    alt={`Task image ${index + 1}`}
-                                    className="w-full h-full object-cover rounded border"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling?.classList.remove('hidden');
-                                    }}
-                                />
-                                <div className="hidden w-full h-full bg-gray-100 rounded border flex items-center justify-center text-xs text-gray-500">
-                                    Image
+                        {task.images.slice(0, 3).map((imagePath, index) => {
+                            const imageUrl = getImageUrl(imagePath);
+                            return (
+                                <div key={index} className="relative aspect-square">
+                                    <img
+                                        src={imageUrl}
+                                        alt={`Task image ${index + 1}`}
+                                        className="w-full h-full object-cover rounded border"
+                                        onError={(e) => {
+                                            console.error('Image failed to load:', imageUrl, 'Path:', imagePath);
+                                            e.target.style.display = 'none';
+                                            const fallback = e.target.nextElementSibling;
+                                            if (fallback) {
+                                                fallback.classList.remove('hidden');
+                                            }
+                                        }}
+                                        onLoad={() => {
+                                            console.log('Image loaded successfully:', imageUrl);
+                                        }}
+                                    />
+                                    <div className="hidden w-full h-full bg-gray-100 rounded border flex items-center justify-center text-xs text-gray-500">
+                                        Image {index + 1}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         {task.images.length > 3 && (
                             <div className="w-full aspect-square bg-gray-100 rounded border flex items-center justify-center text-xs sm:text-sm text-gray-600">
                                 +{task.images.length - 3}
