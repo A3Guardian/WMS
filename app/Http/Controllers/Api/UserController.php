@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\JsonResponse;
@@ -64,6 +65,12 @@ class UserController extends Controller
 
         $user->load('roles', 'permissions');
 
+        ActivityLogService::logCreated($user, [
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $validated['roles'] ?? [],
+        ]);
+
         return response()->json($user, 201);
     }
 
@@ -96,6 +103,12 @@ class UserController extends Controller
             'roles.*' => 'exists:roles,name',
         ]);
 
+        $oldValues = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $user->roles->pluck('name')->toArray(),
+        ];
+
         if (isset($validated['name'])) {
             $user->name = $validated['name'];
         }
@@ -116,6 +129,14 @@ class UserController extends Controller
 
         $user->load('roles', 'permissions');
 
+        $newValues = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $user->roles->pluck('name')->toArray(),
+        ];
+
+        ActivityLogService::logUpdated($user, $oldValues, $newValues);
+
         return response()->json($user);
     }
 
@@ -127,6 +148,7 @@ class UserController extends Controller
             );
         }
 
+        ActivityLogService::logDeleted($user);
         $user->delete();
 
         return response()->json(['message' => 'User deleted successfully']);

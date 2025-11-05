@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 
 class SupplierController extends Controller
@@ -32,6 +33,8 @@ class SupplierController extends Controller
 
         $supplier = Supplier::create($validated);
 
+        ActivityLogService::logCreated($supplier, $validated);
+
         return response()->json($supplier, 201);
     }
 
@@ -50,13 +53,18 @@ class SupplierController extends Controller
             'contact_person' => 'nullable|string|max:255',
         ]);
 
+        $oldValues = $supplier->only(array_keys($validated));
         $supplier->update($validated);
+        $newValues = $supplier->only(array_keys($validated));
+
+        ActivityLogService::logUpdated($supplier, $oldValues, $newValues);
 
         return response()->json($supplier);
     }
 
     public function destroy(Supplier $supplier)
     {
+        ActivityLogService::logDeleted($supplier);
         $supplier->delete();
 
         return response()->json(['message' => 'Supplier deleted successfully']);

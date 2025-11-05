@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Inventory;
+use App\Services\ActivityLogService;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
 
@@ -42,6 +43,8 @@ class InventoryController extends Controller
 
         $inventory = Inventory::create($validated);
 
+        ActivityLogService::logCreated($inventory, $validated);
+
         return response()->json($inventory->load('product'), 201);
     }
 
@@ -58,7 +61,11 @@ class InventoryController extends Controller
             'reorder_level' => 'nullable|integer|min:0',
         ]);
 
+        $oldValues = $inventory->only(array_keys($validated));
         $inventory->update($validated);
+        $newValues = $inventory->only(array_keys($validated));
+
+        ActivityLogService::logUpdated($inventory, $oldValues, $newValues);
 
         return response()->json($inventory->load('product'));
     }
@@ -81,6 +88,7 @@ class InventoryController extends Controller
 
     public function destroy(Inventory $inventory)
     {
+        ActivityLogService::logDeleted($inventory);
         $inventory->delete();
 
         return response()->json(['message' => 'Inventory record deleted successfully']);

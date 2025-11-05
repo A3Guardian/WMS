@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\ActivityLogService;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
 
@@ -48,6 +49,12 @@ class OrderController extends Controller
 
         $order = $this->orderService->createOrder($validated);
 
+        ActivityLogService::logCreated($order, [
+            'order_number' => $order->order_number,
+            'supplier_id' => $order->supplier_id,
+            'status' => $order->status,
+        ]);
+
         return response()->json($order->load(['items', 'supplier']), 201);
     }
 
@@ -63,7 +70,11 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $oldValues = $order->only(array_keys($validated));
         $order->update($validated);
+        $newValues = $order->only(array_keys($validated));
+
+        ActivityLogService::logUpdated($order, $oldValues, $newValues);
 
         if (isset($validated['status']) && $validated['status'] === 'completed') {
             $this->orderService->fulfillOrder($order);
@@ -74,6 +85,7 @@ class OrderController extends Controller
 
     public function destroy(Order $order)
     {
+        ActivityLogService::logDeleted($order);
         $order->delete();
 
         return response()->json(['message' => 'Order deleted successfully']);
