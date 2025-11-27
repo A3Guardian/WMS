@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\PayrollRecordController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\DepositController;
 use App\Http\Controllers\Api\FinancialDashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -128,6 +129,13 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::put('/payments/{payment}', [PaymentController::class, 'update'])->middleware('permission:edit payments,web');
     Route::patch('/payments/{payment}', [PaymentController::class, 'update'])->middleware('permission:edit payments,web');
     Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->middleware('permission:delete payments,web');
+
+    Route::get('/deposits', [DepositController::class, 'index'])->middleware('permission:view deposits,web');
+    Route::post('/deposits', [DepositController::class, 'store'])->middleware('permission:create deposits,web');
+    Route::get('/deposits/{deposit}', [DepositController::class, 'show'])->middleware('permission:view deposits,web');
+    Route::put('/deposits/{deposit}', [DepositController::class, 'update'])->middleware('permission:edit deposits,web');
+    Route::patch('/deposits/{deposit}', [DepositController::class, 'update'])->middleware('permission:edit deposits,web');
+    Route::delete('/deposits/{deposit}', [DepositController::class, 'destroy'])->middleware('permission:delete deposits,web');
 
     Route::prefix('admin')->middleware('permission:view roles|view permissions|view users,web')->group(function () {
         Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:view roles,web');

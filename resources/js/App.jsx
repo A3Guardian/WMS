@@ -42,6 +42,8 @@ import InvoiceForm from './features/financial/InvoiceForm';
 import CostReports from './features/financial/CostReports';
 import SupplierPaymentList from './features/financial/SupplierPaymentList';
 import SupplierPaymentForm from './features/financial/SupplierPaymentForm';
+import DepositList from './features/deposits/DepositList';
+import DepositForm from './features/deposits/DepositForm';
 
 import { AuthProvider } from './features/auth/AuthContext';
 
@@ -98,6 +100,9 @@ const routes = createRoutesFromElements(
                 <Route path="/payments/create" element={<SupplierPaymentForm />} />
                 <Route path="/payments/:id/edit" element={<SupplierPaymentForm />} />
                 <Route path="/payments" element={<SupplierPaymentList />} />
+                <Route path="/deposits/create" element={<DepositForm />} />
+                <Route path="/deposits/:id/edit" element={<DepositForm />} />
+                <Route path="/deposits" element={<DepositList />} />
                 <Route path="/admin/users" element={<UserList />} />
                 <Route path="/admin/users/create" element={<UserForm />} />
                 <Route path="/admin/users/:id/edit" element={<UserForm />} />

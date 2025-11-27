@@ -81,6 +81,11 @@ class RoleSeeder extends Seeder
             'create payments',
             'edit payments',
             'delete payments',
+            
+            'view deposits',
+            'create deposits',
+            'edit deposits',
+            'delete deposits',
         ];
 
         foreach ($permissions as $permission) {
@@ -136,6 +141,10 @@ class RoleSeeder extends Seeder
             'create payments',
             'edit payments',
             'delete payments',
+            'view deposits',
+            'create deposits',
+            'edit deposits',
+            'delete deposits',
         ]);
     }
 }
