@@ -107,6 +107,13 @@ export default function DepositList() {
             cell: (id, row) => (
                 <div className="flex space-x-2">
                     <button
+                        onClick={() => navigate(`/deposits/${id}/configure`)}
+                        className="px-2 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                        disabled={!hasPermission('edit deposits')}
+                    >
+                        Configure
+                    </button>
+                    <button
                         onClick={() => navigate(`/deposits/${id}/edit`)}
                         className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                         disabled={!hasPermission('edit deposits')}

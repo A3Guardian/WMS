@@ -4,46 +4,38 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Deposit extends Model
+class Shelf extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'deposit_id',
         'name',
         'code',
-        'location',
+        'x_position',
+        'y_position',
         'width',
         'height',
         'depth',
         'capacity',
-        'status',
         'description',
-        'notes',
     ];
 
     protected $casts = [
+        'x_position' => 'decimal:2',
+        'y_position' => 'decimal:2',
         'width' => 'decimal:2',
         'height' => 'decimal:2',
         'depth' => 'decimal:2',
         'capacity' => 'decimal:2',
     ];
 
-    public function shelves(): HasMany
+    public function deposit(): BelongsTo
     {
-        return $this->hasMany(Shelf::class);
-    }
-
-    public function walls(): HasMany
-    {
-        return $this->hasMany(Wall::class);
-    }
-
-    public function doors(): HasMany
-    {
-        return $this->hasMany(Door::class);
+        return $this->belongsTo(Deposit::class);
     }
 }
 

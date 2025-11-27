@@ -19,6 +19,9 @@ use App\Http\Controllers\Api\PayrollRecordController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\DepositController;
+use App\Http\Controllers\Api\ShelfController;
+use App\Http\Controllers\Api\WallController;
+use App\Http\Controllers\Api\DoorController;
 use App\Http\Controllers\Api\FinancialDashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -136,6 +139,27 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::put('/deposits/{deposit}', [DepositController::class, 'update'])->middleware('permission:edit deposits,web');
     Route::patch('/deposits/{deposit}', [DepositController::class, 'update'])->middleware('permission:edit deposits,web');
     Route::delete('/deposits/{deposit}', [DepositController::class, 'destroy'])->middleware('permission:delete deposits,web');
+
+    Route::get('/deposits/{depositId}/shelves', [ShelfController::class, 'index'])->middleware('permission:view deposits,web');
+    Route::post('/deposits/{depositId}/shelves', [ShelfController::class, 'store'])->middleware('permission:edit deposits,web');
+    Route::get('/deposits/{depositId}/shelves/{shelf}', [ShelfController::class, 'show'])->middleware('permission:view deposits,web');
+    Route::put('/deposits/{depositId}/shelves/{shelf}', [ShelfController::class, 'update'])->middleware('permission:edit deposits,web');
+    Route::patch('/deposits/{depositId}/shelves/{shelf}', [ShelfController::class, 'update'])->middleware('permission:edit deposits,web');
+    Route::delete('/deposits/{depositId}/shelves/{shelf}', [ShelfController::class, 'destroy'])->middleware('permission:edit deposits,web');
+
+    Route::get('/deposits/{depositId}/walls', [WallController::class, 'index'])->middleware('permission:view deposits,web');
+    Route::post('/deposits/{depositId}/walls', [WallController::class, 'store'])->middleware('permission:edit deposits,web');
+    Route::get('/deposits/{depositId}/walls/{wall}', [WallController::class, 'show'])->middleware('permission:view deposits,web');
+    Route::put('/deposits/{depositId}/walls/{wall}', [WallController::class, 'update'])->middleware('permission:edit deposits,web');
+    Route::patch('/deposits/{depositId}/walls/{wall}', [WallController::class, 'update'])->middleware('permission:edit deposits,web');
+    Route::delete('/deposits/{depositId}/walls/{wall}', [WallController::class, 'destroy'])->middleware('permission:edit deposits,web');
+
+    Route::get('/deposits/{depositId}/doors', [DoorController::class, 'index'])->middleware('permission:view deposits,web');
+    Route::post('/deposits/{depositId}/doors', [DoorController::class, 'store'])->middleware('permission:edit deposits,web');
+    Route::get('/deposits/{depositId}/doors/{door}', [DoorController::class, 'show'])->middleware('permission:view deposits,web');
+    Route::put('/deposits/{depositId}/doors/{door}', [DoorController::class, 'update'])->middleware('permission:edit deposits,web');
+    Route::patch('/deposits/{depositId}/doors/{door}', [DoorController::class, 'update'])->middleware('permission:edit deposits,web');
+    Route::delete('/deposits/{depositId}/doors/{door}', [DoorController::class, 'destroy'])->middleware('permission:edit deposits,web');
 
     Route::prefix('admin')->middleware('permission:view roles|view permissions|view users,web')->group(function () {
         Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:view roles,web');

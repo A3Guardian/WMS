@@ -44,6 +44,7 @@ import SupplierPaymentList from './features/financial/SupplierPaymentList';
 import SupplierPaymentForm from './features/financial/SupplierPaymentForm';
 import DepositList from './features/deposits/DepositList';
 import DepositForm from './features/deposits/DepositForm';
+import DepositConfigurator from './features/deposits/DepositConfigurator';
 
 import { AuthProvider } from './features/auth/AuthContext';
 
@@ -102,6 +103,7 @@ const routes = createRoutesFromElements(
                 <Route path="/payments" element={<SupplierPaymentList />} />
                 <Route path="/deposits/create" element={<DepositForm />} />
                 <Route path="/deposits/:id/edit" element={<DepositForm />} />
+                <Route path="/deposits/:id/configure" element={<DepositConfigurator />} />
                 <Route path="/deposits" element={<DepositList />} />
                 <Route path="/admin/users" element={<UserList />} />
                 <Route path="/admin/users/create" element={<UserForm />} />
