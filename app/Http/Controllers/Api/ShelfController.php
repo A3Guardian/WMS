@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Shelf;
 use App\Models\Deposit;
+use App\Models\Product;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ShelfController extends Controller
 {
@@ -124,6 +126,177 @@ class ShelfController extends Controller
         $shelf->delete();
 
         return response()->json(['message' => 'Shelf deleted successfully']);
+    }
+
+    public function assignProduct(Request $request, $depositId, $shelfId)
+    {
+        $shelf = Shelf::where('deposit_id', $depositId)->findOrFail($shelfId);
+        
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $product = Product::findOrFail($validated['product_id']);
+        
+        $totalInventory = $product->inventories()->sum('quantity');
+        
+        $currentShelfQuantity = DB::table('product_shelf')
+            ->where('product_id', $product->id)
+            ->where('shelf_id', '!=', $shelfId)
+            ->sum('quantity');
+        
+        $requestedQuantity = $validated['quantity'];
+        $availableQuantity = $totalInventory - $currentShelfQuantity;
+        
+        $existingQuantity = DB::table('product_shelf')
+            ->where('product_id', $product->id)
+            ->where('shelf_id', $shelfId)
+            ->value('quantity') ?? 0;
+        
+        $availableQuantity += $existingQuantity;
+        
+        if ($requestedQuantity > $availableQuantity) {
+            return response()->json([
+                'message' => "Insufficient inventory. Available: {$availableQuantity}, Requested: {$requestedQuantity}"
+            ], 422);
+        }
+
+        $shelf->products()->syncWithoutDetaching([
+            $product->id => ['quantity' => $requestedQuantity]
+        ]);
+
+        if (!$product->shelf_id) {
+            $product->update([
+                'deposit_id' => $depositId,
+                'shelf_id' => $shelfId,
+            ]);
+        }
+
+        $shelf->load('products');
+        
+        return response()->json([
+            'message' => 'Product assigned successfully',
+            'shelf' => $shelf,
+        ]);
+    }
+
+    public function updateProductQuantity(Request $request, $depositId, $shelfId, $productId)
+    {
+        $shelf = Shelf::where('deposit_id', $depositId)->findOrFail($shelfId);
+        $product = Product::findOrFail($productId);
+        
+        $validated = $request->validate([
+            'quantity' => 'required|integer|min:0',
+        ]);
+
+        if ($validated['quantity'] == 0) {
+            $shelf->products()->detach($productId);
+            if ($product->shelf_id == $shelfId) {
+                $product->update(['shelf_id' => null]);
+            }
+            return response()->json(['message' => 'Product removed from shelf']);
+        }
+
+        $totalInventory = $product->inventories()->sum('quantity');
+        
+        $currentShelfQuantity = DB::table('product_shelf')
+            ->where('product_id', $product->id)
+            ->where('shelf_id', '!=', $shelfId)
+            ->sum('quantity');
+        
+        $requestedQuantity = $validated['quantity'];
+        $availableQuantity = $totalInventory - $currentShelfQuantity;
+        
+        if ($requestedQuantity > $availableQuantity) {
+            return response()->json([
+                'message' => "Insufficient inventory. Available: {$availableQuantity}, Requested: {$requestedQuantity}"
+            ], 422);
+        }
+
+        $shelf->products()->syncWithoutDetaching([
+            $productId => ['quantity' => $requestedQuantity]
+        ]);
+
+        if ($product->shelf_id != $shelfId || $product->deposit_id != $depositId) {
+            $product->update([
+                'deposit_id' => $depositId,
+                'shelf_id' => $shelfId,
+            ]);
+        }
+
+        $shelf->load('products');
+        
+        return response()->json([
+            'message' => 'Product quantity updated successfully',
+            'shelf' => $shelf,
+        ]);
+    }
+
+    public function removeProduct($depositId, $shelfId, $productId)
+    {
+        $shelf = Shelf::where('deposit_id', $depositId)->findOrFail($shelfId);
+        $product = Product::findOrFail($productId);
+        
+        $shelf->products()->detach($productId);
+        
+        return response()->json(['message' => 'Product removed from shelf']);
+    }
+
+    public function getProducts($depositId, $shelfId)
+    {
+        $shelf = Shelf::where('deposit_id', $depositId)->findOrFail($shelfId);
+        
+        $pivotProducts = $shelf->products()
+            ->with(['supplier', 'inventories'])
+            ->get();
+        
+        $oldProducts = Product::where('shelf_id', $shelfId)
+            ->where('deposit_id', $depositId)
+            ->with(['supplier', 'inventories'])
+            ->get();
+        
+        $productIds = $pivotProducts->pluck('id')->toArray();
+        $oldProducts = $oldProducts->reject(function($product) use ($productIds) {
+            return in_array($product->id, $productIds);
+        });
+        
+        $allProducts = $pivotProducts->concat($oldProducts);
+        
+        $products = $allProducts->map(function($product) use ($shelfId) {
+            $pivotQuantity = 0;
+            if ($product->pivot && isset($product->pivot->quantity)) {
+                $pivotQuantity = $product->pivot->quantity;
+            } else {
+                $pivotRecord = DB::table('product_shelf')
+                    ->where('product_id', $product->id)
+                    ->where('shelf_id', $shelfId)
+                    ->first();
+                if ($pivotRecord) {
+                    $pivotQuantity = $pivotRecord->quantity;
+                }
+            }
+            
+            $totalInventory = $product->inventories->sum('quantity');
+            
+            $totalOnShelves = DB::table('product_shelf')
+                ->where('product_id', $product->id)
+                ->sum('quantity');
+            
+            $available = $totalInventory - $totalOnShelves + $pivotQuantity;
+            
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'quantity_on_shelf' => $pivotQuantity,
+                'total_inventory' => $totalInventory,
+                'available' => max(0, $available), // Ensure non-negative
+                'supplier' => $product->supplier,
+            ];
+        });
+        
+        return response()->json($products);
     }
 }
 

@@ -43,7 +43,7 @@ export default function DataTable({ columns, data, loading }) {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                     {data.map((row, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
+                        <tr key={row.id || row._id || index} className="hover:bg-gray-50">
                             {normalizedColumns.map((column) => {
                                 const accessor = column.accessor || column.key;
                                 let value;
