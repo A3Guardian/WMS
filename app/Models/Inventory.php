@@ -14,7 +14,8 @@ class Inventory extends Model
     protected $fillable = [
         'product_id',
         'quantity',
-        'location',
+        'deposit_id',  
+        'shelf_id', 
         'reorder_level',
     ];
 
@@ -28,6 +29,16 @@ class Inventory extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function deposit(): BelongsTo
+    {
+        return $this->belongsTo(Deposit::class);
+    }
+
+    public function shelf(): BelongsTo
+    {
+        return $this->belongsTo(Shelf::class);
+    }
+    
     public function isLowStock(): bool
     {
         return $this->quantity <= $this->reorder_level;

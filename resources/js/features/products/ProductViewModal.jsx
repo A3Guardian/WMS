@@ -10,6 +10,9 @@ export default function ProductViewModal({
 }) {
     if (!product) return null;
 
+    const inventories = product.inventories || [];
+    const totalQuantity = inventories.reduce((sum, inv) => sum + (inv.quantity || 0), 0);
+
     return (
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
             <Dialog.Portal>
@@ -37,15 +40,58 @@ export default function ProductViewModal({
                             <label className="block text-sm font-medium text-gray-700">Supplier</label>
                             <p className="mt-1 text-gray-900">{product.supplier?.name || '-'}</p>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Deposit</label>
-                            <p className="mt-1 text-gray-900">{product.deposit?.name || '-'}</p>
+
+                        <div className="border-t pt-4 mt-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Stock Locations
+                            </label>
+                            {inventories.length === 0 ? (
+                                <p className="text-gray-500 text-sm">No inventory records found</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {inventories.map((inv) => (
+                                        <div key={inv.id} className="bg-gray-50 p-3 rounded-md border">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-medium text-gray-900">
+                                                        {inv.deposit?.name || 'Unknown Deposit'}
+                                                        {inv.shelf && (
+                                                            <span className="text-gray-600">
+                                                                {' - '}{inv.shelf.name}
+                                                            </span>
+                                                        )}
+                                                    </p>
+                                                    {inv.location && (
+                                                        <p className="text-sm text-gray-600 mt-1">
+                                                            {inv.location}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-semibold text-gray-900">
+                                                        {inv.quantity || 0} units
+                                                    </p>
+                                                    {inv.reorder_level > 0 && (
+                                                        <p className="text-xs text-gray-500">
+                                                            Reorder: {inv.reorder_level}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {totalQuantity > 0 && (
+                                <div className="mt-3 pt-3 border-t">
+                                    <p className="text-sm font-semibold text-gray-900">
+                                        Total Stock: <span className="text-blue-600">{totalQuantity} units</span>
+                                    </p>
+                                </div>
+                            )}
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Shelf</label>
-                            <p className="mt-1 text-gray-900">{product.shelf?.name || '-'}</p>
-                        </div>
-                        {product.deposit_id && (
+
+                        {inventories.length > 0 && inventories[0]?.deposit_id && (
                             <div className="mt-4">
                                 <button
                                     onClick={() => {
@@ -71,4 +117,3 @@ export default function ProductViewModal({
         </Dialog.Root>
     );
 }
-

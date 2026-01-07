@@ -16,8 +16,10 @@ export default function ProductFormModal({
         description: '',
         price: '',
         supplier_id: '',
+        quantity: '',
         deposit_id: '',
         shelf_id: '',
+        reorder_level: '',
     });
 
     const { data: depositsData } = useQuery({
@@ -53,6 +55,7 @@ export default function ProductFormModal({
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['products'] });
+            queryClient.invalidateQueries({ queryKey: ['inventory'] });
             toast.success('Product created successfully');
             handleClose();
         },
@@ -88,8 +91,10 @@ export default function ProductFormModal({
                 description: product.description || '',
                 price: product.price || '',
                 supplier_id: product.supplier_id || '',
-                deposit_id: product.deposit_id || '',
-                shelf_id: product.shelf_id || '',
+                quantity: '',
+                deposit_id: '',
+                shelf_id: '',
+                reorder_level: '',
             });
         } else {
             setFormData({
@@ -98,8 +103,10 @@ export default function ProductFormModal({
                 description: '',
                 price: '',
                 supplier_id: '',
+                quantity: '',
                 deposit_id: '',
                 shelf_id: '',
+                reorder_level: '',
             });
         }
     }, [product, isOpen]);
@@ -111,25 +118,40 @@ export default function ProductFormModal({
             description: '',
             price: '',
             supplier_id: '',
+            quantity: '',
             deposit_id: '',
             shelf_id: '',
+            reorder_level: '',
         });
         onClose();
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const submitData = {
-            ...formData,
-            price: parseFloat(formData.price) || 0,
-            supplier_id: formData.supplier_id || null,
-            deposit_id: formData.deposit_id || null,
-            shelf_id: formData.shelf_id || null,
-        };
-
+        
         if (product) {
+            const submitData = {
+                name: formData.name,
+                sku: formData.sku,
+                description: formData.description,
+                price: parseFloat(formData.price) || 0,
+                supplier_id: formData.supplier_id || null,
+            };
             updateMutation.mutate({ id: product.id, data: submitData });
         } else {
+            const submitData = {
+                name: formData.name,
+                sku: formData.sku,
+                description: formData.description,
+                price: parseFloat(formData.price) || 0,
+                supplier_id: formData.supplier_id || null,
+                ...(formData.quantity && {
+                    quantity: parseInt(formData.quantity) || 0,
+                    deposit_id: formData.deposit_id || null,
+                    shelf_id: formData.shelf_id || null,
+                    reorder_level: parseInt(formData.reorder_level) || 0,
+                }),
+            };
             createMutation.mutate(submitData);
         }
     };
@@ -141,6 +163,8 @@ export default function ProductFormModal({
             shelf_id: '', 
         });
     };
+
+    const isEditMode = !!product;
 
     return (
         <Dialog.Root open={isOpen} onOpenChange={(open) => {
@@ -226,42 +250,86 @@ export default function ProductFormModal({
                             </select>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Deposit
-                            </label>
-                            <select
-                                value={formData.deposit_id}
-                                onChange={(e) => handleDepositChange(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="">Select Deposit</option>
-                                {(depositsData || []).map((deposit) => (
-                                    <option key={deposit.id} value={deposit.id}>
-                                        {deposit.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        {!isEditMode && (
+                            <>
+                                <div className="border-t pt-4 mt-4">
+                                    <h3 className="text-lg font-semibold mb-3 text-gray-800">
+                                        Initial Inventory (Optional)
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Add initial stock location and quantity when creating the product.
+                                    </p>
+                                </div>
 
-                        {formData.deposit_id && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Shelf
-                                </label>
-                                <select
-                                    value={formData.shelf_id}
-                                    onChange={(e) => setFormData({ ...formData, shelf_id: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="">Select Shelf</option>
-                                    {(shelvesData || []).map((shelf) => (
-                                        <option key={shelf.id} value={shelf.id}>
-                                            {shelf.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Initial Quantity
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={formData.quantity}
+                                        onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                        placeholder="0"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Deposit
+                                    </label>
+                                    <select
+                                        value={formData.deposit_id}
+                                        onChange={(e) => handleDepositChange(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="">Select Deposit</option>
+                                        {(depositsData || []).map((deposit) => (
+                                            <option key={deposit.id} value={deposit.id}>
+                                                {deposit.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {formData.deposit_id && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Shelf
+                                        </label>
+                                        <select
+                                            value={formData.shelf_id}
+                                            onChange={(e) => setFormData({ ...formData, shelf_id: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            <option value="">Select Shelf</option>
+                                            {(shelvesData || []).map((shelf) => (
+                                                <option key={shelf.id} value={shelf.id}>
+                                                    {shelf.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Reorder Level
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={formData.reorder_level}
+                                        onChange={(e) => setFormData({ ...formData, reorder_level: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                        placeholder="0"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Minimum stock level before reordering
+                                    </p>
+                                </div>
+                            </>
                         )}
 
                         <div className="flex justify-end gap-3 mt-6">
@@ -287,4 +355,3 @@ export default function ProductFormModal({
         </Dialog.Root>
     );
 }
-

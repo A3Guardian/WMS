@@ -13,44 +13,48 @@ export default function ProductMapModal({
     const [mapScale, setMapScale] = useState(1);
     const [baseScale, setBaseScale] = useState(1);
 
+    const firstInventory = product?.inventories && product.inventories.length > 0 
+        ? product.inventories[0] 
+        : null;
+
     const { data: depositDetails } = useQuery({
-        queryKey: ['deposit', product?.deposit_id],
+        queryKey: ['deposit', firstInventory?.deposit_id],
         queryFn: async () => {
-            if (!product?.deposit_id) return null;
-            const response = await api.get(`/deposits/${product.deposit_id}`);
+            if (!firstInventory?.deposit_id) return null;
+            const response = await api.get(`/deposits/${firstInventory.deposit_id}`);
             return response.data;
         },
-        enabled: !!product?.deposit_id && isOpen,
+        enabled: !!firstInventory?.deposit_id && isOpen,
     });
 
     const { data: mapShelves } = useQuery({
-        queryKey: ['shelves', product?.deposit_id],
+        queryKey: ['shelves', firstInventory?.deposit_id],
         queryFn: async () => {
-            if (!product?.deposit_id) return [];
-            const response = await api.get(`/deposits/${product.deposit_id}/shelves`);
+            if (!firstInventory?.deposit_id) return [];
+            const response = await api.get(`/deposits/${firstInventory.deposit_id}/shelves`);
             return response.data?.data || response.data || [];
         },
-        enabled: !!product?.deposit_id && isOpen,
+        enabled: !!firstInventory?.deposit_id && isOpen,
     });
 
     const { data: mapWalls } = useQuery({
-        queryKey: ['walls', product?.deposit_id],
+        queryKey: ['walls', firstInventory?.deposit_id],
         queryFn: async () => {
-            if (!product?.deposit_id) return [];
-            const response = await api.get(`/deposits/${product.deposit_id}/walls`);
+            if (!firstInventory?.deposit_id) return [];
+            const response = await api.get(`/deposits/${firstInventory.deposit_id}/walls`);
             return response.data?.data || response.data || [];
         },
-        enabled: !!product?.deposit_id && isOpen,
+        enabled: !!firstInventory?.deposit_id && isOpen,
     });
 
     const { data: mapDoors } = useQuery({
-        queryKey: ['doors', product?.deposit_id],
+        queryKey: ['doors', firstInventory?.deposit_id],
         queryFn: async () => {
-            if (!product?.deposit_id) return [];
-            const response = await api.get(`/deposits/${product.deposit_id}/doors`);
+            if (!firstInventory?.deposit_id) return [];
+            const response = await api.get(`/deposits/${firstInventory.deposit_id}/doors`);
             return response.data?.data || response.data || [];
         },
-        enabled: !!product?.deposit_id && isOpen,
+        enabled: !!firstInventory?.deposit_id && isOpen,
     });
 
     useEffect(() => {
@@ -124,10 +128,14 @@ export default function ProductMapModal({
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
                 <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-6xl max-h-[90vh] overflow-hidden z-50 flex flex-col">
+                    <Dialog.Title className="text-2xl font-bold mb-2">
+                        Product Location - {product.name}
+                    </Dialog.Title>
+                    <Dialog.Description className="text-sm text-gray-600 mb-4">
+                        View the product location on the deposit map
+                    </Dialog.Description>
                     <div className="flex justify-between items-center mb-4">
-                        <Dialog.Title className="text-2xl font-bold">
-                            Product Location - {product.name}
-                        </Dialog.Title>
+                        <div></div>
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-gray-700">Zoom:</span>
                             <button
@@ -160,15 +168,15 @@ export default function ProductMapModal({
                             </button>
                         </div>
                     </div>
-                    {depositDetails && mapShelves && (
+                    {depositDetails && mapShelves && firstInventory ? (
                         <div className="flex-1 overflow-hidden flex flex-col">
                             <div className="mb-4">
                                 <p className="text-gray-600">
                                     <strong>Deposit:</strong> {depositDetails.name} ({depositDetails.width}m × {depositDetails.height}m)
                                 </p>
-                                {product?.shelf && (
+                                {firstInventory.shelf && (
                                     <p className="text-gray-600">
-                                        <strong>Shelf:</strong> {product.shelf.name} at ({product.shelf.x_position}m, {product.shelf.y_position}m)
+                                        <strong>Shelf:</strong> {firstInventory.shelf.name} at ({firstInventory.shelf.x_position}m, {firstInventory.shelf.y_position}m)
                                     </p>
                                 )}
                                 <p className="text-sm text-gray-500 mt-1">
@@ -180,10 +188,14 @@ export default function ProductMapModal({
                                 shelves={mapShelves}
                                 walls={mapWalls}
                                 doors={mapDoors}
-                                productShelfId={product?.shelf_id}
+                                productShelfId={firstInventory.shelf_id}
                                 scale={mapScale}
                                 containerRef={mapContainerRef}
                             />
+                        </div>
+                    ) : (
+                        <div className="flex-1 flex items-center justify-center text-gray-500">
+                            <p>No inventory location found for this product.</p>
                         </div>
                     )}
                     <div className="flex justify-end mt-4 pt-4 border-t">
@@ -198,4 +210,3 @@ export default function ProductMapModal({
         </Dialog.Root>
     );
 }
-

@@ -69,67 +69,62 @@ export default function ProductList() {
         }
     };
 
-    const columns = [
-        { key: 'name', label: 'Name' },
-        { key: 'sku', label: 'SKU' },
-        { 
-            key: 'price', 
-            label: 'Price', 
-            render: (value) => formatCurrency(value) 
-        },
-        { 
-            key: 'deposit', 
-            label: 'Deposit', 
-            render: (value, row) => row.deposit?.name || '-' 
-        },
-        { 
-            key: 'shelf', 
-            label: 'Shelf', 
-            render: (value, row) => row.shelf?.name || '-' 
-        },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (value, row) => (
-                <div className="flex items-center gap-2">
+const columns = [
+    { key: 'name', label: 'Name' },
+    { key: 'sku', label: 'SKU' },
+    { 
+        key: 'price', 
+        label: 'Price', 
+        render: (value) => formatCurrency(value) 
+    },
+    {
+        key: 'total_quantity',
+        label: 'Total Stock',
+        render: (value, row) => row.total_inventory_quantity ?? 0
+    },
+    {
+        key: 'actions',
+        label: 'Actions',
+        render: (value, row) => (
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={() => handleView(row)}
+                    className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                    title="View"
+                >
+                    View
+                </button>
+                {row.inventories && row.inventories.length > 0 && row.inventories[0]?.deposit_id && (
                     <button
-                        onClick={() => handleView(row)}
-                        className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                        title="View"
+                        onClick={() => handleViewMap(row)}
+                        className="px-2 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+                        title="View on Map"
                     >
-                        View
+                        Map
                     </button>
-                    {row.deposit_id && (
-                        <button
-                            onClick={() => handleViewMap(row)}
-                            className="px-2 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
-                            title="View on Map"
-                        >
-                            Map
-                        </button>
-                    )}
-                    {hasPermission('edit products') && (
-                        <button
-                            onClick={() => handleEdit(row)}
-                            className="px-2 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                            title="Edit"
-                        >
-                            Edit
-                        </button>
-                    )}
-                    {hasPermission('delete products') && (
-                        <button
-                            onClick={() => handleDelete(row)}
-                            className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-                            title="Delete"
-                        >
-                            Delete
-                        </button>
-                    )}
-                </div>
-            ),
-        },
-    ];
+                )}
+                {hasPermission('edit products') && (
+                    <button
+                        onClick={() => handleEdit(row)}
+                        className="px-2 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                        title="Edit"
+                    >
+                        Edit
+                    </button>
+                )}
+                {hasPermission('delete products') && (
+                    <button
+                        onClick={() => handleDelete(row)}
+                        className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                        title="Delete"
+                    >
+                        Delete
+                    </button>
+                )}
+            </div>
+        ),
+    },
+];
 
     if (error) {
         const errorMessage = error?.response?.data?.message || error?.message || 'Unknown error';

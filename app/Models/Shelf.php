@@ -39,11 +39,9 @@ class Shelf extends Model
         return $this->belongsTo(Deposit::class);
     }
 
-    public function products(): BelongsToMany
+    public function inventories(): HasMany
     {
-        return $this->belongsToMany(Product::class, 'product_shelf')
-            ->withPivot('quantity')
-            ->withTimestamps();
+        return $this->hasMany(Inventory::class);
     }
 }
 

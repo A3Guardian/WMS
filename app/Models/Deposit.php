@@ -35,6 +35,11 @@ class Deposit extends Model
     {
         return $this->hasMany(Shelf::class);
     }
+    
+    public function inventories(): HasMany
+{
+    return $this->hasMany(Inventory::class);
+}
 
     public function walls(): HasMany
     {
