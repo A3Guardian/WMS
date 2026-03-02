@@ -231,17 +231,19 @@ export default function Sidebar({ isOpen, onClose }) {
     return (
         <>
             <aside className={`
-                fixed lg:static inset-y-0 left-0 z-50
-                w-64 bg-gray-800 text-white
-                transform transition-transform duration-300 ease-in-out
-                ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-                flex flex-col
+                flex-shrink-0 w-64 flex flex-col
+                bg-white border-r border-gray-200
+                rounded-b-xl rounded-br-xl shadow-md
+                transition-all duration-300 ease-in-out hover:shadow-lg
+                fixed left-0 top-16 bottom-0 z-50
+                lg:relative lg:top-auto lg:left-auto lg:bottom-auto lg:translate-x-0
+                ${isOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
-                <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700 lg:hidden">
-                    <h2 className="text-lg font-semibold">Menu</h2>
+                <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200 lg:hidden">
+                    <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                        className="p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors"
                         aria-label="Close sidebar"
                     >
                         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -262,12 +264,12 @@ export default function Sidebar({ isOpen, onClose }) {
                                             }
                                         }}
                                         className={`
-                                            flex items-center space-x-3 px-4 py-3 rounded-lg
-                                            transition-colors duration-150
+                                            flex items-center space-x-3 px-4 py-3 rounded-xl
+                                            transition-all duration-150
                                             ${
                                                 isActive(item.path)
                                                     ? 'bg-blue-600 text-white shadow-md'
-                                                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                                                    : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                                             }
                                         `}
                                     >
@@ -278,7 +280,7 @@ export default function Sidebar({ isOpen, onClose }) {
                             ))}
                         </ul>
                     ) : (
-                        <div className="text-center text-gray-400 py-8">
+                        <div className="text-center text-gray-500 py-8">
                             <p className="text-sm">No menu items available</p>
                         </div>
                     )}

@@ -7,7 +7,7 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE:-wms}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "3307:3306"
     volumes:
       - ./database/mysql:/var/lib/mysql
     networks:
@@ -55,4 +55,3 @@ services:
 networks:
   wms_network:
     driver: bridge
-
