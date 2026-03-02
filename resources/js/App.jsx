@@ -21,6 +21,7 @@ import SupplierList from "./features/suppliers/SupplierList";
 import UserList from "./features/admin/UserList";
 import UserForm from "./features/admin/UserForm";
 import RoleList from "./features/admin/RoleList";
+import SettingsPage from "./features/admin/SettingsPage";
 import TaskList from "./features/tasks/TaskList";
 import TaskForm from "./features/tasks/TaskForm";
 import EmployeeList from "./features/employees/EmployeeList";
@@ -139,6 +140,7 @@ const routes = createRoutesFromElements(
                     element={<DepositConfigurator />}
                 />
                 <Route path="/deposits" element={<DepositList />} />
+                <Route path="/admin/settings" element={<SettingsPage />} />
                 <Route path="/admin/users" element={<UserList />} />
                 <Route path="/admin/users/create" element={<UserForm />} />
                 <Route path="/admin/users/:id/edit" element={<UserForm />} />

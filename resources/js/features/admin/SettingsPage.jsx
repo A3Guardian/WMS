@@ -1,0 +1,519 @@
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import api from "../../utils/api";
+import { usePermissions } from "../../hooks/usePermissions";
+
+export default function SettingsPage() {
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const { isAdmin } = usePermissions();
+    const logoInputRef = useRef(null);
+
+    const { data: settings, isLoading } = useQuery({
+        queryKey: ["settings"],
+        queryFn: async () => {
+            const res = await api.get("/settings");
+            return res.data;
+        },
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: async (payload) => {
+            const res = await api.put("/settings", payload);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["settings"] });
+            toast.success("Setările au fost salvate.");
+        },
+        onError: (err) => {
+            toast.error(err.response?.data?.message || "Eroare la salvare.");
+        },
+    });
+
+    const logoMutation = useMutation({
+        mutationFn: async (file) => {
+            const form = new FormData();
+            form.append("logo", file);
+            const res = await api.post("/settings/logo", form, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["settings"] });
+            toast.success("Logo încărcat.");
+        },
+        onError: (err) => {
+            toast.error(
+                err.response?.data?.message || "Eroare la încărcare logo.",
+            );
+        },
+    });
+
+    const [general, setGeneral] = useState({ locale: "ro" });
+    const [company, setCompany] = useState({
+        name: "",
+        cui: "",
+        phone: "",
+        address: "",
+    });
+    const [smtp, setSmtp] = useState({
+        host: "",
+        port: "587",
+        username: "",
+        password: "",
+        encryption: "tls",
+        from_address: "",
+        from_name: "",
+    });
+
+    useEffect(() => {
+        if (!settings) return;
+        setGeneral((g) =>
+            g._synced
+                ? g
+                : { ...g, locale: settings.app?.locale || "ro", _synced: true },
+        );
+    }, [settings?.app?.locale]);
+
+    useEffect(() => {
+        if (!settings?.company) return;
+        setCompany((c) =>
+            c._synced
+                ? c
+                : {
+                      name: settings.company.name ?? "",
+                      cui: settings.company.cui ?? "",
+                      phone: settings.company.phone ?? "",
+                      address: settings.company.address ?? "",
+                      _synced: true,
+                  },
+        );
+    }, [
+        settings?.company?.name,
+        settings?.company?.cui,
+        settings?.company?.phone,
+        settings?.company?.address,
+    ]);
+
+    useEffect(() => {
+        if (!settings?.smtp) return;
+        setSmtp((s) =>
+            s._synced
+                ? s
+                : {
+                      host: settings.smtp.host ?? "",
+                      port: settings.smtp.port ?? "587",
+                      username: settings.smtp.username ?? "",
+                      password: "",
+                      encryption: settings.smtp.encryption ?? "tls",
+                      from_address: settings.smtp.from_address ?? "",
+                      from_name: settings.smtp.from_name ?? "",
+                      _synced: true,
+                  },
+        );
+    }, [
+        settings?.smtp?.host,
+        settings?.smtp?.port,
+        settings?.smtp?.username,
+        settings?.smtp?.encryption,
+        settings?.smtp?.from_address,
+        settings?.smtp?.from_name,
+    ]);
+
+    const handleLogoChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) logoMutation.mutate(file);
+    };
+
+    const saveGeneral = () => {
+        updateMutation.mutate({ "app.locale": general.locale });
+    };
+
+    const saveCompany = () => {
+        updateMutation.mutate({
+            "company.name": company.name,
+            "company.cui": company.cui,
+            "company.phone": company.phone,
+            "company.address": company.address,
+        });
+    };
+
+    const saveSmtp = () => {
+        const payload = {
+            "smtp.host": smtp.host,
+            "smtp.port": smtp.port,
+            "smtp.username": smtp.username,
+            "smtp.encryption": smtp.encryption,
+            "smtp.from_address": smtp.from_address,
+            "smtp.from_name": smtp.from_name,
+        };
+        if (smtp.password) payload["smtp.password"] = smtp.password;
+        updateMutation.mutate(payload);
+    };
+
+    if (!isAdmin()) {
+        return (
+            <div className="p-6">
+                <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4">
+                    Nu aveți permisiunea de a accesa setările.
+                </div>
+            </div>
+        );
+    }
+
+    if (isLoading || !settings) {
+        return (
+            <div className="p-6">
+                <div className="animate-pulse rounded-xl bg-gray-200 h-8 w-48 mb-6" />
+                <div className="space-y-6 max-w-3xl">
+                    <div className="h-48 rounded-xl bg-gray-100" />
+                    <div className="h-48 rounded-xl bg-gray-100" />
+                </div>
+            </div>
+        );
+    }
+
+    const logoUrl = settings.app?.logo_url;
+
+    return (
+        <div className="p-6">
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-900">
+                    Setări aplicație
+                </h1>
+                <p className="mt-1 text-gray-600">
+                    Configurați parametrii generali, datele companiei și
+                    notificările prin email.
+                </p>
+            </div>
+
+            <div className="space-y-6 ">
+                {/* General */}
+                <section className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                        General
+                    </h2>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Logo aplicație
+                            </label>
+                            <div className="flex items-center gap-4">
+                                {logoUrl ? (
+                                    <img
+                                        src={logoUrl}
+                                        alt="Logo"
+                                        className="h-16 w-auto object-contain rounded-lg border border-gray-200"
+                                    />
+                                ) : (
+                                    <div className="h-16 w-24 rounded-lg border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-gray-400 text-xs">
+                                        Fără logo
+                                    </div>
+                                )}
+                                <div>
+                                    <input
+                                        ref={logoInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleLogoChange}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            logoInputRef.current?.click()
+                                        }
+                                        disabled={logoMutation.isPending}
+                                        className="px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium disabled:opacity-50"
+                                    >
+                                        {logoMutation.isPending
+                                            ? "Se încarcă…"
+                                            : "Încarcă logo"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Limbă implicită
+                            </label>
+                            <select
+                                value={general.locale}
+                                onChange={(e) =>
+                                    setGeneral((g) => ({
+                                        ...g,
+                                        locale: e.target.value,
+                                    }))
+                                }
+                                className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="ro">Română</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={saveGeneral}
+                            disabled={updateMutation.isPending}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
+                        >
+                            Salvează general
+                        </button>
+                    </div>
+                </section>
+
+                {/* Company */}
+                <section className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                        Companie
+                    </h2>
+                    <p className="text-gray-600 text-sm mb-4">
+                        Detalii companie: nume, CUI, telefon, locație.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="sm:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Nume companie
+                            </label>
+                            <input
+                                type="text"
+                                value={company.name}
+                                onChange={(e) =>
+                                    setCompany((c) => ({
+                                        ...c,
+                                        name: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Ex: S.C. Exemplu S.R.L."
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                CUI
+                            </label>
+                            <input
+                                type="text"
+                                value={company.cui}
+                                onChange={(e) =>
+                                    setCompany((c) => ({
+                                        ...c,
+                                        cui: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Cod unic de identificare"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Telefon
+                            </label>
+                            <input
+                                type="text"
+                                value={company.phone}
+                                onChange={(e) =>
+                                    setCompany((c) => ({
+                                        ...c,
+                                        phone: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="+40 ..."
+                            />
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Adresă / Locație
+                            </label>
+                            <textarea
+                                value={company.address}
+                                onChange={(e) =>
+                                    setCompany((c) => ({
+                                        ...c,
+                                        address: e.target.value,
+                                    }))
+                                }
+                                rows={2}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Adresa sediului social"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={saveCompany}
+                        disabled={updateMutation.isPending}
+                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
+                    >
+                        Salvează companie
+                    </button>
+                </section>
+
+                {/* Notificări - SMTP */}
+                <section className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                        Notificări – Email (SMTP)
+                    </h2>
+                    <p className="text-gray-600 text-sm mb-4">
+                        Configurați serverul SMTP pentru trimiterea de emailuri
+                        (rapoarte, alerte, etc.).
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="sm:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Host SMTP
+                            </label>
+                            <input
+                                type="text"
+                                value={smtp.host}
+                                onChange={(e) =>
+                                    setSmtp((s) => ({
+                                        ...s,
+                                        host: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="smtp.example.com"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Port
+                            </label>
+                            <input
+                                type="text"
+                                value={smtp.port}
+                                onChange={(e) =>
+                                    setSmtp((s) => ({
+                                        ...s,
+                                        port: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="587"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Criptare
+                            </label>
+                            <select
+                                value={smtp.encryption}
+                                onChange={(e) =>
+                                    setSmtp((s) => ({
+                                        ...s,
+                                        encryption: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="tls">TLS</option>
+                                <option value="ssl">SSL</option>
+                                <option value="null">Niciuna</option>
+                            </select>
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Utilizator SMTP
+                            </label>
+                            <input
+                                type="text"
+                                value={smtp.username}
+                                onChange={(e) =>
+                                    setSmtp((s) => ({
+                                        ...s,
+                                        username: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="user@example.com"
+                            />
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Parolă SMTP
+                            </label>
+                            <input
+                                type="password"
+                                value={smtp.password}
+                                onChange={(e) =>
+                                    setSmtp((s) => ({
+                                        ...s,
+                                        password: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Lăsați gol pentru a păstra parola existentă"
+                                autoComplete="new-password"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                De la (email)
+                            </label>
+                            <input
+                                type="email"
+                                value={smtp.from_address}
+                                onChange={(e) =>
+                                    setSmtp((s) => ({
+                                        ...s,
+                                        from_address: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="noreply@example.com"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                De la (nume)
+                            </label>
+                            <input
+                                type="text"
+                                value={smtp.from_name}
+                                onChange={(e) =>
+                                    setSmtp((s) => ({
+                                        ...s,
+                                        from_name: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="WMS"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={saveSmtp}
+                        disabled={updateMutation.isPending}
+                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
+                    >
+                        Salvează SMTP
+                    </button>
+                </section>
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+                <button
+                    type="button"
+                    onClick={() => navigate("/admin/users")}
+                    className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium"
+                >
+                    Utilizatori
+                </button>
+                <button
+                    type="button"
+                    onClick={() => navigate("/admin/roles")}
+                    className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium"
+                >
+                    Roluri & permisiuni
+                </button>
+            </div>
+        </div>
+    );
+}

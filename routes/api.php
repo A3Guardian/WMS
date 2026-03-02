@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\ShelfController;
 use App\Http\Controllers\Api\WallController;
 use App\Http\Controllers\Api\DoorController;
 use App\Http\Controllers\Api\FinancialDashboardController;
+use App\Http\Controllers\Api\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -165,6 +166,10 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::put('/deposits/{depositId}/doors/{door}', [DoorController::class, 'update'])->middleware('permission:edit deposits,web');
     Route::patch('/deposits/{depositId}/doors/{door}', [DoorController::class, 'update'])->middleware('permission:edit deposits,web');
     Route::delete('/deposits/{depositId}/doors/{door}', [DoorController::class, 'destroy'])->middleware('permission:edit deposits,web');
+
+    Route::get('/settings', [SettingsController::class, 'index']);
+    Route::put('/settings', [SettingsController::class, 'update']);
+    Route::post('/settings/logo', [SettingsController::class, 'uploadLogo']);
 
     Route::prefix('admin')->middleware('permission:view roles|view permissions|view users,web')->group(function () {
         Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:view roles,web');

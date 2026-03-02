@@ -1,236 +1,166 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { usePermissions } from '../hooks/usePermissions';
+
+const icon = (path) => (
+    <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={path} />
+    </svg>
+);
+
+const ICONS = {
+    dashboard: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+    products: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+    inventory: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+    orders: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
+    suppliers: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+    tasks: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+    warehouse: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+    employees: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+    departments: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+    salaries: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+    leaveTypes: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
+    leaves: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+    attendance: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+    payroll: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    chart: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+    invoices: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    costReport: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    payments: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
+    deposits: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+    users: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+    roles: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
+    settings: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z',
+    chevronDown: 'M19 9l-7 7-7-7',
+    chevronRight: 'M9 5l7 7-7 7',
+};
+
+const menuStructure = [
+    {
+        type: 'link',
+        path: '/',
+        label: 'Dashboard',
+        iconKey: 'dashboard',
+        permission: null,
+    },
+    {
+        type: 'group',
+        key: 'warehouse',
+        label: 'Depozit & Operațiuni',
+        iconKey: 'warehouse',
+        items: [
+            { path: '/products', label: 'Produse', iconKey: 'products', permission: 'view products' },
+            { path: '/inventory', label: 'Inventar', iconKey: 'inventory', permission: 'view inventory' },
+            { path: '/orders', label: 'Comenzi', iconKey: 'orders', permission: 'view orders' },
+            { path: '/suppliers', label: 'Furnizori', iconKey: 'suppliers', permission: 'view suppliers' },
+            { path: '/deposits', label: 'Depozite', iconKey: 'deposits', permission: 'view deposits' },
+        ],
+    },
+    {
+        type: 'group',
+        key: 'tasks',
+        label: 'Task-uri',
+        iconKey: 'tasks',
+        items: [
+            { path: '/tasks', label: 'Lista task-uri', iconKey: 'tasks', permission: 'view tasks' },
+        ],
+    },
+    {
+        type: 'group',
+        key: 'hr',
+        label: 'Resurse umane',
+        iconKey: 'employees',
+        items: [
+            { path: '/employees', label: 'Angajați', iconKey: 'employees', permission: 'view employees' },
+            { path: '/departments', label: 'Departamente', iconKey: 'departments', permission: 'view employees' },
+            { path: '/salaries', label: 'Salarii', iconKey: 'salaries', permission: 'view salaries' },
+            { path: '/leave-types', label: 'Tipuri concedii', iconKey: 'leaveTypes', permission: 'view leave types' },
+            { path: '/leaves', label: 'Concedii', iconKey: 'leaves', permission: 'view leaves' },
+            { path: '/attendance', label: 'Prezență', iconKey: 'attendance', permission: 'view attendance' },
+            { path: '/payroll-records', label: 'Salarizare', iconKey: 'payroll', permission: 'view payroll' },
+        ],
+    },
+    {
+        type: 'group',
+        key: 'financial',
+        label: 'Finanțe',
+        iconKey: 'chart',
+        items: [
+            { path: '/financial/dashboard', label: 'Dashboard financiar', iconKey: 'chart', permission: 'view financial' },
+            { path: '/invoices', label: 'Facturi', iconKey: 'invoices', permission: 'view invoices' },
+            { path: '/cost-reports', label: 'Rapoarte costuri', iconKey: 'costReport', permission: 'view financial' },
+            { path: '/payments', label: 'Plăți furnizori', iconKey: 'payments', permission: 'view payments' },
+        ],
+    },
+    {
+        type: 'group',
+        key: 'settings',
+        label: 'Setări',
+        iconKey: 'settings',
+        adminOnly: true,
+        bottom: true,
+        items: [
+            { path: '/admin/settings', label: 'Setări aplicație', iconKey: 'settings', permission: null, adminOnly: true },
+            { path: '/admin/users', label: 'Utilizatori', iconKey: 'users', permission: 'view users', adminOnly: true },
+            { path: '/admin/roles', label: 'Roluri & permisiuni', iconKey: 'roles', permission: 'view roles', adminOnly: true },
+        ],
+    },
+];
 
 export default function Sidebar({ isOpen, onClose }) {
     const location = useLocation();
     const { hasPermission, isAdmin } = usePermissions();
-    
-    const menuItems = [
-        { 
-            path: '/', 
-            label: 'Dashboard', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-            ),
-            permission: null
-        },
-        { 
-            path: '/products', 
-            label: 'Products', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-            ),
-            permission: 'view products'
-        },
-        { 
-            path: '/inventory', 
-            label: 'Inventory', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-            ),
-            permission: 'view inventory'
-        },
-        { 
-            path: '/orders', 
-            label: 'Orders', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-            ),
-            permission: 'view orders'
-        },
-        { 
-            path: '/suppliers', 
-            label: 'Suppliers', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-            ),
-            permission: 'view suppliers'
-        },
-        { 
-            path: '/tasks', 
-            label: 'Tasks', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-            ),
-            permission: 'view tasks'
-        },
-        { 
-            path: '/employees', 
-            label: 'Employees', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-            ),
-            permission: 'view employees'
-        },
-        { 
-            path: '/departments', 
-            label: 'Departments', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-            ),
-            permission: 'view employees'
-        },
-        { 
-            path: '/salaries', 
-            label: 'Salaries', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            ),
-            permission: 'view salaries'
-        },
-        { 
-            path: '/leave-types', 
-            label: 'Leave Types', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                </svg>
-            ),
-            permission: 'view leave types'
-        },
-        { 
-            path: '/leaves', 
-            label: 'Leaves', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-            ),
-            permission: 'view leaves'
-        },
-        { 
-            path: '/attendance', 
-            label: 'Attendance', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            ),
-            permission: 'view attendance'
-        },
-        { 
-            path: '/payroll-records', 
-            label: 'Payroll', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-            ),
-            permission: 'view payroll'
-        },
-        { 
-            path: '/financial/dashboard', 
-            label: 'Financial Dashboard', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-            ),
-            permission: 'view financial'
-        },
-        { 
-            path: '/invoices', 
-            label: 'Invoices', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-            ),
-            permission: 'view invoices'
-        },
-        { 
-            path: '/cost-reports', 
-            label: 'Cost Reports', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-            ),
-            permission: 'view financial'
-        },
-        { 
-            path: '/payments', 
-            label: 'Supplier Payments', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-            ),
-            permission: 'view payments'
-        },
-        { 
-            path: '/deposits', 
-            label: 'Deposits', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-            ),
-            permission: 'view deposits'
-        },
-        { 
-            path: '/admin/users', 
-            label: 'Users', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-            ),
-            permission: 'view users',
-            adminOnly: true
-        },
-        { 
-            path: '/admin/roles', 
-            label: 'Roles & Permissions', 
-            icon: (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-            ),
-            permission: 'view roles',
-            adminOnly: true
-        },
-    ];
+    const [openGroups, setOpenGroups] = useState(() => ({}));
 
-    const visibleItems = menuItems.filter(item => {
-        if (item.adminOnly && !isAdmin()) {
-            return false;
+    useEffect(() => {
+        const toOpen = {};
+        menuStructure.forEach((entry) => {
+            if (entry.type === 'group' && entry.items.some((it) => (it.path === '/' ? location.pathname === '/' : location.pathname.startsWith(it.path)))) {
+                toOpen[entry.key] = true;
+            }
+        });
+        if (Object.keys(toOpen).length > 0) {
+            setOpenGroups((prev) => ({ ...prev, ...toOpen }));
         }
-        if (item.permission === null) {
-            return true;
-        }
+    }, [location.pathname]);
+
+    const canSeeItem = (item) => {
+        if (item.adminOnly && !isAdmin()) return false;
+        if (item.permission === null) return true;
         return hasPermission(item.permission);
-    });
+    };
+
+    const canSeeGroup = (entry) => {
+        if (entry.adminOnly && !isAdmin()) return false;
+        if (entry.type === 'link') return canSeeItem(entry);
+        return entry.items.some(canSeeItem);
+    };
+
+    const visibleStructure = menuStructure.filter(canSeeGroup);
+    const mainMenuItems = visibleStructure.filter((entry) => !entry.bottom);
+    const bottomMenuItems = visibleStructure.filter((entry) => entry.bottom);
+
+    const toggleGroup = (key) => {
+        setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
 
     const isActive = (path) => {
-        if (path === '/') {
-            return location.pathname === '/';
-        }
+        if (path === '/') return location.pathname === '/';
         return location.pathname.startsWith(path);
     };
 
+    const linkClass = (active) =>
+        `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+            active ? 'bg-blue-600 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
+        }`;
+
+    const closeOnMobile = () => {
+        if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose();
+    };
+
     return (
-        <>
-            <aside className={`
+        <aside
+            className={`
                 flex-shrink-0 w-64 flex flex-col
                 bg-white border-r border-gray-200
                 rounded-b-xl rounded-br-xl shadow-md
@@ -238,54 +168,160 @@ export default function Sidebar({ isOpen, onClose }) {
                 fixed left-0 top-16 bottom-0 z-50
                 lg:relative lg:top-auto lg:left-auto lg:bottom-auto lg:translate-x-0
                 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-            `}>
-                <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200 lg:hidden">
-                    <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors"
-                        aria-label="Close sidebar"
-                    >
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-                <nav className="flex-1 overflow-y-auto p-4">
-                    {visibleItems.length > 0 ? (
-                        <ul className="space-y-1">
-                            {visibleItems.map((item) => (
-                                <li key={item.path}>
-                                    <Link
-                                        to={item.path}
-                                        onClick={() => {
-                                            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-                                                onClose();
-                                            }
-                                        }}
-                                        className={`
-                                            flex items-center space-x-3 px-4 py-3 rounded-xl
-                                            transition-all duration-150
-                                            ${
-                                                isActive(item.path)
-                                                    ? 'bg-blue-600 text-white shadow-md'
-                                                    : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
-                                            }
-                                        `}
+            `}
+        >
+            <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200 lg:hidden">
+                <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors"
+                    aria-label="Închide meniul"
+                >
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-4 flex flex-col min-h-0">
+                {visibleStructure.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8 text-sm">Nu aveți elemente în meniu.</div>
+                ) : (
+                    <>
+                        <ul className="space-y-1 flex-shrink-0">
+                            {mainMenuItems.map((entry) => {
+                            if (entry.type === 'link') {
+                                return (
+                                    <li key={entry.path}>
+                                        <Link
+                                            to={entry.path}
+                                            onClick={closeOnMobile}
+                                            className={linkClass(isActive(entry.path))}
+                                        >
+                                            {icon(ICONS[entry.iconKey] || ICONS.dashboard)}
+                                            <span>{entry.label}</span>
+                                        </Link>
+                                    </li>
+                                );
+                            }
+
+                            const visibleItems = entry.items.filter(canSeeItem);
+                            if (visibleItems.length === 0) return null;
+
+                            const isOpenGroup = openGroups[entry.key];
+                            const groupIcon = ICONS[entry.iconKey] || ICONS.warehouse;
+
+                            return (
+                                <li key={entry.key}>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleGroup(entry.key)}
+                                        className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-all duration-150 text-left font-medium"
                                     >
-                                        <span className="flex-shrink-0">{item.icon}</span>
-                                        <span className="font-medium">{item.label}</span>
-                                    </Link>
+                                        <span className="flex items-center gap-3">
+                                            {icon(groupIcon)}
+                                            <span>{entry.label}</span>
+                                        </span>
+                                        <svg
+                                            className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isOpenGroup ? 'rotate-180' : ''}`}
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={ICONS.chevronDown} />
+                                        </svg>
+                                    </button>
+                                    <ul
+                                        className={`overflow-hidden transition-all duration-200 ${
+                                            isOpenGroup ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'
+                                        }`}
+                                    >
+                                        {visibleItems.map((item) => (
+                                            <li key={item.path} className="pl-4 py-0.5">
+                                                <Link
+                                                    to={item.path}
+                                                    onClick={closeOnMobile}
+                                                    className={linkClass(isActive(item.path))}
+                                                >
+                                                    {icon(ICONS[item.iconKey] || ICONS.products)}
+                                                    <span>{item.label}</span>
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </li>
-                            ))}
+                            );
+                        })}
                         </ul>
-                    ) : (
-                        <div className="text-center text-gray-500 py-8">
-                            <p className="text-sm">No menu items available</p>
-                        </div>
-                    )}
-                </nav>
-            </aside>
-        </>
+                        {bottomMenuItems.length > 0 && (
+                            <div className="mt-auto pt-4 border-t border-gray-200 flex-shrink-0">
+                                <ul className="space-y-1">
+                                    {bottomMenuItems.map((entry) => {
+                                        if (entry.type === 'link') {
+                                            return (
+                                                <li key={entry.path}>
+                                                    <Link
+                                                        to={entry.path}
+                                                        onClick={closeOnMobile}
+                                                        className={linkClass(isActive(entry.path))}
+                                                    >
+                                                        {icon(ICONS[entry.iconKey] || ICONS.dashboard)}
+                                                        <span>{entry.label}</span>
+                                                    </Link>
+                                                </li>
+                                            );
+                                        }
+                                        const visibleItems = entry.items.filter(canSeeItem);
+                                        if (visibleItems.length === 0) return null;
+                                        const isOpenGroup = openGroups[entry.key];
+                                        const groupIcon = ICONS[entry.iconKey] || ICONS.settings;
+                                        return (
+                                            <li key={entry.key}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => toggleGroup(entry.key)}
+                                                    className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-all duration-150 text-left font-medium"
+                                                >
+                                                    <span className="flex items-center gap-3">
+                                                        {icon(groupIcon)}
+                                                        <span>{entry.label}</span>
+                                                    </span>
+                                                    <svg
+                                                        className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isOpenGroup ? 'rotate-180' : ''}`}
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={ICONS.chevronDown} />
+                                                    </svg>
+                                                </button>
+                                                <ul
+                                                    className={`overflow-hidden transition-all duration-200 ${
+                                                        isOpenGroup ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'
+                                                    }`}
+                                                >
+                                                    {visibleItems.map((item) => (
+                                                        <li key={item.path} className="pl-4 py-0.5">
+                                                            <Link
+                                                                to={item.path}
+                                                                onClick={closeOnMobile}
+                                                                className={linkClass(isActive(item.path))}
+                                                            >
+                                                                {icon(ICONS[item.iconKey] || ICONS.products)}
+                                                                <span>{item.label}</span>
+                                                            </Link>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+                        )}
+                    </>
+                )}
+            </nav>
+        </aside>
     );
 }
