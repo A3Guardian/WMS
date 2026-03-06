@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import api from '../../utils/api';
-import { usePermissions } from '../../hooks/usePermissions';
-import DepositMap from '../../components/DepositMap';
-import ShelfProductsList from './ShelfProductsList';
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
+import api from "../../utils/api";
+import { usePermissions } from "../../hooks/usePermissions";
+import DepositMap from "../../components/DepositMap";
+import ShelfProductsList from "./ShelfProductsList";
 
 export default function DepositConfigurator() {
     const { id } = useParams();
@@ -26,7 +27,7 @@ export default function DepositConfigurator() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
     const { data: deposit, isLoading: depositLoading } = useQuery({
-        queryKey: ['deposit', id],
+        queryKey: ["deposit", id],
         queryFn: async () => {
             const response = await api.get(`/deposits/${id}`);
             return response.data;
@@ -34,7 +35,7 @@ export default function DepositConfigurator() {
     });
 
     const { data: shelves = [], isLoading: shelvesLoading } = useQuery({
-        queryKey: ['shelves', id],
+        queryKey: ["shelves", id],
         queryFn: async () => {
             const response = await api.get(`/deposits/${id}/shelves`);
             return response.data;
@@ -43,7 +44,7 @@ export default function DepositConfigurator() {
     });
 
     const { data: walls = [], isLoading: wallsLoading } = useQuery({
-        queryKey: ['walls', id],
+        queryKey: ["walls", id],
         queryFn: async () => {
             const response = await api.get(`/deposits/${id}/walls`);
             return response.data;
@@ -52,7 +53,7 @@ export default function DepositConfigurator() {
     });
 
     const { data: doors = [], isLoading: doorsLoading } = useQuery({
-        queryKey: ['doors', id],
+        queryKey: ["doors", id],
         queryFn: async () => {
             const response = await api.get(`/deposits/${id}/doors`);
             return response.data;
@@ -60,18 +61,24 @@ export default function DepositConfigurator() {
         enabled: !!id,
     });
 
-
-    const { data: shelfProducts = [], isLoading: shelfProductsLoading, error: shelfProductsError } = useQuery({
-        queryKey: ['shelf-products', id, selectedShelf?.id],
+    const {
+        data: shelfProducts = [],
+        isLoading: shelfProductsLoading,
+        error: shelfProductsError,
+    } = useQuery({
+        queryKey: ["shelf-products", id, selectedShelf?.id],
         queryFn: async () => {
             if (!selectedShelf?.id || !id) return [];
             try {
-                const response = await api.get(`/deposits/${id}/shelves/${selectedShelf.id}/products`);
+                const response = await api.get(
+                    `/deposits/${id}/shelves/${selectedShelf.id}/products`,
+                );
                 return response.data || [];
             } catch (error) {
-                console.error('Error fetching shelf products:', error);
-                toast.error('Failed to load products', {
-                    description: error.response?.data?.message || 'An error occurred',
+                console.error("Error fetching shelf products:", error);
+                toast.error("Failed to load products", {
+                    description:
+                        error.response?.data?.message || "An error occurred",
                 });
                 return [];
             }
@@ -80,11 +87,11 @@ export default function DepositConfigurator() {
     });
 
     const { data: allShelfProducts = [] } = useQuery({
-        queryKey: ['all-shelf-products', id],
+        queryKey: ["all-shelf-products", id],
         queryFn: async () => {
             if (!id) return [];
-            const response = await api.get('/products', {
-                params: { deposit_id: id, per_page: 1000 }
+            const response = await api.get("/products", {
+                params: { deposit_id: id, per_page: 1000 },
             });
             return response.data?.data || response.data || [];
         },
@@ -93,39 +100,47 @@ export default function DepositConfigurator() {
 
     const createShelfMutation = useMutation({
         mutationFn: async (shelfData) => {
-            const response = await api.post(`/deposits/${id}/shelves`, shelfData);
+            const response = await api.post(
+                `/deposits/${id}/shelves`,
+                shelfData,
+            );
             return response.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['shelves', id] });
-            toast.success('Shelf created successfully');
+            queryClient.invalidateQueries({ queryKey: ["shelves", id] });
+            toast.success("Shelf created successfully");
             setDrawingMode(null);
         },
         onError: (error) => {
-            toast.error('Failed to create shelf', {
-                description: error.response?.data?.message || 'An error occurred',
+            toast.error("Failed to create shelf", {
+                description:
+                    error.response?.data?.message || "An error occurred",
             });
         },
     });
 
     const updateShelfMutation = useMutation({
         mutationFn: async ({ shelfId, data }) => {
-            const response = await api.put(`/deposits/${id}/shelves/${shelfId}`, data);
+            const response = await api.put(
+                `/deposits/${id}/shelves/${shelfId}`,
+                data,
+            );
             return response.data;
         },
         onSuccess: (updatedShelf) => {
-            queryClient.setQueryData(['shelves', id], (oldShelves) => {
-                return oldShelves.map(shelf => 
-                    shelf.id === updatedShelf.id ? updatedShelf : shelf
+            queryClient.setQueryData(["shelves", id], (oldShelves) => {
+                return oldShelves.map((shelf) =>
+                    shelf.id === updatedShelf.id ? updatedShelf : shelf,
                 );
             });
             setSelectedShelf(updatedShelf);
         },
         onError: (error) => {
-            toast.error('Failed to update shelf', {
-                description: error.response?.data?.message || 'An error occurred',
+            toast.error("Failed to update shelf", {
+                description:
+                    error.response?.data?.message || "An error occurred",
             });
-            queryClient.invalidateQueries({ queryKey: ['shelves', id] });
+            queryClient.invalidateQueries({ queryKey: ["shelves", id] });
         },
     });
 
@@ -134,13 +149,14 @@ export default function DepositConfigurator() {
             await api.delete(`/deposits/${id}/shelves/${shelfId}`);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['shelves', id] });
+            queryClient.invalidateQueries({ queryKey: ["shelves", id] });
             setSelectedShelf(null);
-            toast.success('Shelf deleted successfully');
+            toast.success("Shelf deleted successfully");
         },
         onError: (error) => {
-            toast.error('Failed to delete shelf', {
-                description: error.response?.data?.message || 'An error occurred',
+            toast.error("Failed to delete shelf", {
+                description:
+                    error.response?.data?.message || "An error occurred",
             });
         },
     });
@@ -151,8 +167,8 @@ export default function DepositConfigurator() {
             return response.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['walls', id] });
-            toast.success('Wall created successfully');
+            queryClient.invalidateQueries({ queryKey: ["walls", id] });
+            toast.success("Wall created successfully");
             setDrawingMode(null);
             setWallStart(null);
             setSelectedShelf(null);
@@ -160,8 +176,9 @@ export default function DepositConfigurator() {
             setSelectedDoor(null);
         },
         onError: (error) => {
-            toast.error('Failed to create wall', {
-                description: error.response?.data?.message || 'An error occurred',
+            toast.error("Failed to create wall", {
+                description:
+                    error.response?.data?.message || "An error occurred",
             });
         },
     });
@@ -171,13 +188,14 @@ export default function DepositConfigurator() {
             await api.delete(`/deposits/${id}/walls/${wallId}`);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['walls', id] });
+            queryClient.invalidateQueries({ queryKey: ["walls", id] });
             setSelectedWall(null);
-            toast.success('Wall deleted successfully');
+            toast.success("Wall deleted successfully");
         },
         onError: (error) => {
-            toast.error('Failed to delete wall', {
-                description: error.response?.data?.message || 'An error occurred',
+            toast.error("Failed to delete wall", {
+                description:
+                    error.response?.data?.message || "An error occurred",
             });
         },
     });
@@ -188,16 +206,17 @@ export default function DepositConfigurator() {
             return response.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['doors', id] });
-            toast.success('Door created successfully');
+            queryClient.invalidateQueries({ queryKey: ["doors", id] });
+            toast.success("Door created successfully");
             setDrawingMode(null);
             setSelectedShelf(null);
             setSelectedWall(null);
             setSelectedDoor(null);
         },
         onError: (error) => {
-            toast.error('Failed to create door', {
-                description: error.response?.data?.message || 'An error occurred',
+            toast.error("Failed to create door", {
+                description:
+                    error.response?.data?.message || "An error occurred",
             });
         },
     });
@@ -207,39 +226,39 @@ export default function DepositConfigurator() {
             await api.delete(`/deposits/${id}/doors/${doorId}`);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['doors', id] });
+            queryClient.invalidateQueries({ queryKey: ["doors", id] });
             setSelectedDoor(null);
-            toast.success('Door deleted successfully');
+            toast.success("Door deleted successfully");
         },
         onError: (error) => {
-            toast.error('Failed to delete door', {
-                description: error.response?.data?.message || 'An error occurred',
+            toast.error("Failed to delete door", {
+                description:
+                    error.response?.data?.message || "An error occurred",
             });
         },
     });
-
 
     useEffect(() => {
         if (deposit && canvasRef.current) {
             const container = canvasRef.current.parentElement;
             const containerWidth = container.clientWidth - 100;
             const containerHeight = container.clientHeight - 100;
-            
-            const scaleX = containerWidth / (deposit.width * 50); 
+
+            const scaleX = containerWidth / (deposit.width * 50);
             const scaleY = containerHeight / (deposit.height * 50);
-            const newScale = Math.min(scaleX, scaleY, 1); 
-            
+            const newScale = Math.min(scaleX, scaleY, 1);
+
             setBaseScale(newScale);
             setScale(newScale);
         }
     }, [deposit]);
 
     const handleZoomIn = () => {
-        setScale(prev => Math.min(prev * 1.2, 5)); 
+        setScale((prev) => Math.min(prev * 1.2, 5));
     };
 
     const handleZoomOut = () => {
-        setScale(prev => Math.max(prev / 1.2, 0.1));
+        setScale((prev) => Math.max(prev / 1.2, 0.1));
     };
 
     const handleZoomReset = () => {
@@ -254,17 +273,17 @@ export default function DepositConfigurator() {
             if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
                 const delta = e.deltaY > 0 ? 0.9 : 1.1;
-                setScale(prev => {
+                setScale((prev) => {
                     const newScale = prev * delta;
-                    return Math.max(0.1, Math.min(5, newScale)); 
+                    return Math.max(0.1, Math.min(5, newScale));
                 });
             }
         };
 
-        canvas.addEventListener('wheel', handleWheel, { passive: false });
+        canvas.addEventListener("wheel", handleWheel, { passive: false });
 
         return () => {
-            canvas.removeEventListener('wheel', handleWheel);
+            canvas.removeEventListener("wheel", handleWheel);
         };
     }, []);
 
@@ -274,7 +293,7 @@ export default function DepositConfigurator() {
 
     const handleCanvasClick = (e) => {
         if (isDragging) return;
-        
+
         const canvas = canvasRef.current;
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -282,10 +301,10 @@ export default function DepositConfigurator() {
         const xMeters = pixelsToMeters(x);
         const yMeters = pixelsToMeters(y);
 
-        if (drawingMode === 'wall') {
+        if (drawingMode === "wall") {
             if (!wallStart) {
                 setWallStart({ x: xMeters, y: yMeters });
-                toast.info('Click again to set wall end point');
+                toast.info("Click again to set wall end point");
             } else {
                 createWallMutation.mutate({
                     x_start: wallStart.x,
@@ -298,27 +317,51 @@ export default function DepositConfigurator() {
             return;
         }
 
-        if (drawingMode === 'door') {
+        if (drawingMode === "door") {
             const borderWalls = [
-                { id: 'border-top', x_start: 0, y_start: 0, x_end: deposit.width, y_end: 0 }, // Top
-                { id: 'border-right', x_start: deposit.width, y_start: 0, x_end: deposit.width, y_end: deposit.height }, // Right
-                { id: 'border-bottom', x_start: deposit.width, y_start: deposit.height, x_end: 0, y_end: deposit.height }, // Bottom
-                { id: 'border-left', x_start: 0, y_start: deposit.height, x_end: 0, y_end: 0 }, // Left
+                {
+                    id: "border-top",
+                    x_start: 0,
+                    y_start: 0,
+                    x_end: deposit.width,
+                    y_end: 0,
+                }, // Top
+                {
+                    id: "border-right",
+                    x_start: deposit.width,
+                    y_start: 0,
+                    x_end: deposit.width,
+                    y_end: deposit.height,
+                }, // Right
+                {
+                    id: "border-bottom",
+                    x_start: deposit.width,
+                    y_start: deposit.height,
+                    x_end: 0,
+                    y_end: deposit.height,
+                }, // Bottom
+                {
+                    id: "border-left",
+                    x_start: 0,
+                    y_start: deposit.height,
+                    x_end: 0,
+                    y_end: 0,
+                }, // Left
             ];
 
             const detectionThreshold = Math.max(20, 20 / scale);
-            
+
             let clickedWall = null;
             let minDistance = Infinity;
-            
-            walls.forEach(wall => {
-                if (!wall || typeof wall.x_start === 'undefined') return;
-                
+
+            walls.forEach((wall) => {
+                if (!wall || typeof wall.x_start === "undefined") return;
+
                 const x1 = metersToPixels(wall.x_start);
                 const y1 = metersToPixels(wall.y_start);
                 const x2 = metersToPixels(wall.x_end);
                 const y2 = metersToPixels(wall.y_end);
-                
+
                 const distance = pointToLineDistance(x, y, x1, y1, x2, y2);
                 if (distance < detectionThreshold && distance < minDistance) {
                     minDistance = distance;
@@ -327,15 +370,18 @@ export default function DepositConfigurator() {
             });
 
             if (!clickedWall) {
-                minDistance = Infinity; 
-                borderWalls.forEach(wall => {
+                minDistance = Infinity;
+                borderWalls.forEach((wall) => {
                     const x1 = metersToPixels(wall.x_start);
                     const y1 = metersToPixels(wall.y_start);
                     const x2 = metersToPixels(wall.x_end);
                     const y2 = metersToPixels(wall.y_end);
-                    
+
                     const distance = pointToLineDistance(x, y, x1, y1, x2, y2);
-                    if (distance < detectionThreshold && distance < minDistance) {
+                    if (
+                        distance < detectionThreshold &&
+                        distance < minDistance
+                    ) {
                         minDistance = distance;
                         clickedWall = wall;
                     }
@@ -343,15 +389,17 @@ export default function DepositConfigurator() {
             }
 
             if (!clickedWall) {
-                console.log('Door placement failed:', { 
-                    clickPos: { x, y }, 
-                    xMeters, 
-                    yMeters, 
+                console.log("Door placement failed:", {
+                    clickPos: { x, y },
+                    xMeters,
+                    yMeters,
                     wallsCount: walls.length,
                     detectionThreshold,
-                    scale 
+                    scale,
                 });
-                toast.error('Please click on a wall or deposit border to place a door');
+                toast.error(
+                    "Please click on a wall or deposit border to place a door",
+                );
                 return;
             }
 
@@ -365,19 +413,24 @@ export default function DepositConfigurator() {
             const wallLength = Math.sqrt(dx * dx + dy * dy);
 
             if (wallLength === 0) {
-                toast.error('Invalid wall');
+                toast.error("Invalid wall");
                 return;
             }
 
-            const t = Math.max(0, Math.min(1, 
-                ((xMeters - xStart) * dx + (yMeters - yStart) * dy) / (wallLength * wallLength)
-            ));
+            const t = Math.max(
+                0,
+                Math.min(
+                    1,
+                    ((xMeters - xStart) * dx + (yMeters - yStart) * dy) /
+                        (wallLength * wallLength),
+                ),
+            );
 
             const doorX = parseFloat((xStart + t * dx).toFixed(2));
             const doorY = parseFloat((yStart + t * dy).toFixed(2));
 
             const isHorizontal = Math.abs(dy) < Math.abs(dx);
-            const orientation = isHorizontal ? 'horizontal' : 'vertical';
+            const orientation = isHorizontal ? "horizontal" : "vertical";
 
             const doorData = {
                 x_position: doorX,
@@ -386,7 +439,9 @@ export default function DepositConfigurator() {
                 orientation: orientation,
             };
 
-            const isBorderWall = typeof clickedWall.id === 'string' && clickedWall.id.startsWith('border-');
+            const isBorderWall =
+                typeof clickedWall.id === "string" &&
+                clickedWall.id.startsWith("border-");
             if (clickedWall.id && !isBorderWall) {
                 doorData.wall_id = clickedWall.id;
             }
@@ -396,21 +451,26 @@ export default function DepositConfigurator() {
         }
 
         if (drawingMode) {
-            if (drawingMode === 'door') {
+            if (drawingMode === "door") {
                 return;
-            } else if (drawingMode === 'wall') {
+            } else if (drawingMode === "wall") {
                 return;
             }
             return;
         }
 
-        const clickedShelf = shelves.find(shelf => {
+        const clickedShelf = shelves.find((shelf) => {
             const shelfX = metersToPixels(shelf.x_position);
             const shelfY = metersToPixels(shelf.y_position);
             const shelfW = metersToPixels(shelf.width);
             const shelfH = metersToPixels(shelf.height);
-            
-            return x >= shelfX && x <= shelfX + shelfW && y >= shelfY && y <= shelfY + shelfH;
+
+            return (
+                x >= shelfX &&
+                x <= shelfX + shelfW &&
+                y >= shelfY &&
+                y <= shelfY + shelfH
+            );
         });
 
         if (clickedShelf) {
@@ -420,12 +480,12 @@ export default function DepositConfigurator() {
             return;
         }
 
-        const clickedWall = walls.find(wall => {
+        const clickedWall = walls.find((wall) => {
             const x1 = metersToPixels(wall.x_start);
             const y1 = metersToPixels(wall.y_start);
             const x2 = metersToPixels(wall.x_end);
             const y2 = metersToPixels(wall.y_end);
-            
+
             const distance = pointToLineDistance(x, y, x1, y1, x2, y2);
             return distance < 5;
         });
@@ -437,13 +497,24 @@ export default function DepositConfigurator() {
             return;
         }
 
-        const clickedDoor = doors.find(door => {
+        const clickedDoor = doors.find((door) => {
             const doorX = metersToPixels(door.x_position);
             const doorY = metersToPixels(door.y_position);
-            const doorW = door.orientation === 'horizontal' ? metersToPixels(door.width) : 10;
-            const doorH = door.orientation === 'vertical' ? metersToPixels(door.width) : 10;
-            
-            return x >= doorX - 5 && x <= doorX + doorW + 5 && y >= doorY - 5 && y <= doorY + doorH + 5;
+            const doorW =
+                door.orientation === "horizontal"
+                    ? metersToPixels(door.width)
+                    : 10;
+            const doorH =
+                door.orientation === "vertical"
+                    ? metersToPixels(door.width)
+                    : 10;
+
+            return (
+                x >= doorX - 5 &&
+                x <= doorX + doorW + 5 &&
+                y >= doorY - 5 &&
+                y <= doorY + doorH + 5
+            );
         });
 
         if (clickedDoor) {
@@ -463,10 +534,10 @@ export default function DepositConfigurator() {
         const rect = canvasRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        
-        if (drawingMode === 'wall' && wallStart) {
+
+        if (drawingMode === "wall" && wallStart) {
             setMousePosition({ x, y });
-        } else if (drawingMode === 'door') {
+        } else if (drawingMode === "door") {
             setMousePosition({ x, y });
         }
     };
@@ -497,18 +568,18 @@ export default function DepositConfigurator() {
     };
 
     const handleAddShelf = () => {
-        if (!deposit || !hasPermission('edit deposits')) return;
+        if (!deposit || !hasPermission("edit deposits")) return;
 
         let xPos = 0;
         let yPos = 0;
-        
+
         const positionOccupied = (x, y, width, height) => {
-            return shelves.some(shelf => {
+            return shelves.some((shelf) => {
                 const shelfRight = shelf.x_position + shelf.width;
                 const shelfBottom = shelf.y_position + shelf.height;
                 const newRight = x + width;
                 const newBottom = y + height;
-                
+
                 return !(
                     newRight <= shelf.x_position ||
                     x >= shelfRight ||
@@ -519,9 +590,24 @@ export default function DepositConfigurator() {
         };
 
         let found = false;
-        for (let y = 0; y <= deposit.height - newShelfSize.height && !found; y += 0.5) {
-            for (let x = 0; x <= deposit.width - newShelfSize.width && !found; x += 0.5) {
-                if (!positionOccupied(x, y, newShelfSize.width, newShelfSize.height)) {
+        for (
+            let y = 0;
+            y <= deposit.height - newShelfSize.height && !found;
+            y += 0.5
+        ) {
+            for (
+                let x = 0;
+                x <= deposit.width - newShelfSize.width && !found;
+                x += 0.5
+            ) {
+                if (
+                    !positionOccupied(
+                        x,
+                        y,
+                        newShelfSize.width,
+                        newShelfSize.height,
+                    )
+                ) {
                     xPos = x;
                     yPos = y;
                     found = true;
@@ -567,7 +653,7 @@ export default function DepositConfigurator() {
 
         const canvas = canvasRef.current;
         if (!canvas) return;
-        
+
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left - dragStart.x;
         const y = e.clientY - rect.top - dragStart.y;
@@ -593,17 +679,20 @@ export default function DepositConfigurator() {
             const finalShelf = {
                 ...selectedShelf,
             };
-            updateShelfMutation.mutate({
-                shelfId: finalShelf.id,
-                data: {
-                    x_position: finalShelf.x_position,
-                    y_position: finalShelf.y_position,
+            updateShelfMutation.mutate(
+                {
+                    shelfId: finalShelf.id,
+                    data: {
+                        x_position: finalShelf.x_position,
+                        y_position: finalShelf.y_position,
+                    },
                 },
-            }, {
-                onSuccess: () => {
-                    toast.success('Shelf position updated');
-                }
-            });
+                {
+                    onSuccess: () => {
+                        toast.success("Shelf position updated");
+                    },
+                },
+            );
         }
         setIsDragging(false);
     };
@@ -612,18 +701,21 @@ export default function DepositConfigurator() {
         if (isDragging) {
             const moveHandler = (e) => handleShelfDragMove(e);
             const upHandler = () => handleMouseUp();
-            
-            window.addEventListener('mousemove', moveHandler);
-            window.addEventListener('mouseup', upHandler);
+
+            window.addEventListener("mousemove", moveHandler);
+            window.addEventListener("mouseup", upHandler);
             return () => {
-                window.removeEventListener('mousemove', moveHandler);
-                window.removeEventListener('mouseup', upHandler);
+                window.removeEventListener("mousemove", moveHandler);
+                window.removeEventListener("mouseup", upHandler);
             };
         }
     }, [isDragging, selectedShelf, dragStart, deposit]);
 
     const handleDeleteShelf = () => {
-        if (selectedShelf && window.confirm(`Delete shelf "${selectedShelf.name}"?`)) {
+        if (
+            selectedShelf &&
+            window.confirm(`Delete shelf "${selectedShelf.name}"?`)
+        ) {
             deleteShelfMutation.mutate(selectedShelf.id);
         }
     };
@@ -635,13 +727,16 @@ export default function DepositConfigurator() {
     };
 
     const handleDeleteDoor = () => {
-        if (selectedDoor && window.confirm(`Delete door "${selectedDoor.name || 'door'}"?`)) {
+        if (
+            selectedDoor &&
+            window.confirm(`Delete door "${selectedDoor.name || "door"}"?`)
+        ) {
             deleteDoorMutation.mutate(selectedDoor.id);
         }
     };
 
     const handleStartDrawingWall = () => {
-        setDrawingMode('wall');
+        setDrawingMode("wall");
         setWallStart(null);
         setSelectedShelf(null);
         setSelectedWall(null);
@@ -650,7 +745,7 @@ export default function DepositConfigurator() {
     };
 
     const handleStartDrawingDoor = () => {
-        setDrawingMode('door');
+        setDrawingMode("door");
         setSelectedShelf(null);
         setSelectedWall(null);
         setSelectedDoor(null);
@@ -673,19 +768,38 @@ export default function DepositConfigurator() {
         return <div className="text-red-500 p-4">Deposit not found</div>;
     }
 
-    if (!hasPermission('view deposits')) {
-        return <div className="text-red-500 p-4">You don't have permission to view deposits.</div>;
+    if (!hasPermission("view deposits")) {
+        return (
+            <div className="text-red-500 p-4">
+                You don't have permission to view deposits.
+            </div>
+        );
     }
 
     return (
-        <div className="p-6">
+        <div>
             <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-3xl font-bold">Deposit Configurator</h1>
-                    <p className="text-gray-600 mt-1">{deposit.name} - {deposit.width}m × {deposit.height}m</p>
+                <div className="flex items-start gap-3 min-w-0">
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        aria-label="Back"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <div className="min-w-0">
+                        <h1 className="text-3xl font-bold truncate">
+                            Deposit Configurator
+                        </h1>
+                        <p className="text-gray-600 mt-1 truncate">
+                            {deposit.name} - {deposit.width}m × {deposit.height}
+                            m
+                        </p>
+                    </div>
                 </div>
                 <button
-                    onClick={() => navigate('/deposits')}
+                    onClick={() => navigate("/deposits")}
                     className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                 >
                     Back to Deposits
@@ -704,7 +818,13 @@ export default function DepositConfigurator() {
                                 <input
                                     type="number"
                                     value={newShelfSize.width}
-                                    onChange={(e) => setNewShelfSize({ ...newShelfSize, width: parseFloat(e.target.value) || 1 })}
+                                    onChange={(e) =>
+                                        setNewShelfSize({
+                                            ...newShelfSize,
+                                            width:
+                                                parseFloat(e.target.value) || 1,
+                                        })
+                                    }
                                     step="0.1"
                                     min="0.1"
                                     className="w-20 px-2 py-1 border border-gray-300 rounded"
@@ -714,60 +834,132 @@ export default function DepositConfigurator() {
                                 <input
                                     type="number"
                                     value={newShelfSize.height}
-                                    onChange={(e) => setNewShelfSize({ ...newShelfSize, height: parseFloat(e.target.value) || 1 })}
+                                    onChange={(e) =>
+                                        setNewShelfSize({
+                                            ...newShelfSize,
+                                            height:
+                                                parseFloat(e.target.value) || 1,
+                                        })
+                                    }
                                     step="0.1"
                                     min="0.1"
                                     className="w-20 px-2 py-1 border border-gray-300 rounded"
                                     placeholder="H"
                                 />
-                                <span className="text-sm text-gray-500">meters</span>
+                                <span className="text-sm text-gray-500">
+                                    meters
+                                </span>
                                 <button
                                     onClick={handleAddShelf}
-                                    disabled={!hasPermission('edit deposits') || !deposit || drawingMode}
+                                    disabled={
+                                        !hasPermission("edit deposits") ||
+                                        !deposit ||
+                                        drawingMode
+                                    }
                                     className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 >
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                    <svg
+                                        className="w-5 h-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 4v16m8-8H4"
+                                        />
                                     </svg>
                                     Add Shelf
                                 </button>
                                 <button
-                                    onClick={drawingMode === 'wall' ? handleCancelDrawing : handleStartDrawingWall}
-                                    disabled={!hasPermission('edit deposits') || !deposit}
+                                    onClick={
+                                        drawingMode === "wall"
+                                            ? handleCancelDrawing
+                                            : handleStartDrawingWall
+                                    }
+                                    disabled={
+                                        !hasPermission("edit deposits") ||
+                                        !deposit
+                                    }
                                     className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-                                        drawingMode === 'wall' 
-                                            ? 'bg-red-600 text-white hover:bg-red-700' 
-                                            : 'bg-gray-600 text-white hover:bg-gray-700'
+                                        drawingMode === "wall"
+                                            ? "bg-red-600 text-white hover:bg-red-700"
+                                            : "bg-gray-600 text-white hover:bg-gray-700"
                                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                    <svg
+                                        className="w-5 h-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 6h16M4 12h16M4 18h16"
+                                        />
                                     </svg>
-                                    {drawingMode === 'wall' ? 'Cancel Wall' : 'Add Wall'}
+                                    {drawingMode === "wall"
+                                        ? "Cancel Wall"
+                                        : "Add Wall"}
                                 </button>
                                 <button
-                                    onClick={drawingMode === 'door' ? handleCancelDrawing : handleStartDrawingDoor}
-                                    disabled={!hasPermission('edit deposits') || !deposit}
+                                    onClick={
+                                        drawingMode === "door"
+                                            ? handleCancelDrawing
+                                            : handleStartDrawingDoor
+                                    }
+                                    disabled={
+                                        !hasPermission("edit deposits") ||
+                                        !deposit
+                                    }
                                     className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-                                        drawingMode === 'door' 
-                                            ? 'bg-red-600 text-white hover:bg-red-700' 
-                                            : 'bg-orange-600 text-white hover:bg-orange-700'
+                                        drawingMode === "door"
+                                            ? "bg-red-600 text-white hover:bg-red-700"
+                                            : "bg-orange-600 text-white hover:bg-orange-700"
                                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                                    <svg
+                                        className="w-5 h-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"
+                                        />
                                     </svg>
-                                    {drawingMode === 'door' ? 'Cancel Door' : 'Add Door'}
+                                    {drawingMode === "door"
+                                        ? "Cancel Door"
+                                        : "Add Door"}
                                 </button>
                                 <div className="flex items-center gap-2 border-l pl-4 ml-2">
-                                    <span className="text-sm text-gray-700">Zoom:</span>
+                                    <span className="text-sm text-gray-700">
+                                        Zoom:
+                                    </span>
                                     <button
                                         onClick={handleZoomOut}
                                         className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"
                                         title="Zoom Out"
                                     >
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                                        <svg
+                                            className="w-5 h-5"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"
+                                            />
                                         </svg>
                                     </button>
                                     <span className="text-sm font-medium w-16 text-center">
@@ -778,8 +970,18 @@ export default function DepositConfigurator() {
                                         className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"
                                         title="Zoom In"
                                     >
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                                        <svg
+                                            className="w-5 h-5"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"
+                                            />
                                         </svg>
                                     </button>
                                     <button
@@ -792,7 +994,10 @@ export default function DepositConfigurator() {
                                 </div>
                             </div>
                         </div>
-                        <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50 overflow-auto" style={{ maxHeight: '600px' }}>
+                        <div
+                            className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50 overflow-auto"
+                            style={{ maxHeight: "600px" }}
+                        >
                             <DepositMap
                                 deposit={deposit}
                                 shelves={shelves?.data || shelves || []}
@@ -817,10 +1022,16 @@ export default function DepositConfigurator() {
                             />
                         </div>
                         <p className="text-sm text-gray-500 mt-2 text-center">
-                            {drawingMode === 'wall' && !wallStart && 'Click to set wall start point'}
-                            {drawingMode === 'wall' && wallStart && 'Click to set wall end point'}
-                            {drawingMode === 'door' && 'Click on a wall to place door'}
-                            {!drawingMode && 'Drag shelves to reposition • Click to select • Use buttons to add items • Ctrl+Scroll to zoom'}
+                            {drawingMode === "wall" &&
+                                !wallStart &&
+                                "Click to set wall start point"}
+                            {drawingMode === "wall" &&
+                                wallStart &&
+                                "Click to set wall end point"}
+                            {drawingMode === "door" &&
+                                "Click on a wall to place door"}
+                            {!drawingMode &&
+                                "Drag shelves to reposition • Click to select • Use buttons to add items • Ctrl+Scroll to zoom"}
                         </p>
                     </div>
                 </div>
@@ -828,7 +1039,15 @@ export default function DepositConfigurator() {
                 <div className="lg:col-span-1">
                     <div className="bg-white shadow-md rounded-lg p-6">
                         <h2 className="text-xl font-semibold mb-4">
-                            {selectedShelf ? 'Shelf Details' : selectedWall ? 'Wall Details' : selectedDoor ? 'Door Details' : drawingMode ? 'Drawing Mode' : 'Details'}
+                            {selectedShelf
+                                ? "Shelf Details"
+                                : selectedWall
+                                  ? "Wall Details"
+                                  : selectedDoor
+                                    ? "Door Details"
+                                    : drawingMode
+                                      ? "Drawing Mode"
+                                      : "Details"}
                         </h2>
                         {selectedWall ? (
                             <div className="space-y-4">
@@ -838,9 +1057,8 @@ export default function DepositConfigurator() {
                                     </label>
                                     <input
                                         type="text"
-                                        value={selectedWall.name || ''}
-                                        onChange={(e) => {
-                                        }}
+                                        value={selectedWall.name || ""}
+                                        onChange={(e) => {}}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                                         placeholder="Wall name (optional)"
                                     />
@@ -905,8 +1123,16 @@ export default function DepositConfigurator() {
                                     <input
                                         type="number"
                                         value={Math.sqrt(
-                                            Math.pow(selectedWall.x_end - selectedWall.x_start, 2) +
-                                            Math.pow(selectedWall.y_end - selectedWall.y_start, 2)
+                                            Math.pow(
+                                                selectedWall.x_end -
+                                                    selectedWall.x_start,
+                                                2,
+                                            ) +
+                                                Math.pow(
+                                                    selectedWall.y_end -
+                                                        selectedWall.y_start,
+                                                    2,
+                                                ),
                                         ).toFixed(2)}
                                         readOnly
                                         className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
@@ -915,7 +1141,7 @@ export default function DepositConfigurator() {
                                 <button
                                     onClick={handleDeleteWall}
                                     className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                                    disabled={!hasPermission('edit deposits')}
+                                    disabled={!hasPermission("edit deposits")}
                                 >
                                     Delete Wall
                                 </button>
@@ -928,9 +1154,8 @@ export default function DepositConfigurator() {
                                     </label>
                                     <input
                                         type="text"
-                                        value={selectedDoor.name || ''}
-                                        onChange={(e) => {
-                                        }}
+                                        value={selectedDoor.name || ""}
+                                        onChange={(e) => {}}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                                         placeholder="Door name (optional)"
                                     />
@@ -942,7 +1167,14 @@ export default function DepositConfigurator() {
                                         </label>
                                         <input
                                             type="text"
-                                            value={walls.find(w => w.id === selectedDoor.wall_id)?.name || `Wall #${selectedDoor.wall_id}`}
+                                            value={
+                                                walls.find(
+                                                    (w) =>
+                                                        w.id ===
+                                                        selectedDoor.wall_id,
+                                                )?.name ||
+                                                `Wall #${selectedDoor.wall_id}`
+                                            }
                                             readOnly
                                             className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
                                         />
@@ -986,7 +1218,10 @@ export default function DepositConfigurator() {
                                     </label>
                                     <input
                                         type="text"
-                                        value={selectedDoor.orientation || 'horizontal'}
+                                        value={
+                                            selectedDoor.orientation ||
+                                            "horizontal"
+                                        }
                                         readOnly
                                         className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100 capitalize"
                                     />
@@ -994,7 +1229,7 @@ export default function DepositConfigurator() {
                                 <button
                                     onClick={handleDeleteDoor}
                                     className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                                    disabled={!hasPermission('edit deposits')}
+                                    disabled={!hasPermission("edit deposits")}
                                 >
                                     Delete Door
                                 </button>
@@ -1016,7 +1251,7 @@ export default function DepositConfigurator() {
                                             });
                                         }}
                                         disabled={!!drawingMode}
-                                        className={`w-full px-3 py-2 border border-gray-300 rounded-md ${drawingMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                        className={`w-full px-3 py-2 border border-gray-300 rounded-md ${drawingMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                     />
                                 </div>
                                 <div>
@@ -1031,12 +1266,17 @@ export default function DepositConfigurator() {
                                                 if (drawingMode) return;
                                                 updateShelfMutation.mutate({
                                                     shelfId: selectedShelf.id,
-                                                    data: { x_position: parseFloat(e.target.value) || 0 },
+                                                    data: {
+                                                        x_position:
+                                                            parseFloat(
+                                                                e.target.value,
+                                                            ) || 0,
+                                                    },
                                                 });
                                             }}
                                             disabled={!!drawingMode}
                                             step="0.01"
-                                            className={`w-full px-2 py-1 border border-gray-300 rounded ${drawingMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                            className={`w-full px-2 py-1 border border-gray-300 rounded ${drawingMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                             placeholder="X"
                                         />
                                         <input
@@ -1046,12 +1286,17 @@ export default function DepositConfigurator() {
                                                 if (drawingMode) return;
                                                 updateShelfMutation.mutate({
                                                     shelfId: selectedShelf.id,
-                                                    data: { y_position: parseFloat(e.target.value) || 0 },
+                                                    data: {
+                                                        y_position:
+                                                            parseFloat(
+                                                                e.target.value,
+                                                            ) || 0,
+                                                    },
                                                 });
                                             }}
                                             disabled={!!drawingMode}
                                             step="0.01"
-                                            className={`w-full px-2 py-1 border border-gray-300 rounded ${drawingMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                            className={`w-full px-2 py-1 border border-gray-300 rounded ${drawingMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                             placeholder="Y"
                                         />
                                     </div>
@@ -1068,12 +1313,17 @@ export default function DepositConfigurator() {
                                                 if (drawingMode) return;
                                                 updateShelfMutation.mutate({
                                                     shelfId: selectedShelf.id,
-                                                    data: { width: parseFloat(e.target.value) || 0 },
+                                                    data: {
+                                                        width:
+                                                            parseFloat(
+                                                                e.target.value,
+                                                            ) || 0,
+                                                    },
                                                 });
                                             }}
                                             disabled={!!drawingMode}
                                             step="0.01"
-                                            className={`w-full px-2 py-1 border border-gray-300 rounded ${drawingMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                            className={`w-full px-2 py-1 border border-gray-300 rounded ${drawingMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                             placeholder="W"
                                         />
                                         <input
@@ -1083,12 +1333,17 @@ export default function DepositConfigurator() {
                                                 if (drawingMode) return;
                                                 updateShelfMutation.mutate({
                                                     shelfId: selectedShelf.id,
-                                                    data: { height: parseFloat(e.target.value) || 0 },
+                                                    data: {
+                                                        height:
+                                                            parseFloat(
+                                                                e.target.value,
+                                                            ) || 0,
+                                                    },
                                                 });
                                             }}
                                             disabled={!!drawingMode}
                                             step="0.01"
-                                            className={`w-full px-2 py-1 border border-gray-300 rounded ${drawingMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                            className={`w-full px-2 py-1 border border-gray-300 rounded ${drawingMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                             placeholder="H"
                                         />
                                     </div>
@@ -1099,17 +1354,22 @@ export default function DepositConfigurator() {
                                     </label>
                                     <input
                                         type="number"
-                                        value={selectedShelf.depth || ''}
+                                        value={selectedShelf.depth || ""}
                                         onChange={(e) => {
                                             if (drawingMode) return;
                                             updateShelfMutation.mutate({
                                                 shelfId: selectedShelf.id,
-                                                data: { depth: parseFloat(e.target.value) || null },
+                                                data: {
+                                                    depth:
+                                                        parseFloat(
+                                                            e.target.value,
+                                                        ) || null,
+                                                },
                                             });
                                         }}
                                         disabled={!!drawingMode}
                                         step="0.01"
-                                        className={`w-full px-2 py-1 border border-gray-300 rounded ${drawingMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                        className={`w-full px-2 py-1 border border-gray-300 rounded ${drawingMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                     />
                                 </div>
                                 <div>
@@ -1118,14 +1378,16 @@ export default function DepositConfigurator() {
                                     </label>
                                     <input
                                         type="number"
-                                        value={selectedShelf.capacity || ''}
+                                        value={selectedShelf.capacity || ""}
                                         readOnly
                                         className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
                                     />
                                 </div>
 
                                 <div className="border-t pt-4 mt-4">
-                                    <h3 className="text-lg font-semibold mb-3">Products in Shelf</h3>
+                                    <h3 className="text-lg font-semibold mb-3">
+                                        Products in Shelf
+                                    </h3>
                                     <ShelfProductsList
                                         products={shelfProducts}
                                         isLoading={shelfProductsLoading}
@@ -1136,7 +1398,10 @@ export default function DepositConfigurator() {
                                 <button
                                     onClick={handleDeleteShelf}
                                     className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                                    disabled={!hasPermission('edit deposits') || !!drawingMode}
+                                    disabled={
+                                        !hasPermission("edit deposits") ||
+                                        !!drawingMode
+                                    }
                                 >
                                     Delete Shelf
                                 </button>
@@ -1145,9 +1410,14 @@ export default function DepositConfigurator() {
                             <div className="space-y-4">
                                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                                     <p className="text-sm text-yellow-800 font-medium mb-2">
-                                        {drawingMode === 'wall' && !wallStart && 'Click to set wall start point'}
-                                        {drawingMode === 'wall' && wallStart && 'Click to set wall end point'}
-                                        {drawingMode === 'door' && 'Click on a wall or border to place door'}
+                                        {drawingMode === "wall" &&
+                                            !wallStart &&
+                                            "Click to set wall start point"}
+                                        {drawingMode === "wall" &&
+                                            wallStart &&
+                                            "Click to set wall end point"}
+                                        {drawingMode === "door" &&
+                                            "Click on a wall or border to place door"}
                                     </p>
                                     <button
                                         onClick={handleCancelDrawing}
@@ -1159,7 +1429,8 @@ export default function DepositConfigurator() {
                             </div>
                         ) : (
                             <p className="text-gray-500 text-sm">
-                                Click on a shelf, wall, or door to view and edit its details
+                                Click on a shelf, wall, or door to view and edit
+                                its details
                             </p>
                         )}
                     </div>

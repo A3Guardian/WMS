@@ -157,7 +157,7 @@ export default function SettingsPage() {
 
     if (!isAdmin()) {
         return (
-            <div className="p-6">
+            <div>
                 <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4">
                     Nu aveți permisiunea de a accesa setările.
                 </div>
@@ -167,7 +167,7 @@ export default function SettingsPage() {
 
     if (isLoading || !settings) {
         return (
-            <div className="p-6">
+            <div>
                 <div className="animate-pulse rounded-xl bg-gray-200 h-8 w-48 mb-6" />
                 <div className="space-y-6 max-w-3xl">
                     <div className="h-48 rounded-xl bg-gray-100" />
@@ -180,7 +180,7 @@ export default function SettingsPage() {
     const logoUrl = settings.app?.logo_url;
 
     return (
-        <div className="p-6">
+        <div>
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">
                     Setări aplicație

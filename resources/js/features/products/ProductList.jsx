@@ -8,6 +8,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import ProductFormModal from "./ProductFormModal";
 import ProductViewModal from "./ProductViewModal";
 import ProductMapModal from "./ProductMapModal";
+import PageHeader from "../../components/PageHeader";
 
 export default function ProductList() {
     const queryClient = useQueryClient();
@@ -149,40 +150,44 @@ export default function ProductList() {
     }
 
     return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Products</h1>
-                {hasPermission("create products") && (
-                    <button
-                        onClick={handleCreate}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                    >
-                        <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+        <div>
+            <PageHeader
+                title="Products"
+                actions={
+                    hasPermission("create products") && (
+                        <button
+                            onClick={handleCreate}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 4v16m8-8H4"
-                            />
-                        </svg>
-                        Add Product
-                    </button>
-                )}
-            </div>
+                            <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 4v16m8-8H4"
+                                />
+                            </svg>
+                            Add Product
+                        </button>
+                    )
+                }
+            />
 
-            <div className="mb-4">
-                <input
-                    type="text"
-                    placeholder="Search products by name or SKU..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+            <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+                <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                    <input
+                        type="text"
+                        placeholder="Search products by name or SKU..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full sm:max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                </div>
             </div>
 
             <div className="bg-white shadow-md rounded-lg overflow-hidden">

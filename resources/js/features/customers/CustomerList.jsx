@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFetch } from '../../hooks/useFetch';
 import DataTable from '../../components/DataTable';
+import PageHeader from '../../components/PageHeader';
 
 export default function CustomerList() {
     const { data, loading, error } = useFetch('customers', '/customers');
@@ -28,7 +29,7 @@ export default function CustomerList() {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-6">Customers</h1>
+            <PageHeader title="Customers" />
             <DataTable
                 columns={columns}
                 data={data?.data || []}

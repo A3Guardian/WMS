@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFetch } from '../../hooks/useFetch';
 import DataTable from '../../components/DataTable';
+import PageHeader from '../../components/PageHeader';
 import { formatDate } from '../../utils/formatters';
 import { TASK_STATUS_LABELS, TASK_STATUS_COLORS } from '../../utils/constants';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -143,9 +144,9 @@ export default function TaskList() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Tasks</h1>
-                {hasPermission('create tasks') && (
+            <PageHeader
+                title="Tasks"
+                actions={hasPermission('create tasks') && (
                     <Link
                         to="/tasks/create"
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -153,7 +154,7 @@ export default function TaskList() {
                         Create Task
                     </Link>
                 )}
-            </div>
+            />
             <DataTable
                 columns={columns}
                 data={data?.data || []}

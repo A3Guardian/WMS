@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFetch } from '../../hooks/useFetch';
 import DataTable from '../../components/DataTable';
+import PageHeader from '../../components/PageHeader';
 
 export default function SupplierList() {
     const { data, loading, error } = useFetch('suppliers', '/suppliers');
@@ -28,7 +29,7 @@ export default function SupplierList() {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-6">Suppliers</h1>
+            <PageHeader title="Suppliers" />
             <DataTable
                 columns={columns}
                 data={data?.data || []}

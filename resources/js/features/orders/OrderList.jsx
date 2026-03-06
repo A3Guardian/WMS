@@ -3,6 +3,7 @@ import { useFetch } from '../../hooks/useFetch';
 import DataTable from '../../components/DataTable';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { ORDER_STATUS_LABELS } from '../../utils/constants';
+import PageHeader from '../../components/PageHeader';
 
 export default function OrderList() {
     const { data, loading, error } = useFetch('orders', '/orders');
@@ -31,7 +32,7 @@ export default function OrderList() {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-6">Orders</h1>
+            <PageHeader title="Orders" />
             <DataTable
                 columns={columns}
                 data={data?.data || []}

@@ -6,6 +6,7 @@ import DataTable from '../../components/DataTable';
 import Pagination from '../../components/Pagination';
 import { usePermissions } from '../../hooks/usePermissions';
 import api from '../../utils/api';
+import PageHeader from '../../components/PageHeader';
 
 export default function UserList() {
     const navigate = useNavigate();
@@ -142,9 +143,9 @@ export default function UserList() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Users</h1>
-                {hasPermission('create users') && (
+            <PageHeader
+                title="Users"
+                actions={hasPermission('create users') && (
                     <button
                         onClick={() => navigate('/admin/users/create')}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -152,33 +153,35 @@ export default function UserList() {
                         Create User
                     </button>
                 )}
-            </div>
+            />
 
-            <div className="mb-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                <div className="flex-1">
-                    <input
-                        type="text"
-                        placeholder="Search users by name or email..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <div className="flex items-center gap-2">
-                    <label htmlFor="perPage" className="text-sm font-medium text-gray-700">
-                        Items per page:
-                    </label>
-                    <select
-                        id="perPage"
-                        value={perPage}
-                        onChange={handlePerPageChange}
-                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value={10}>10</option>
-                        <option value={20}>20</option>
-                        <option value={50}>50</option>
-                        <option value={100}>100</option>
-                    </select>
+            <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                    <div className="flex-1">
+                        <input
+                            type="text"
+                            placeholder="Search users by name or email..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="perPage" className="text-sm font-medium text-gray-700">
+                            Items per page:
+                        </label>
+                        <select
+                            id="perPage"
+                            value={perPage}
+                            onChange={handlePerPageChange}
+                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 

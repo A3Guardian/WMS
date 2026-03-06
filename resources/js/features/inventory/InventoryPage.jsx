@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFetch } from '../../hooks/useFetch';
 import DataTable from '../../components/DataTable';
+import PageHeader from '../../components/PageHeader';
 
 export default function InventoryPage() {
     const { data, loading, error } = useFetch('inventory', '/inventory');
@@ -28,7 +29,7 @@ export default function InventoryPage() {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-6">Inventory</h1>
+            <PageHeader title="Inventory" />
             <DataTable
                 columns={columns}
                 data={data?.data || []}
