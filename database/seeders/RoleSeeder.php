@@ -31,6 +31,11 @@ class RoleSeeder extends Seeder
             'create suppliers',
             'edit suppliers',
             'delete suppliers',
+
+            'view customers',
+            'create customers',
+            'edit customers',
+            'delete customers',
             
             'view users',
             'create users',
@@ -107,6 +112,7 @@ class RoleSeeder extends Seeder
             'create orders',
             'edit orders',
             'view suppliers',
+            'view customers',
             'view tasks',
             'edit tasks',
         ]);
@@ -117,6 +123,10 @@ class RoleSeeder extends Seeder
             'view inventory',
             'view orders',
             'view suppliers',
+            'view customers',
+            'create customers',
+            'edit customers',
+            'delete customers',
             'edit orders',
             'view employees',
             'edit employees',

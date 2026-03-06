@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\WallController;
 use App\Http\Controllers\Api\DoorController;
 use App\Http\Controllers\Api\FinancialDashboardController;
 use App\Http\Controllers\Api\SettingsController;
+use App\Http\Controllers\Api\CustomerController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -60,6 +61,13 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::put('/suppliers/{supplier}', [SupplierController::class, 'update'])->middleware('permission:edit suppliers,web');
     Route::patch('/suppliers/{supplier}', [SupplierController::class, 'update'])->middleware('permission:edit suppliers,web');
     Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->middleware('permission:delete suppliers,web');
+
+    Route::get('/customers', [CustomerController::class, 'index'])->middleware('permission:view customers,web');
+    Route::post('/customers', [CustomerController::class, 'store'])->middleware('permission:create customers,web');
+    Route::get('/customers/{customer}', [CustomerController::class, 'show'])->middleware('permission:view customers,web');
+    Route::put('/customers/{customer}', [CustomerController::class, 'update'])->middleware('permission:edit customers,web');
+    Route::patch('/customers/{customer}', [CustomerController::class, 'update'])->middleware('permission:edit customers,web');
+    Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->middleware('permission:delete customers,web');
 
     Route::get('/tasks', [TaskController::class, 'index'])->middleware('permission:view tasks,web');
     Route::post('/tasks', [TaskController::class, 'store'])->middleware('permission:create tasks,web');
