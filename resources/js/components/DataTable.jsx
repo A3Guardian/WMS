@@ -6,8 +6,10 @@ const PER_PAGE_OPTIONS = [10, 20, 50, 100].map((n) => ({
     value: n,
     label: String(n),
 }));
-const TOOLBAR_CLASSES = "px-4 sm:px-6 py-3 sm:py-4 bg-gray-100 border-b border-gray-200";
-const FOOTER_CLASSES = "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200";
+const TOOLBAR_CLASSES =
+    "px-4 sm:px-6 py-3 sm:py-4 bg-gray-100 border-b border-gray-200";
+const FOOTER_CLASSES =
+    "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 bg-gray-100 border-t border-gray-200";
 
 export default function DataTable({
     columns,
@@ -57,7 +59,7 @@ export default function DataTable({
                                 onChange={(v) => handlePerPageChange(Number(v))}
                                 options={PER_PAGE_OPTIONS}
                                 placeholder="Items per page"
-                                className="min-w-[100px] sm:w-auto"
+                                className="min-w-[100px] sm:w-auto "
                             />
                         </>
                     )}
@@ -69,7 +71,7 @@ export default function DataTable({
                             placeholder={searchPlaceholder || "Search..."}
                             value={searchValue}
                             onChange={(e) => onSearchChange?.(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base !bg-white"
                         />
                     </div>
                 )}
@@ -80,7 +82,7 @@ export default function DataTable({
     const showFooter =
         pagination &&
         (pagination.currentPage != null || pagination.total != null);
-    const total = pagination?.total ?? (data?.length ?? 0);
+    const total = pagination?.total ?? data?.length ?? 0;
     const currentPage = pagination?.currentPage ?? 1;
     const lastPage = pagination?.lastPage ?? 1;
     const effectivePerPageForFooter =
