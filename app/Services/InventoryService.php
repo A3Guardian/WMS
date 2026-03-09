@@ -3,23 +3,27 @@
 namespace App\Services;
 
 use App\Models\Inventory;
+use App\Services\ActivityLogService;
 use Illuminate\Support\Facades\DB;
 
 class InventoryService
 {
     public function adjustStock(Inventory $inventory, int $quantity, ?string $reason = null): Inventory
     {
-        DB::transaction(function () use ($inventory, $quantity, $reason) {
-            $oldQuantity = $inventory->quantity;
-            $newQuantity = max(0, $oldQuantity + $quantity);
+        $oldQuantity = $inventory->quantity;
 
-            $inventory->update([
-                'quantity' => $newQuantity,
-            ]);
-
+        DB::transaction(function () use ($inventory, $quantity) {
+            $newQuantity = max(0, $inventory->quantity + $quantity);
+            $inventory->update(['quantity' => $newQuantity]);
         });
 
-        return $inventory->fresh();
+        $inventory->refresh();
+
+        ActivityLogService::log('adjusted', $inventory, [
+            'quantity' => ['old' => $oldQuantity, 'new' => $inventory->quantity],
+        ], $reason ? "Stock adjustment: {$reason}" : 'Stock adjustment');
+
+        return $inventory;
     }
 
     public function checkLowStock(): array

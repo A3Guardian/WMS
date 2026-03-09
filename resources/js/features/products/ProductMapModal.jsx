@@ -12,10 +12,20 @@ export default function ProductMapModal({
     const mapContainerRef = useRef(null);
     const [mapScale, setMapScale] = useState(1);
     const [baseScale, setBaseScale] = useState(1);
+    const [selectedDepositId, setSelectedDepositId] = useState(null);
 
-    const firstInventory = product?.inventories && product.inventories.length > 0 
-        ? product.inventories[0] 
-        : null;
+    const inventories = product?.inventories || [];
+    const byDeposit = inventories.reduce((acc, inv) => {
+        const id = inv.deposit_id ?? inv.deposit?.id;
+        if (id == null) return acc;
+        if (!acc[id]) acc[id] = { deposit: inv.deposit, deposit_id: id, items: [] };
+        acc[id].items.push(inv);
+        return acc;
+    }, {});
+    const depositList = Object.values(byDeposit);
+    const currentDepositId = selectedDepositId ?? depositList[0]?.deposit_id ?? null;
+    const currentGroup = depositList.find((g) => g.deposit_id === currentDepositId);
+    const firstInventory = currentGroup?.items?.[0] ?? null;
 
     const { data: depositDetails } = useQuery({
         queryKey: ['deposit', firstInventory?.deposit_id],
@@ -134,6 +144,29 @@ export default function ProductMapModal({
                     <Dialog.Description className="text-sm text-gray-600 mb-4">
                         View the product location on the deposit map
                     </Dialog.Description>
+                    {depositList.length > 1 && (
+                        <div className="flex flex-wrap gap-2 mb-4 border-b border-gray-200 pb-3">
+                            <span className="text-sm font-medium text-gray-700 self-center mr-2">Deposit:</span>
+                            {depositList.map((group) => {
+                                const name = group.deposit?.name || `Deposit #${group.deposit_id}`;
+                                const isSelected = group.deposit_id === currentDepositId;
+                                return (
+                                    <button
+                                        key={group.deposit_id}
+                                        type="button"
+                                        onClick={() => setSelectedDepositId(group.deposit_id)}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                            isSelected
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                    >
+                                        {name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                     <div className="flex justify-between items-center mb-4">
                         <div></div>
                         <div className="flex items-center gap-2">

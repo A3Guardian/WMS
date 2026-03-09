@@ -40,11 +40,14 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::get('/products/{product}', [ProductController::class, 'show'])->middleware('permission:view products,web');
     Route::put('/products/{product}', [ProductController::class, 'update'])->middleware('permission:edit products,web');
     Route::patch('/products/{product}', [ProductController::class, 'update'])->middleware('permission:edit products,web');
+    Route::post('/products/{product}/images', [ProductController::class, 'uploadImage'])->middleware('permission:edit products,web');
+    Route::delete('/products/{product}/images', [ProductController::class, 'deleteImage'])->middleware('permission:edit products,web');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->middleware('permission:delete products,web');
 
     Route::get('/inventory', [InventoryController::class, 'index'])->middleware('permission:view inventory,web');
     Route::post('/inventory', [InventoryController::class, 'store'])->middleware('permission:manage inventory,web');
     Route::get('/inventory/{inventory}', [InventoryController::class, 'show'])->middleware('permission:view inventory,web');
+    Route::get('/inventory/{inventory}/activity', [InventoryController::class, 'activity'])->middleware('permission:view inventory,web');
     Route::put('/inventory/{inventory}', [InventoryController::class, 'update'])->middleware('permission:manage inventory,web');
     Route::patch('/inventory/{inventory}', [InventoryController::class, 'update'])->middleware('permission:manage inventory,web');
     Route::delete('/inventory/{inventory}', [InventoryController::class, 'destroy'])->middleware('permission:manage inventory,web');

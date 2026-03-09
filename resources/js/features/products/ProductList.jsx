@@ -5,6 +5,7 @@ import api from "../../utils/api";
 import DataTable from "../../components/DataTable";
 import { formatCurrency } from "../../utils/formatters";
 import { usePermissions } from "../../hooks/usePermissions";
+import { Eye, MapPin, Pencil, Trash2, ImageOff } from "lucide-react";
 import ProductFormModal from "./ProductFormModal";
 import ProductViewModal from "./ProductViewModal";
 import ProductMapModal from "./ProductMapModal";
@@ -74,6 +75,34 @@ export default function ProductList() {
     };
 
     const columns = [
+        {
+            key: "image",
+            label: "Image",
+            render: (_, row) => {
+                const images = row.images || [];
+                const mainImage = images.find((img) => img.display_type === 1) || images[0];
+                if (mainImage?.url) {
+                    return (
+                        <div className="w-12 h-12 flex-shrink-0 rounded border border-gray-200 overflow-hidden bg-gray-50">
+                            <img
+                                src={mainImage.url}
+                                alt=""
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                    );
+                }
+                return (
+                    <div
+                        className="w-12 h-12 flex-shrink-0 rounded border border-gray-200 bg-gray-100 flex flex-col items-center justify-center text-gray-400"
+                        title="No image"
+                    >
+                        <ImageOff className="w-5 h-5 flex-shrink-0" />
+                        <span className="text-[10px] leading-tight mt-0.5">No image</span>
+                    </div>
+                );
+            },
+        },
         { key: "name", label: "Name" },
         { key: "sku", label: "SKU" },
         {
@@ -82,49 +111,50 @@ export default function ProductList() {
             render: (value) => formatCurrency(value),
         },
         {
-            key: "total_quantity",
+            key: "total_stock",
             label: "Total Stock",
-            render: (value, row) => row.total_inventory_quantity ?? 0,
+            render: (value, row) => row.total_inventory_quantity ?? (row.inventories || []).reduce((s, inv) => s + (inv.quantity ?? 0), 0),
         },
         {
             key: "actions",
             label: "Actions",
+            align: "right",
             render: (value, row) => (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-end gap-1">
                     <button
                         onClick={() => handleView(row)}
-                        className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                         title="View"
                     >
-                        View
+                        <Eye className="w-4 h-4" />
                     </button>
                     {row.inventories &&
                         row.inventories.length > 0 &&
                         row.inventories[0]?.deposit_id && (
                             <button
                                 onClick={() => handleViewMap(row)}
-                                className="px-2 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+                                className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
                                 title="View on Map"
                             >
-                                Map
+                                <MapPin className="w-4 h-4" />
                             </button>
                         )}
                     {hasPermission("edit products") && (
                         <button
                             onClick={() => handleEdit(row)}
-                            className="px-2 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                            className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
                             title="Edit"
                         >
-                            Edit
+                            <Pencil className="w-4 h-4" />
                         </button>
                     )}
                     {hasPermission("delete products") && (
                         <button
                             onClick={() => handleDelete(row)}
-                            className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete"
                         >
-                            Delete
+                            <Trash2 className="w-4 h-4" />
                         </button>
                     )}
                 </div>

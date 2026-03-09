@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Inventory;
+use App\Models\ActivityLog;
 use App\Services\ActivityLogService;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
@@ -83,6 +84,18 @@ class InventoryController extends Controller
     public function show(Inventory $inventory)
     {
         return response()->json($inventory->load(['product', 'deposit', 'shelf']));
+    }
+
+    public function activity(Inventory $inventory)
+    {
+        $logs = ActivityLog::where('model_type', Inventory::class)
+            ->where('model_id', $inventory->id)
+            ->with('user:id,name')
+            ->orderByDesc('created_at')
+            ->limit(100)
+            ->get();
+
+        return response()->json($logs);
     }
 
     public function update(Request $request, Inventory $inventory)
