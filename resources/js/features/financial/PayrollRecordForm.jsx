@@ -166,20 +166,15 @@ export default function PayrollRecordForm() {
                         <label htmlFor="month" className="block text-sm font-medium text-gray-700 mb-1">
                             Month <span className="text-red-500">*</span>
                         </label>
-                        <select
-                            id="month"
-                            name="month"
+                        <SearchableSelect
                             value={values.month}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        >
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                                <option key={month} value={month}>
-                                    {new Date(2000, month - 1).toLocaleString('default', { month: 'long' })}
-                                </option>
-                            ))}
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'month', value: Number(v) } })}
+                            options={Array.from({ length: 12 }, (_, i) => ({
+                                value: i + 1,
+                                label: new Date(2000, i).toLocaleString('default', { month: 'long' }),
+                            }))}
+                            placeholder="Select month"
+                        />
                         {errors.month && (
                             <p className="mt-1 text-sm text-red-600">{errors.month}</p>
                         )}
@@ -300,19 +295,12 @@ export default function PayrollRecordForm() {
                         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
-                        <select
-                            id="status"
-                            name="status"
+                        <SearchableSelect
                             value={values.status}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            {Object.entries(PAYROLL_STATUS_LABELS).map(([key, label]) => (
-                                <option key={key} value={key}>
-                                    {label}
-                                </option>
-                            ))}
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'status', value: v } })}
+                            options={Object.entries(PAYROLL_STATUS_LABELS).map(([value, label]) => ({ value, label }))}
+                            placeholder="Select status"
+                        />
                         {errors.status && (
                             <p className="mt-1 text-sm text-red-600">{errors.status}</p>
                         )}

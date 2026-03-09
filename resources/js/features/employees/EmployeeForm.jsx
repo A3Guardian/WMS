@@ -236,19 +236,17 @@ export default function EmployeeForm() {
                         <label htmlFor="employment_type" className="block text-sm font-medium text-gray-700 mb-1">
                             Employment Type <span className="text-red-500">*</span>
                         </label>
-                        <select
-                            id="employment_type"
-                            name="employment_type"
+                        <SearchableSelect
                             value={values.employment_type}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        >
-                            <option value="full-time">Full-time</option>
-                            <option value="part-time">Part-time</option>
-                            <option value="contractor">Contractor</option>
-                            <option value="intern">Intern</option>
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'employment_type', value: v } })}
+                            options={[
+                                { value: 'full-time', label: 'Full-time' },
+                                { value: 'part-time', label: 'Part-time' },
+                                { value: 'contractor', label: 'Contractor' },
+                                { value: 'intern', label: 'Intern' },
+                            ]}
+                            placeholder="Select type"
+                        />
                         {errors.employment_type && (
                             <p className="mt-1 text-sm text-red-600">{errors.employment_type}</p>
                         )}
@@ -345,18 +343,17 @@ export default function EmployeeForm() {
                         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
-                        <select
-                            id="status"
-                            name="status"
+                        <SearchableSelect
                             value={values.status}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="terminated">Terminated</option>
-                            <option value="on_leave">On Leave</option>
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'status', value: v } })}
+                            options={[
+                                { value: 'active', label: 'Active' },
+                                { value: 'inactive', label: 'Inactive' },
+                                { value: 'terminated', label: 'Terminated' },
+                                { value: 'on_leave', label: 'On Leave' },
+                            ]}
+                            placeholder="Select status"
+                        />
                         {errors.status && (
                             <p className="mt-1 text-sm text-red-600">{errors.status}</p>
                         )}

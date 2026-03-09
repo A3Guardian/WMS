@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import DataTable from "../../components/DataTable";
+import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import {
@@ -16,11 +17,12 @@ export default function PayrollRecordList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
-    const [perPage, setPerPage] = useState(15);
+    const [perPage, setPerPage] = useState(10);
     const [employeeFilter, setEmployeeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [monthFilter, setMonthFilter] = useState("");
     const [yearFilter, setYearFilter] = useState("");
+    const [search, setSearch] = useState("");
 
     const { data, isLoading, error } = useQuery({
         queryKey: [
@@ -48,13 +50,10 @@ export default function PayrollRecordList() {
         },
     });
 
-    const { data: employeesData } = useQuery({
-        queryKey: ["employees"],
-        queryFn: async () => {
-            const response = await api.get("/employees?per_page=100");
-            return response.data;
-        },
-    });
+    const handlePerPageChange = (newPerPage) => {
+        setPerPage(newPerPage);
+        setPage(1);
+    };
 
     const deleteMutation = useMutation({
         mutationFn: async (payrollRecordId) => {
@@ -123,6 +122,15 @@ export default function PayrollRecordList() {
         ];
         return months[month] || month;
     };
+
+    const pageData = data?.data || [];
+    const filteredData = React.useMemo(() => {
+        const s = search.trim().toLowerCase();
+        if (!s) return pageData;
+        return pageData.filter((row) =>
+            JSON.stringify(row).toLowerCase().includes(s),
+        );
+    }, [pageData, search]);
 
     const columns = [
         {
@@ -196,7 +204,6 @@ export default function PayrollRecordList() {
         },
     ];
 
-    const employees = employeesData?.data || [];
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
@@ -230,108 +237,109 @@ export default function PayrollRecordList() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Employee
                         </label>
-                        <select
+                        <SearchableSelect
                             value={employeeFilter}
-                            onChange={(e) => {
-                                setEmployeeFilter(e.target.value);
+                            onChange={(v) => {
+                                setEmployeeFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">All Employees</option>
-                            {employees.map((emp) => (
-                                <option key={emp.id} value={emp.id}>
-                                    {emp.employee_code} -{" "}
-                                    {emp.user?.name || "N/A"}
-                                </option>
-                            ))}
-                        </select>
+                            fetchOptions={(params) =>
+                                api
+                                    .get("/employees?" + params)
+                                    .then((r) => r.data)
+                            }
+                            displayValue={(emp) =>
+                                `${emp.employee_code} - ${emp.user?.name || "N/A"}`
+                            }
+                            placeholder="All Employees"
+                            cacheKey="payroll-list-employees"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Month
                         </label>
-                        <select
+                        <SearchableSelect
                             value={monthFilter}
-                            onChange={(e) => {
-                                setMonthFilter(e.target.value);
+                            onChange={(v) => {
+                                setMonthFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">All Months</option>
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map(
-                                (month) => (
-                                    <option key={month} value={month}>
-                                        {new Date(
-                                            2000,
-                                            month - 1,
-                                        ).toLocaleString("default", {
-                                            month: "long",
-                                        })}
-                                    </option>
-                                ),
-                            )}
-                        </select>
+                            options={[
+                                { value: "", label: "All Months" },
+                                ...Array.from({ length: 12 }, (_, i) => ({
+                                    value: String(i + 1),
+                                    label: new Date(2000, i).toLocaleString(
+                                        "default",
+                                        { month: "long" },
+                                    ),
+                                })),
+                            ]}
+                            placeholder="All Months"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Year
                         </label>
-                        <select
+                        <SearchableSelect
                             value={yearFilter}
-                            onChange={(e) => {
-                                setYearFilter(e.target.value);
+                            onChange={(v) => {
+                                setYearFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">All Years</option>
-                            {years.map((year) => (
-                                <option key={year} value={year}>
-                                    {year}
-                                </option>
-                            ))}
-                        </select>
+                            options={[
+                                { value: "", label: "All Years" },
+                                ...years.map((y) => ({
+                                    value: String(y),
+                                    label: String(y),
+                                })),
+                            ]}
+                            placeholder="All Years"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
-                        <select
+                        <SearchableSelect
                             value={statusFilter}
-                            onChange={(e) => {
-                                setStatusFilter(e.target.value);
+                            onChange={(v) => {
+                                setStatusFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">All Statuses</option>
-                            {Object.entries(PAYROLL_STATUS_LABELS).map(
-                                ([key, label]) => (
-                                    <option key={key} value={key}>
-                                        {label}
-                                    </option>
+                            options={[
+                                { value: "", label: "All Statuses" },
+                                ...Object.entries(PAYROLL_STATUS_LABELS).map(
+                                    ([value, label]) => ({ value, label }),
                                 ),
-                            )}
-                        </select>
+                            ]}
+                            placeholder="All Statuses"
+                        />
                     </div>
                 </div>
             </div>
 
-            <DataTable
-                columns={columns}
-                data={data?.data || []}
-                loading={isLoading}
-                pagination={{
-                    currentPage: data?.current_page || 1,
-                    lastPage: data?.last_page || 1,
-                    perPage: data?.per_page || 15,
-                    total: data?.total || 0,
-                    onPageChange: setPage,
-                    onPerPageChange: setPerPage,
-                }}
-            />
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <DataTable
+                    columns={columns}
+                    data={filteredData}
+                    loading={isLoading}
+                    perPage={perPage}
+                    pagination={{
+                        currentPage: data?.current_page || 1,
+                        lastPage: data?.last_page || 1,
+                        perPage: data?.per_page || 15,
+                        total: data?.total || 0,
+                        onPageChange: setPage,
+                        onPerPageChange: handlePerPageChange,
+                    }}
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder="Search payroll records..."
+                    totalRecordName="payroll records"
+                />
+            </div>
         </div>
     );
 }

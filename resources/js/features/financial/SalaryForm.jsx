@@ -15,14 +15,6 @@ export default function SalaryForm() {
     const { hasPermission } = usePermissions();
     const isEdit = !!id;
 
-    const { data: employeesData } = useQuery({
-        queryKey: ['employees'],
-        queryFn: async () => {
-            const response = await api.get('/employees?per_page=100');
-            return response.data;
-        },
-    });
-
     const { data: salaryData } = useQuery({
         queryKey: ['salary', id],
         queryFn: async () => {
@@ -91,8 +83,6 @@ export default function SalaryForm() {
             });
         }
     }, [salaryData, setValues]);
-
-    const employees = employeesData?.data || [];
 
     if (isEdit && !hasPermission('manage salaries')) {
         return (
@@ -164,20 +154,12 @@ export default function SalaryForm() {
                         <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
                             Type <span className="text-red-500">*</span>
                         </label>
-                        <select
-                            id="type"
-                            name="type"
+                        <SearchableSelect
                             value={values.type}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        >
-                            {Object.entries(SALARY_TYPE_LABELS).map(([key, label]) => (
-                                <option key={key} value={key}>
-                                    {label}
-                                </option>
-                            ))}
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'type', value: v } })}
+                            options={Object.entries(SALARY_TYPE_LABELS).map(([value, label]) => ({ value, label }))}
+                            placeholder="Select type"
+                        />
                         {errors.type && (
                             <p className="mt-1 text-sm text-red-600">{errors.type}</p>
                         )}

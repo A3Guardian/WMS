@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import DataTable from "../../components/DataTable";
+import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import { formatDate } from "../../utils/formatters";
@@ -15,7 +16,7 @@ export default function EmployeeList() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [perPage, setPerPage] = useState(15);
+    const [perPage, setPerPage] = useState(10);
     const [departmentFilter, setDepartmentFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
 
@@ -50,13 +51,10 @@ export default function EmployeeList() {
         },
     });
 
-    const { data: departmentsData } = useQuery({
-        queryKey: ["departments"],
-        queryFn: async () => {
-            const response = await api.get("/departments?per_page=100");
-            return response.data;
-        },
-    });
+    const handlePerPageChange = (newPerPage) => {
+        setPerPage(newPerPage);
+        setPage(1);
+    };
 
     const deleteMutation = useMutation({
         mutationFn: async (employeeId) => {
@@ -171,8 +169,6 @@ export default function EmployeeList() {
         },
     ];
 
-    const departments = departmentsData?.data || [];
-
     if (error) {
         return (
             <div className="text-red-500 p-4">
@@ -198,74 +194,71 @@ export default function EmployeeList() {
             />
 
             <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Search
-                        </label>
-                        <input
-                            type="text"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search by name, email, code, position..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Department
                         </label>
-                        <select
+                        <SearchableSelect
                             value={departmentFilter}
-                            onChange={(e) => {
-                                setDepartmentFilter(e.target.value);
+                            onChange={(v) => {
+                                setDepartmentFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">All Departments</option>
-                            {departments.map((dept) => (
-                                <option key={dept.id} value={dept.id}>
-                                    {dept.name}
-                                </option>
-                            ))}
-                        </select>
+                            fetchOptions={(params) => api.get("/departments?" + params).then((r) => r.data)}
+                            displayValue={(d) => d?.name}
+                            placeholder="All Departments"
+                            cacheKey="employee-list-departments"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
-                        <select
+                        <SearchableSelect
                             value={statusFilter}
-                            onChange={(e) => {
-                                setStatusFilter(e.target.value);
+                            onChange={(v) => {
+                                setStatusFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">All Statuses</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="terminated">Terminated</option>
-                            <option value="on_leave">On Leave</option>
-                        </select>
+                            options={[
+                                { value: "", label: "All Statuses" },
+                                { value: "active", label: "Active" },
+                                { value: "inactive", label: "Inactive" },
+                                { value: "terminated", label: "Terminated" },
+                                { value: "on_leave", label: "On Leave" },
+                            ]}
+                            placeholder="All Statuses"
+                        />
                     </div>
                 </div>
             </div>
 
-            <DataTable
-                columns={columns}
-                data={data?.data || []}
-                loading={isLoading}
-                pagination={{
-                    currentPage: data?.current_page || 1,
-                    lastPage: data?.last_page || 1,
-                    perPage: data?.per_page || 15,
-                    total: data?.total || 0,
-                    onPageChange: setPage,
-                    onPerPageChange: setPerPage,
-                }}
-            />
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <DataTable
+                    columns={columns}
+                    data={data?.data || []}
+                    loading={isLoading}
+                    perPage={perPage}
+                    pagination={
+                        data
+                            ? {
+                                  currentPage: data.current_page || 1,
+                                  lastPage: data.last_page || 1,
+                                  perPage: data.per_page || 15,
+                                  total: data.total || 0,
+                                  onPageChange: setPage,
+                                  onPerPageChange: handlePerPageChange,
+                              }
+                            : undefined
+                    }
+                    onPerPageChange={handlePerPageChange}
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder="Search by name, email, code, position..."
+                    totalRecordName="employees"
+                />
+            </div>
         </div>
     );
 }

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useForm } from '../../hooks/useForm';
 import api from '../../utils/api';
 import { usePermissions } from '../../hooks/usePermissions';
+import SearchableSelect from '../../components/SearchableSelect';
 
 export default function SupplierPaymentForm() {
     const { id } = useParams();
@@ -13,21 +14,8 @@ export default function SupplierPaymentForm() {
     const { hasPermission } = usePermissions();
     const isEdit = !!id;
 
-    const { data: suppliersData } = useQuery({
-        queryKey: ['suppliers'],
-        queryFn: async () => {
-            const response = await api.get('/suppliers?per_page=100');
-            return response.data;
-        },
-    });
-
-    const { data: invoicesData } = useQuery({
-        queryKey: ['invoices'],
-        queryFn: async () => {
-            const response = await api.get('/invoices?per_page=100');
-            return response.data;
-        },
-    });
+    const fetchSuppliers = (params) => api.get('/suppliers?' + params).then((r) => r.data);
+    const fetchInvoices = (params) => api.get('/invoices?' + params).then((r) => r.data);
 
     const { data: paymentData } = useQuery({
         queryKey: ['payment', id],
@@ -105,9 +93,6 @@ export default function SupplierPaymentForm() {
         }
     }, [paymentData, setValues]);
 
-    const suppliers = suppliersData?.data || [];
-    const invoices = invoicesData?.data || [];
-
     if (isEdit && !hasPermission('edit payments')) {
         return (
             <div className="text-red-500 p-4">
@@ -151,80 +136,64 @@ export default function SupplierPaymentForm() {
                         <label htmlFor="supplier_id" className="block text-sm font-medium text-gray-700 mb-1">
                             Supplier
                         </label>
-                        <select
-                            id="supplier_id"
-                            name="supplier_id"
-                            value={values.supplier_id}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="">Select Supplier (Optional)</option>
-                            {suppliers.map((sup) => (
-                                <option key={sup.id} value={sup.id}>
-                                    {sup.name}
-                                </option>
-                            ))}
-                        </select>
+                        <SearchableSelect
+                            value={values.supplier_id || ""}
+                            onChange={(v) => handleChange({ target: { name: 'supplier_id', value: v || '' } })}
+                            fetchOptions={fetchSuppliers}
+                            displayValue={(sup) => sup?.name}
+                            placeholder="Select Supplier (Optional)"
+                            cacheKey="payment-suppliers"
+                        />
                     </div>
 
                     <div>
                         <label htmlFor="invoice_id" className="block text-sm font-medium text-gray-700 mb-1">
                             Invoice
                         </label>
-                        <select
-                            id="invoice_id"
-                            name="invoice_id"
-                            value={values.invoice_id}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="">Select Invoice (Optional)</option>
-                            {invoices.map((inv) => (
-                                <option key={inv.id} value={inv.id}>
-                                    {inv.invoice_number} - {inv.supplier?.name || 'N/A'} ({inv.type})
-                                </option>
-                            ))}
-                        </select>
+                        <SearchableSelect
+                            value={values.invoice_id || ""}
+                            onChange={(v) => handleChange({ target: { name: 'invoice_id', value: v || '' } })}
+                            fetchOptions={fetchInvoices}
+                            displayValue={(inv) => inv ? `${inv.invoice_number} - ${inv.supplier?.name || 'N/A'} (${inv.type})` : ''}
+                            placeholder="Select Invoice (Optional)"
+                            cacheKey="payment-invoices"
+                        />
                     </div>
 
                     <div>
                         <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
                             Type <span className="text-red-500">*</span>
                         </label>
-                        <select
-                            id="type"
-                            name="type"
+                        <SearchableSelect
                             value={values.type}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            required
-                        >
-                            <option value="payment">Payment</option>
-                            <option value="receipt">Receipt</option>
-                            <option value="refund">Refund</option>
-                            <option value="adjustment">Adjustment</option>
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'type', value: v } })}
+                            options={[
+                                { value: 'payment', label: 'Payment' },
+                                { value: 'receipt', label: 'Receipt' },
+                                { value: 'refund', label: 'Refund' },
+                                { value: 'adjustment', label: 'Adjustment' },
+                            ]}
+                            placeholder="Select type"
+                        />
                     </div>
 
                     <div>
                         <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                             Category <span className="text-red-500">*</span>
                         </label>
-                        <select
-                            id="category"
-                            name="category"
+                        <SearchableSelect
                             value={values.category}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            required
-                        >
-                            <option value="supplier_payment">Supplier Payment</option>
-                            <option value="customer_payment">Customer Payment</option>
-                            <option value="salary">Salary</option>
-                            <option value="expense">Expense</option>
-                            <option value="income">Income</option>
-                            <option value="other">Other</option>
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'category', value: v } })}
+                            options={[
+                                { value: 'supplier_payment', label: 'Supplier Payment' },
+                                { value: 'customer_payment', label: 'Customer Payment' },
+                                { value: 'salary', label: 'Salary' },
+                                { value: 'expense', label: 'Expense' },
+                                { value: 'income', label: 'Income' },
+                                { value: 'other', label: 'Other' },
+                            ]}
+                            placeholder="Select category"
+                        />
                     </div>
 
                     <div>
@@ -248,21 +217,19 @@ export default function SupplierPaymentForm() {
                         <label htmlFor="payment_method" className="block text-sm font-medium text-gray-700 mb-1">
                             Payment Method <span className="text-red-500">*</span>
                         </label>
-                        <select
-                            id="payment_method"
-                            name="payment_method"
+                        <SearchableSelect
                             value={values.payment_method}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            required
-                        >
-                            <option value="cash">Cash</option>
-                            <option value="bank_transfer">Bank Transfer</option>
-                            <option value="check">Check</option>
-                            <option value="credit_card">Credit Card</option>
-                            <option value="debit_card">Debit Card</option>
-                            <option value="other">Other</option>
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'payment_method', value: v } })}
+                            options={[
+                                { value: 'cash', label: 'Cash' },
+                                { value: 'bank_transfer', label: 'Bank Transfer' },
+                                { value: 'check', label: 'Check' },
+                                { value: 'credit_card', label: 'Credit Card' },
+                                { value: 'debit_card', label: 'Debit Card' },
+                                { value: 'other', label: 'Other' },
+                            ]}
+                            placeholder="Select method"
+                        />
                     </div>
 
                     <div>

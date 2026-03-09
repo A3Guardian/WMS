@@ -14,12 +14,19 @@ import PageHeader from "../../components/PageHeader";
 export default function ProductList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
-    const [searchTerm, setSearchTerm] = useState("");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [isMapModalOpen, setIsMapModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [perPage, setPerPage] = useState(20);
+    const [page, setPage] = useState(1);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const handlePerPageChange = (newPerPage) => {
+        setPerPage(newPerPage);
+        setPage(1);
+    };
 
     const { data, loading, error, refetch } = useQuery({
         queryKey: ["products", searchTerm],
@@ -29,6 +36,10 @@ export default function ProductList() {
             return response.data;
         },
     });
+
+    const allData = data?.data || [];
+    const displayData = allData.slice((page - 1) * perPage, page * perPage);
+    const lastPage = Math.max(1, Math.ceil(allData.length / perPage));
 
     const deleteMutation = useMutation({
         mutationFn: async (id) => {
@@ -80,7 +91,8 @@ export default function ProductList() {
             label: "Image",
             render: (_, row) => {
                 const images = row.images || [];
-                const mainImage = images.find((img) => img.display_type === 1) || images[0];
+                const mainImage =
+                    images.find((img) => img.display_type === 1) || images[0];
                 if (mainImage?.url) {
                     return (
                         <div className="w-12 h-12 flex-shrink-0 rounded border border-gray-200 overflow-hidden bg-gray-50">
@@ -98,7 +110,9 @@ export default function ProductList() {
                         title="No image"
                     >
                         <ImageOff className="w-5 h-5 flex-shrink-0" />
-                        <span className="text-[10px] leading-tight mt-0.5">No image</span>
+                        <span className="text-[10px] leading-tight mt-0.5">
+                            No image
+                        </span>
                     </div>
                 );
             },
@@ -113,7 +127,12 @@ export default function ProductList() {
         {
             key: "total_stock",
             label: "Total Stock",
-            render: (value, row) => row.total_inventory_quantity ?? (row.inventories || []).reduce((s, inv) => s + (inv.quantity ?? 0), 0),
+            render: (value, row) =>
+                row.total_inventory_quantity ??
+                (row.inventories || []).reduce(
+                    (s, inv) => s + (inv.quantity ?? 0),
+                    0,
+                ),
         },
         {
             key: "actions",
@@ -208,30 +227,24 @@ export default function ProductList() {
                 }
             />
 
-            <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-                <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                    <input
-                        type="text"
-                        placeholder="Search products by name or SKU..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full sm:max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                </div>
-            </div>
-
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
                 <DataTable
                     columns={columns}
-                    data={data?.data || []}
+                    data={displayData}
                     loading={loading}
+                    perPage={perPage}
+                    onPerPageChange={handlePerPageChange}
+                    searchValue={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    searchPlaceholder="Search products by name or SKU..."
+                    pagination={{
+                        currentPage: page,
+                        lastPage,
+                        total: allData.length,
+                        onPageChange: setPage,
+                    }}
+                    totalRecordName="products"
                 />
-                {data && data.total && (
-                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-sm text-gray-600">
-                        Showing {data.from || 0} to {data.to || 0} of{" "}
-                        {data.total} products
-                    </div>
-                )}
             </div>
 
             <ProductFormModal

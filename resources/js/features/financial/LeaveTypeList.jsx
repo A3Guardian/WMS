@@ -12,7 +12,8 @@ export default function LeaveTypeList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
-    const [perPage, setPerPage] = useState(15);
+    const [perPage, setPerPage] = useState(10);
+    const [search, setSearch] = useState("");
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["leave-types", page, perPage],
@@ -25,6 +26,11 @@ export default function LeaveTypeList() {
             return response.data;
         },
     });
+
+    const handlePerPageChange = (newPerPage) => {
+        setPerPage(newPerPage);
+        setPage(1);
+    };
 
     const deleteMutation = useMutation({
         mutationFn: async (leaveTypeId) => {
@@ -52,6 +58,15 @@ export default function LeaveTypeList() {
             deleteMutation.mutate(leaveType.id);
         }
     };
+
+    const pageData = data?.data || [];
+    const filteredData = React.useMemo(() => {
+        const s = search.trim().toLowerCase();
+        if (!s) return pageData;
+        return pageData.filter((row) =>
+            JSON.stringify(row).toLowerCase().includes(s),
+        );
+    }, [pageData, search]);
 
     const columns = [
         {
@@ -136,19 +151,30 @@ export default function LeaveTypeList() {
                 }
             />
 
-            <DataTable
-                columns={columns}
-                data={data?.data || []}
-                loading={isLoading}
-                pagination={{
-                    currentPage: data?.current_page || 1,
-                    lastPage: data?.last_page || 1,
-                    perPage: data?.per_page || 15,
-                    total: data?.total || 0,
-                    onPageChange: setPage,
-                    onPerPageChange: setPerPage,
-                }}
-            />
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <DataTable
+                    columns={columns}
+                    data={filteredData}
+                    loading={isLoading}
+                    perPage={perPage}
+                    pagination={
+                        data
+                            ? {
+                                  currentPage: data.current_page || 1,
+                                  lastPage: data.last_page || 1,
+                                  perPage: data.per_page || 15,
+                                  total: data.total || 0,
+                                  onPageChange: setPage,
+                                  onPerPageChange: handlePerPageChange,
+                              }
+                            : undefined
+                    }
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder="Search leave types..."
+                    totalRecordName="leave types"
+                />
+            </div>
         </div>
     );
 }

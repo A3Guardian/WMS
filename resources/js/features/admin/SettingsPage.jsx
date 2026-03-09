@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
+import SearchableSelect from "../../components/SearchableSelect";
 
 export default function SettingsPage() {
     const navigate = useNavigate();
@@ -253,19 +254,21 @@ export default function SettingsPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Limbă implicită
                             </label>
-                            <select
+                            <SearchableSelect
                                 value={general.locale}
-                                onChange={(e) =>
+                                onChange={(v) =>
                                     setGeneral((g) => ({
                                         ...g,
-                                        locale: e.target.value,
+                                        locale: v,
                                     }))
                                 }
-                                className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="ro">Română</option>
-                                <option value="en">English</option>
-                            </select>
+                                options={[
+                                    { value: "ro", label: "Română" },
+                                    { value: "en", label: "English" },
+                                ]}
+                                placeholder="Locale"
+                                className="max-w-xs"
+                            />
                         </div>
                         <button
                             type="button"
@@ -414,20 +417,22 @@ export default function SettingsPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Criptare
                             </label>
-                            <select
+                            <SearchableSelect
                                 value={smtp.encryption}
-                                onChange={(e) =>
+                                onChange={(v) =>
                                     setSmtp((s) => ({
                                         ...s,
-                                        encryption: e.target.value,
+                                        encryption: v,
                                     }))
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="tls">TLS</option>
-                                <option value="ssl">SSL</option>
-                                <option value="null">Niciuna</option>
-                            </select>
+                                options={[
+                                    { value: "tls", label: "TLS" },
+                                    { value: "ssl", label: "SSL" },
+                                    { value: "null", label: "Niciuna" },
+                                ]}
+                                placeholder="Encryption"
+                                className="w-full"
+                            />
                         </div>
                         <div className="sm:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">

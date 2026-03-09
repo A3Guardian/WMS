@@ -64,7 +64,7 @@ const CommandItem = React.forwardRef(({ className, onClick, onMouseDown, ...prop
     <CommandPrimitive.Item
         ref={ref}
         className={cn(
-            "relative flex cursor-pointer !cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-gray-100 aria-selected:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-gray-100 pointer-events-auto",
+            "relative flex cursor-pointer !cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-gray-100 aria-selected:text-gray-900 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 hover:bg-gray-100 pointer-events-auto",
             className
         )}
         onClick={onClick}

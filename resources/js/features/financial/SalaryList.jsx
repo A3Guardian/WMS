@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import DataTable from "../../components/DataTable";
+import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import { formatDate } from "../../utils/formatters";
@@ -15,9 +16,10 @@ export default function SalaryList() {
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [perPage, setPerPage] = useState(15);
+    const [perPage, setPerPage] = useState(10);
     const [employeeFilter, setEmployeeFilter] = useState("");
     const [typeFilter, setTypeFilter] = useState("");
+    const [search, setSearch] = useState("");
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["salaries", page, perPage, employeeFilter, typeFilter],
@@ -33,13 +35,10 @@ export default function SalaryList() {
         },
     });
 
-    const { data: employeesData } = useQuery({
-        queryKey: ["employees"],
-        queryFn: async () => {
-            const response = await api.get("/employees?per_page=100");
-            return response.data;
-        },
-    });
+    const handlePerPageChange = (newPerPage) => {
+        setPerPage(newPerPage);
+        setPage(1);
+    };
 
     const deleteMutation = useMutation({
         mutationFn: async (salaryId) => {
@@ -67,6 +66,15 @@ export default function SalaryList() {
             deleteMutation.mutate(salary.id);
         }
     };
+
+    const pageData = data?.data || [];
+    const filteredData = React.useMemo(() => {
+        const s = search.trim().toLowerCase();
+        if (!s) return pageData;
+        return pageData.filter((row) =>
+            JSON.stringify(row).toLowerCase().includes(s),
+        );
+    }, [pageData, search]);
 
     const columns = [
         {
@@ -125,8 +133,6 @@ export default function SalaryList() {
         },
     ];
 
-    const employees = employeesData?.data || [];
-
     if (error) {
         return (
             <div className="text-red-500 p-4">
@@ -157,61 +163,66 @@ export default function SalaryList() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Employee
                         </label>
-                        <select
+                        <SearchableSelect
                             value={employeeFilter}
-                            onChange={(e) => {
-                                setEmployeeFilter(e.target.value);
+                            onChange={(v) => {
+                                setEmployeeFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">All Employees</option>
-                            {employees.map((emp) => (
-                                <option key={emp.id} value={emp.id}>
-                                    {emp.employee_code} -{" "}
-                                    {emp.user?.name || "N/A"}
-                                </option>
-                            ))}
-                        </select>
+                            fetchOptions={(params) =>
+                                api
+                                    .get("/employees?" + params)
+                                    .then((r) => r.data)
+                            }
+                            displayValue={(emp) =>
+                                `${emp.employee_code} - ${emp.user?.name || "N/A"}`
+                            }
+                            placeholder="All Employees"
+                            cacheKey="salary-list-employees"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Type
                         </label>
-                        <select
+                        <SearchableSelect
                             value={typeFilter}
-                            onChange={(e) => {
-                                setTypeFilter(e.target.value);
+                            onChange={(v) => {
+                                setTypeFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">All Types</option>
-                            {Object.entries(SALARY_TYPE_LABELS).map(
-                                ([key, label]) => (
-                                    <option key={key} value={key}>
-                                        {label}
-                                    </option>
+                            options={[
+                                { value: "", label: "All Types" },
+                                ...Object.entries(SALARY_TYPE_LABELS).map(
+                                    ([value, label]) => ({ value, label }),
                                 ),
-                            )}
-                        </select>
+                            ]}
+                            placeholder="All Types"
+                        />
                     </div>
                 </div>
             </div>
 
-            <DataTable
-                columns={columns}
-                data={data?.data || []}
-                loading={isLoading}
-                pagination={{
-                    currentPage: data?.current_page || 1,
-                    lastPage: data?.last_page || 1,
-                    perPage: data?.per_page || 15,
-                    total: data?.total || 0,
-                    onPageChange: setPage,
-                    onPerPageChange: setPerPage,
-                }}
-            />
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <DataTable
+                    columns={columns}
+                    data={filteredData}
+                    loading={isLoading}
+                    perPage={perPage}
+                    pagination={{
+                        currentPage: data?.current_page || 1,
+                        lastPage: data?.last_page || 1,
+                        perPage: data?.per_page || 15,
+                        total: data?.total || 0,
+                        onPageChange: setPage,
+                        onPerPageChange: handlePerPageChange,
+                    }}
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder="Search salary records..."
+                    totalRecordName="salary records"
+                />
+            </div>
         </div>
     );
 }

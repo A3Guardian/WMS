@@ -14,13 +14,7 @@ export default function InvoiceForm() {
     const { hasPermission } = usePermissions();
     const isEdit = !!id;
 
-    const { data: suppliersData } = useQuery({
-        queryKey: ['suppliers'],
-        queryFn: async () => {
-            const response = await api.get('/suppliers?per_page=100');
-            return response.data;
-        },
-    });
+    const fetchSuppliers = (params) => api.get('/suppliers?' + params).then((r) => r.data);
 
     const { data: invoiceData } = useQuery({
         queryKey: ['invoice', id],
@@ -120,8 +114,6 @@ export default function InvoiceForm() {
         }
     }, [calculatedTotal]);
 
-    const suppliers = suppliersData?.data || [];
-
     if (isEdit && !hasPermission('edit invoices')) {
         return (
             <div className="text-red-500 p-4">
@@ -165,56 +157,47 @@ export default function InvoiceForm() {
                         <label htmlFor="supplier_id" className="block text-sm font-medium text-gray-700 mb-1">
                             Supplier
                         </label>
-                        <select
-                            id="supplier_id"
-                            name="supplier_id"
-                            value={values.supplier_id}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="">Select Supplier (Optional)</option>
-                            {suppliers.map((sup) => (
-                                <option key={sup.id} value={sup.id}>
-                                    {sup.name}
-                                </option>
-                            ))}
-                        </select>
+                        <SearchableSelect
+                            value={values.supplier_id || ""}
+                            onChange={(v) => handleChange({ target: { name: 'supplier_id', value: v || '' } })}
+                            fetchOptions={fetchSuppliers}
+                            displayValue={(sup) => sup?.name}
+                            placeholder="Select Supplier (Optional)"
+                            cacheKey="invoice-suppliers"
+                        />
                     </div>
 
                     <div>
                         <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
                             Type <span className="text-red-500">*</span>
                         </label>
-                        <select
-                            id="type"
-                            name="type"
+                        <SearchableSelect
                             value={values.type}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            required
-                        >
-                            <option value="income">Income</option>
-                            <option value="expense">Expense</option>
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'type', value: v } })}
+                            options={[
+                                { value: 'income', label: 'Income' },
+                                { value: 'expense', label: 'Expense' },
+                            ]}
+                            placeholder="Select type"
+                        />
                     </div>
 
                     <div>
                         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
-                        <select
-                            id="status"
-                            name="status"
+                        <SearchableSelect
                             value={values.status}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="draft">Draft</option>
-                            <option value="sent">Sent</option>
-                            <option value="paid">Paid</option>
-                            <option value="overdue">Overdue</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'status', value: v } })}
+                            options={[
+                                { value: 'draft', label: 'Draft' },
+                                { value: 'sent', label: 'Sent' },
+                                { value: 'paid', label: 'Paid' },
+                                { value: 'overdue', label: 'Overdue' },
+                                { value: 'cancelled', label: 'Cancelled' },
+                            ]}
+                            placeholder="Select status"
+                        />
                     </div>
 
                     <div>

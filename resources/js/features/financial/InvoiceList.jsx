@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import DataTable from "../../components/DataTable";
+import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import { formatDate, formatCurrency } from "../../utils/formatters";
@@ -13,13 +14,14 @@ export default function InvoiceList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
-    const [perPage, setPerPage] = useState(15);
+    const [perPage, setPerPage] = useState(10);
     const [typeFilter, setTypeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [supplierFilter, setSupplierFilter] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
+    const [search, setSearch] = useState("");
 
     const { data, isLoading, error } = useQuery({
         queryKey: [
@@ -49,14 +51,6 @@ export default function InvoiceList() {
         },
     });
 
-    const { data: suppliersData } = useQuery({
-        queryKey: ["suppliers"],
-        queryFn: async () => {
-            const response = await api.get("/suppliers?per_page=100");
-            return response.data;
-        },
-    });
-
     const deleteMutation = useMutation({
         mutationFn: async (invoiceId) => {
             const response = await api.delete(`/invoices/${invoiceId}`);
@@ -73,6 +67,11 @@ export default function InvoiceList() {
             });
         },
     });
+
+    const handlePerPageChange = (newPerPage) => {
+        setPerPage(newPerPage);
+        setPage(1);
+    };
 
     const handleDelete = (invoice) => {
         if (
@@ -100,6 +99,15 @@ export default function InvoiceList() {
             ? "bg-green-100 text-green-800"
             : "bg-red-100 text-red-800";
     };
+
+    const pageData = data?.data || [];
+    const filteredData = React.useMemo(() => {
+        const s = search.trim().toLowerCase();
+        if (!s) return pageData;
+        return pageData.filter((row) =>
+            JSON.stringify(row).toLowerCase().includes(s),
+        );
+    }, [pageData, search]);
 
     const columns = [
         {
@@ -176,8 +184,6 @@ export default function InvoiceList() {
         },
     ];
 
-    const suppliers = suppliersData?.data || [];
-
     if (error) {
         return (
             <div className="text-red-500 p-4">
@@ -208,58 +214,56 @@ export default function InvoiceList() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Type
                         </label>
-                        <select
+                        <SearchableSelect
                             value={typeFilter}
-                            onChange={(e) => {
-                                setTypeFilter(e.target.value);
+                            onChange={(v) => {
+                                setTypeFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="">All Types</option>
-                            <option value="income">Income</option>
-                            <option value="expense">Expense</option>
-                        </select>
+                            options={[
+                                { value: "", label: "All Types" },
+                                { value: "income", label: "Income" },
+                                { value: "expense", label: "Expense" },
+                            ]}
+                            placeholder="All Types"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
-                        <select
+                        <SearchableSelect
                             value={statusFilter}
-                            onChange={(e) => {
-                                setStatusFilter(e.target.value);
+                            onChange={(v) => {
+                                setStatusFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="">All Statuses</option>
-                            <option value="draft">Draft</option>
-                            <option value="sent">Sent</option>
-                            <option value="paid">Paid</option>
-                            <option value="overdue">Overdue</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
+                            options={[
+                                { value: "", label: "All Statuses" },
+                                { value: "draft", label: "Draft" },
+                                { value: "sent", label: "Sent" },
+                                { value: "paid", label: "Paid" },
+                                { value: "overdue", label: "Overdue" },
+                                { value: "cancelled", label: "Cancelled" },
+                            ]}
+                            placeholder="All Statuses"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Supplier
                         </label>
-                        <select
+                        <SearchableSelect
                             value={supplierFilter}
-                            onChange={(e) => {
-                                setSupplierFilter(e.target.value);
+                            onChange={(v) => {
+                                setSupplierFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="">All Suppliers</option>
-                            {suppliers.map((sup) => (
-                                <option key={sup.id} value={sup.id}>
-                                    {sup.name}
-                                </option>
-                            ))}
-                        </select>
+                            fetchOptions={(params) => api.get("/suppliers?" + params).then((r) => r.data)}
+                            displayValue={(sup) => sup?.name}
+                            placeholder="All Suppliers"
+                            cacheKey="invoice-list-suppliers"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -307,19 +311,30 @@ export default function InvoiceList() {
                 </div>
             </div>
 
-            <DataTable
-                columns={columns}
-                data={data?.data || []}
-                loading={isLoading}
-                pagination={{
-                    currentPage: data?.current_page || 1,
-                    lastPage: data?.last_page || 1,
-                    perPage: data?.per_page || 15,
-                    total: data?.total || 0,
-                    onPageChange: setPage,
-                    onPerPageChange: setPerPage,
-                }}
-            />
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <DataTable
+                    columns={columns}
+                    data={filteredData}
+                    loading={isLoading}
+                    perPage={perPage}
+                    pagination={
+                        data
+                            ? {
+                                  currentPage: data.current_page || 1,
+                                  lastPage: data.last_page || 1,
+                                  perPage: data.per_page || 15,
+                                  total: data.total || 0,
+                                  onPageChange: setPage,
+                                  onPerPageChange: handlePerPageChange,
+                              }
+                            : undefined
+                    }
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder="Search invoices..."
+                    totalRecordName="invoices"
+                />
+            </div>
         </div>
     );
 }

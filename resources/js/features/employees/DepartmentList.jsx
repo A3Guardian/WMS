@@ -14,7 +14,7 @@ export default function DepartmentList() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [perPage, setPerPage] = useState(15);
+    const [perPage, setPerPage] = useState(10);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -36,6 +36,11 @@ export default function DepartmentList() {
             return response.data;
         },
     });
+
+    const handlePerPageChange = (newPerPage) => {
+        setPerPage(newPerPage);
+        setPage(1);
+    };
 
     const deleteMutation = useMutation({
         mutationFn: async (departmentId) => {
@@ -127,34 +132,30 @@ export default function DepartmentList() {
                 }
             />
 
-            <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Search
-                    </label>
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search by name or description..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <DataTable
+                    columns={columns}
+                    data={data?.data || []}
+                    loading={isLoading}
+                    perPage={perPage}
+                    pagination={
+                        data
+                            ? {
+                                  currentPage: data.current_page || 1,
+                                  lastPage: data.last_page || 1,
+                                  perPage: data.per_page || 15,
+                                  total: data.total || 0,
+                                  onPageChange: setPage,
+                                  onPerPageChange: handlePerPageChange,
+                              }
+                            : undefined
+                    }
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder="Search by name or description..."
+                    totalRecordName="departments"
+                />
             </div>
-
-            <DataTable
-                columns={columns}
-                data={data?.data || []}
-                loading={isLoading}
-                pagination={{
-                    currentPage: data?.current_page || 1,
-                    lastPage: data?.last_page || 1,
-                    perPage: data?.per_page || 15,
-                    total: data?.total || 0,
-                    onPageChange: setPage,
-                    onPerPageChange: setPerPage,
-                }}
-            />
         </div>
     );
 }

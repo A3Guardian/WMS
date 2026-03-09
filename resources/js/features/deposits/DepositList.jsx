@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import DataTable from "../../components/DataTable";
-import Pagination from "../../components/Pagination";
+import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
@@ -13,9 +13,10 @@ export default function DepositList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
-    const [perPage, setPerPage] = useState(15);
+    const [perPage, setPerPage] = useState(10);
     const [statusFilter, setStatusFilter] = useState("");
     const [locationFilter, setLocationFilter] = useState("");
+    const [search, setSearch] = useState("");
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["deposits", page, perPage, statusFilter, locationFilter],
@@ -48,6 +49,11 @@ export default function DepositList() {
         },
     });
 
+    const handlePerPageChange = (newPerPage) => {
+        setPerPage(newPerPage);
+        setPage(1);
+    };
+
     const handleDelete = (deposit) => {
         if (
             window.confirm(
@@ -73,6 +79,15 @@ export default function DepositList() {
         }
         return "N/A";
     };
+
+    const pageData = data?.data || [];
+    const filteredData = React.useMemo(() => {
+        const s = search.trim().toLowerCase();
+        if (!s) return pageData;
+        return pageData.filter((row) =>
+            JSON.stringify(row).toLowerCase().includes(s),
+        );
+    }, [pageData, search]);
 
     const columns = [
         {
@@ -171,19 +186,20 @@ export default function DepositList() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
-                        <select
+                        <SearchableSelect
                             value={statusFilter}
-                            onChange={(e) => {
-                                setStatusFilter(e.target.value);
+                            onChange={(v) => {
+                                setStatusFilter(v || "");
                                 setPage(1);
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="">All Statuses</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="maintenance">Maintenance</option>
-                        </select>
+                            options={[
+                                { value: "", label: "All Statuses" },
+                                { value: "active", label: "Active" },
+                                { value: "inactive", label: "Inactive" },
+                                { value: "maintenance", label: "Maintenance" },
+                            ]}
+                            placeholder="All Statuses"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -203,18 +219,26 @@ export default function DepositList() {
                 </div>
             </div>
 
-            <DataTable
-                columns={columns}
-                data={data?.data || []}
-                loading={isLoading}
-            />
-            {data && data.last_page > 1 && (
-                <Pagination
-                    currentPage={data.current_page || 1}
-                    lastPage={data.last_page || 1}
-                    onPageChange={setPage}
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <DataTable
+                    columns={columns}
+                    data={filteredData}
+                    loading={isLoading}
+                    perPage={perPage}
+                    pagination={{
+                        currentPage: data?.current_page || 1,
+                        lastPage: data?.last_page || 1,
+                        perPage: data?.per_page || 15,
+                        total: data?.total || 0,
+                        onPageChange: setPage,
+                        onPerPageChange: handlePerPageChange,
+                    }}
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder="Search deposits..."
+                    totalRecordName="deposits"
                 />
-            )}
+            </div>
         </div>
     );
 }

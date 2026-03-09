@@ -20,6 +20,14 @@ export default function InventoryPage() {
     const [mapModalOpen, setMapModalOpen] = useState(false);
     const [selectedInventory, setSelectedInventory] = useState(null);
     const [inventoryForMap, setInventoryForMap] = useState(null);
+    const [perPage, setPerPage] = useState(20);
+    const [page, setPage] = useState(1);
+    const [search, setSearch] = useState("");
+
+    const handlePerPageChange = (newPerPage) => {
+        setPerPage(newPerPage);
+        setPage(1);
+    };
 
     const deleteMutation = useMutation({
         mutationFn: (id) => api.delete(`/inventory/${id}`),
@@ -149,6 +157,20 @@ export default function InventoryPage() {
         );
     }
 
+    const allData = data?.data || data || [];
+    const filteredData = React.useMemo(() => {
+        const s = search.trim().toLowerCase();
+        if (!s) return allData;
+        return allData.filter((row) =>
+            JSON.stringify(row).toLowerCase().includes(s),
+        );
+    }, [allData, search]);
+    const displayData = filteredData.slice(
+        (page - 1) * perPage,
+        page * perPage,
+    );
+    const lastPage = Math.max(1, Math.ceil(filteredData.length / perPage));
+
     return (
         <div>
             <PageHeader
@@ -168,11 +190,25 @@ export default function InventoryPage() {
                     )
                 }
             />
-            <DataTable
-                columns={columns}
-                data={data?.data || []}
-                loading={loading}
-            />
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <DataTable
+                    columns={columns}
+                    data={displayData}
+                    loading={loading}
+                    perPage={perPage}
+                    onPerPageChange={handlePerPageChange}
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    searchPlaceholder="Search inventory..."
+                    pagination={{
+                        currentPage: page,
+                        lastPage,
+                        total: filteredData.length,
+                        onPageChange: setPage,
+                    }}
+                    totalRecordName="inventory records"
+                />
+            </div>
             <InventoryActivityModal
                 isOpen={activityModalOpen}
                 onClose={() => {

@@ -16,6 +16,7 @@ import {
     ResponsiveContainer,
 } from "recharts";
 import api from "../../utils/api";
+import SearchableSelect from "../../components/SearchableSelect";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import {
     Download,
@@ -69,13 +70,7 @@ export default function FinancialDashboard() {
         },
     });
 
-    const { data: suppliersData } = useQuery({
-        queryKey: ["suppliers"],
-        queryFn: async () => {
-            const response = await api.get("/suppliers?per_page=100");
-            return response.data;
-        },
-    });
+    const fetchSuppliers = (params) => api.get("/suppliers?" + params).then((r) => r.data);
 
     const handleExportPDF = async () => {
         try {
@@ -219,8 +214,6 @@ export default function FinancialDashboard() {
             expenses: parseFloat(charts.expenses_by_month?.[idx]?.total || 0),
         })) || [];
 
-    const suppliers = suppliersData?.data || [];
-
     return (
         <div>
             <PageHeader
@@ -273,18 +266,14 @@ export default function FinancialDashboard() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Supplier
                         </label>
-                        <select
+                        <SearchableSelect
                             value={supplierId}
-                            onChange={(e) => setSupplierId(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="">All Suppliers</option>
-                            {suppliers.map((sup) => (
-                                <option key={sup.id} value={sup.id}>
-                                    {sup.name}
-                                </option>
-                            ))}
-                        </select>
+                            onChange={(v) => setSupplierId(v || "")}
+                            fetchOptions={fetchSuppliers}
+                            displayValue={(sup) => sup?.name}
+                            placeholder="All Suppliers"
+                            cacheKey="dashboard-suppliers"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">

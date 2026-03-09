@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useForm } from '../../hooks/useForm';
 import api from '../../utils/api';
 import { usePermissions } from '../../hooks/usePermissions';
+import SearchableSelect from '../../components/SearchableSelect';
 
 export default function DepositForm() {
     const { id } = useParams();
@@ -244,17 +245,16 @@ export default function DepositForm() {
                         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
                             Status
                         </label>
-                        <select
-                            id="status"
-                            name="status"
+                        <SearchableSelect
                             value={values.status}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="maintenance">Maintenance</option>
-                        </select>
+                            onChange={(v) => handleChange({ target: { name: 'status', value: v } })}
+                            options={[
+                                { value: 'active', label: 'Active' },
+                                { value: 'inactive', label: 'Inactive' },
+                                { value: 'maintenance', label: 'Maintenance' },
+                            ]}
+                            placeholder="Select status"
+                        />
                     </div>
 
                     <div className="md:col-span-2">

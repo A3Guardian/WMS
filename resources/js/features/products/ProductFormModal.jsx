@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useMutation, useQueryClient, useQuery, useQueries } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import api from "../../utils/api";
+import SearchableSelect from "../../components/SearchableSelect";
 import { Plus, Trash2, Upload, Star } from "lucide-react";
 
 const emptyInventoryRow = () => ({
@@ -24,13 +25,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
         images: [],
     });
 
-    const { data: depositsData } = useQuery({
-        queryKey: ["deposits"],
-        queryFn: async () => {
-            const response = await api.get("/deposits");
-            return response.data?.data || response.data || [];
-        },
-    });
+    const fetchDeposits = (params) => api.get("/deposits?" + params).then((r) => r.data);
 
     const depositIds = [...new Set(
         (formData.inventories || [])
@@ -47,6 +42,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                 );
                 return response.data?.data || response.data || [];
             },
+            enabled: isOpen && !!depositId,
         })),
     });
 
@@ -54,13 +50,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
         depositIds.map((id, i) => [id, shelfQueries[i]?.data || []])
     );
 
-    const { data: suppliersData } = useQuery({
-        queryKey: ["suppliers"],
-        queryFn: async () => {
-            const response = await api.get("/suppliers?per_page=100");
-            return response.data?.data ?? response.data ?? [];
-        },
-    });
+    const fetchSuppliers = (params) => api.get("/suppliers?" + params).then((r) => r.data);
 
     const createMutation = useMutation({
         mutationFn: async (data) => {
@@ -305,12 +295,6 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
     };
 
     const isEditMode = !!product;
-    const suppliers = Array.isArray(suppliersData)
-        ? suppliersData
-        : suppliersData?.data || [];
-    const deposits = Array.isArray(depositsData)
-        ? depositsData
-        : depositsData?.data || depositsData || [];
 
     return (
         <Dialog.Root
@@ -405,26 +389,19 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Supplier
                             </label>
-                            <select
-                                value={formData.supplier_id}
-                                onChange={(e) =>
+                            <SearchableSelect
+                                value={formData.supplier_id || ""}
+                                onChange={(v) =>
                                     setFormData({
                                         ...formData,
-                                        supplier_id: e.target.value,
+                                        supplier_id: v || "",
                                     })
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="">Select Supplier</option>
-                                {suppliers.map((supplier) => (
-                                    <option
-                                        key={supplier.id}
-                                        value={supplier.id}
-                                    >
-                                        {supplier.name}
-                                    </option>
-                                ))}
-                            </select>
+                                fetchOptions={fetchSuppliers}
+                                displayValue={(opt) => opt?.name}
+                                placeholder="Select Supplier"
+                                cacheKey="product-suppliers"
+                            />
                         </div>
 
                         <div className="border-t pt-4 mt-4">
@@ -448,54 +425,44 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                         <label className="block text-xs font-medium text-gray-600 mb-0.5">
                                             Deposit
                                         </label>
-                                        <select
-                                            value={row.deposit_id}
-                                            onChange={(e) =>
+                                        <SearchableSelect
+                                            value={row.deposit_id || ""}
+                                            onChange={(v) =>
                                                 updateInventoryRow(
                                                     index,
                                                     "deposit_id",
-                                                    e.target.value
+                                                    v || ""
                                                 )
                                             }
-                                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
-                                        >
-                                            <option value="">
-                                                Select deposit
-                                            </option>
-                                            {deposits.map((d) => (
-                                                <option key={d.id} value={d.id}>
-                                                    {d.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            fetchOptions={fetchDeposits}
+                                            displayValue={(opt) => opt?.name}
+                                            placeholder="Select deposit"
+                                            cacheKey="product-deposits"
+                                            className="min-h-[34px] px-2 py-1.5 text-sm"
+                                        />
                                     </div>
                                     <div className="flex-1 min-w-[100px]">
                                         <label className="block text-xs font-medium text-gray-600 mb-0.5">
                                             Shelf
                                         </label>
-                                        <select
-                                            value={row.shelf_id}
-                                            onChange={(e) =>
+                                        <SearchableSelect
+                                            value={row.shelf_id || ""}
+                                            onChange={(v) =>
                                                 updateInventoryRow(
                                                     index,
                                                     "shelf_id",
-                                                    e.target.value
+                                                    v || ""
                                                 )
                                             }
-                                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
+                                            options={(shelvesByDeposit[row.deposit_id] || []).map((s) => ({
+                                                id: s.id,
+                                                name: s.name,
+                                            }))}
+                                            displayValue={(opt) => opt?.name}
+                                            placeholder="Shelf"
                                             disabled={!row.deposit_id}
-                                        >
-                                            <option value="">
-                                                Shelf
-                                            </option>
-                                            {(shelvesByDeposit[row.deposit_id] || []).map(
-                                                (s) => (
-                                                    <option key={s.id} value={s.id}>
-                                                        {s.name}
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
+                                            className="min-h-[34px] px-2 py-1.5 text-sm"
+                                        />
                                     </div>
                                     <div className="w-20">
                                         <label className="block text-xs font-medium text-gray-600 mb-0.5">

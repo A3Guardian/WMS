@@ -3,6 +3,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import api from "../../utils/api";
+import SearchableSelect from "../../components/SearchableSelect";
 
 export default function InventoryFormModal({
     isOpen,
@@ -19,25 +20,6 @@ export default function InventoryFormModal({
         reorder_level: "",
     });
 
-    const { data: productsData } = useQuery({
-        queryKey: ["products-list"],
-        queryFn: async () => {
-            const res = await api.get("/products?per_page=200");
-            return res.data?.data ?? res.data ?? [];
-        },
-        enabled: isOpen && !isEdit,
-        staleTime: 60000,
-    });
-
-    const { data: depositsData } = useQuery({
-        queryKey: ["deposits"],
-        queryFn: async () => {
-            const res = await api.get("/deposits");
-            return res.data?.data || res.data || [];
-        },
-        enabled: isOpen,
-    });
-
     const { data: shelvesData } = useQuery({
         queryKey: ["shelves", formData.deposit_id],
         queryFn: async () => {
@@ -49,6 +31,9 @@ export default function InventoryFormModal({
         },
         enabled: isOpen && !!formData.deposit_id,
     });
+
+    const fetchProducts = (params) => api.get("/products?" + params).then((r) => r.data);
+    const fetchDeposits = (params) => api.get("/deposits?" + params).then((r) => r.data);
 
     useEffect(() => {
         if (inventory) {
@@ -122,10 +107,6 @@ export default function InventoryFormModal({
         }
     };
 
-    const products = Array.isArray(productsData) ? productsData : [];
-    const deposits = Array.isArray(depositsData)
-        ? depositsData
-        : depositsData?.data || depositsData || [];
     const shelves = Array.isArray(shelvesData)
         ? shelvesData
         : shelvesData?.data || shelvesData || [];
@@ -149,24 +130,19 @@ export default function InventoryFormModal({
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Product *
                                 </label>
-                                <select
-                                    required
-                                    value={formData.product_id}
-                                    onChange={(e) =>
+                                <SearchableSelect
+                                    value={formData.product_id || ""}
+                                    onChange={(v) =>
                                         setFormData({
                                             ...formData,
-                                            product_id: e.target.value,
+                                            product_id: v || "",
                                         })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="">Select product</option>
-                                    {products.map((p) => (
-                                        <option key={p.id} value={p.id}>
-                                            {p.name} ({p.sku})
-                                        </option>
-                                    ))}
-                                </select>
+                                    fetchOptions={fetchProducts}
+                                    displayValue={(p) => (p ? `${p.name} (${p.sku || ""})` : "")}
+                                    placeholder="Select product"
+                                    cacheKey="inventory-products"
+                                />
                             </div>
                         )}
                         {isEdit && (
@@ -184,49 +160,39 @@ export default function InventoryFormModal({
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Deposit *
                             </label>
-                            <select
-                                required
-                                value={formData.deposit_id}
-                                onChange={(e) =>
+                            <SearchableSelect
+                                value={formData.deposit_id || ""}
+                                onChange={(v) =>
                                     setFormData({
                                         ...formData,
-                                        deposit_id: e.target.value,
+                                        deposit_id: v || "",
                                         shelf_id: "",
                                     })
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="">Select deposit</option>
-                                {deposits.map((d) => (
-                                    <option key={d.id} value={d.id}>
-                                        {d.name}
-                                    </option>
-                                ))}
-                            </select>
+                                fetchOptions={fetchDeposits}
+                                displayValue={(d) => d?.name}
+                                placeholder="Select deposit"
+                                cacheKey="inventory-deposits"
+                            />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Shelf
                             </label>
-                            <select
-                                value={formData.shelf_id}
-                                onChange={(e) =>
+                            <SearchableSelect
+                                value={formData.shelf_id || ""}
+                                onChange={(v) =>
                                     setFormData({
                                         ...formData,
-                                        shelf_id: e.target.value,
+                                        shelf_id: v || "",
                                     })
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                options={shelves.map((s) => ({ id: s.id, name: s.name }))}
+                                displayValue={(s) => s?.name}
+                                placeholder="Select shelf"
                                 disabled={!formData.deposit_id}
-                            >
-                                <option value="">Select shelf</option>
-                                {shelves.map((s) => (
-                                    <option key={s.id} value={s.id}>
-                                        {s.name}
-                                    </option>
-                                ))}
-                            </select>
+                            />
                         </div>
 
                         <div>
