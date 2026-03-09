@@ -215,25 +215,37 @@ export default function SettingsPage() {
                                     </div>
                                 )}
                                 <div>
-                                    <input
-                                        ref={logoInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={handleLogoChange}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            logoInputRef.current?.click()
-                                        }
-                                        disabled={logoMutation.isPending}
-                                        className="px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium disabled:opacity-50"
+                                    <label
+                                        htmlFor="settings-logo-input"
+                                        className={`inline-block px-3 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium cursor-pointer relative ${logoMutation.isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                                     >
+                                        <input
+                                            ref={logoInputRef}
+                                            id="settings-logo-input"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleLogoChange}
+                                            onFocus={() =>
+                                                console.log(
+                                                    "[Setări Logo] input focus (ar trebui să se deschidă dialogul)",
+                                                )
+                                            }
+                                            onClick={(e) =>
+                                                console.log(
+                                                    "[Setări Logo] input click",
+                                                    {
+                                                        disabled:
+                                                            logoMutation.isPending,
+                                                    },
+                                                )
+                                            }
+                                            className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+                                            disabled={logoMutation.isPending}
+                                        />
                                         {logoMutation.isPending
                                             ? "Se încarcă…"
                                             : "Încarcă logo"}
-                                    </button>
+                                    </label>
                                 </div>
                             </div>
                         </div>

@@ -13,6 +13,7 @@ import DashboardLayout from "./layout/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import LoginPage from "./features/auth/LoginPage";
+import ProfilePage from "./features/auth/ProfilePage";
 import DashboardPage from "./features/dashboard/DashboardPage";
 import ProductList from "./features/products/ProductList";
 import InventoryPage from "./features/inventory/InventoryPage";
@@ -68,6 +69,7 @@ const routes = createRoutesFromElements(
         <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
                 <Route path="/" element={<DashboardPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/products" element={<ProductList />} />
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/orders" element={<OrderList />} />

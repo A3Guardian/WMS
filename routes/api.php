@@ -32,6 +32,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+    Route::put('/user', [AuthController::class, 'updateProfile']);
+    Route::post('/user/avatar', [AuthController::class, 'uploadAvatar']);
 
     Route::get('/products', [ProductController::class, 'index'])->middleware('permission:view products,web');
     Route::post('/products', [ProductController::class, 'store'])->middleware('permission:create products,web');
