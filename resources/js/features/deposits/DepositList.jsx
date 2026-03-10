@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Pencil, Settings, Trash2 } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -128,29 +129,36 @@ export default function DepositList() {
         {
             header: "Actions",
             accessor: "id",
+            align: "right",
             cell: (id, row) => (
-                <div className="flex space-x-2">
-                    <button
-                        onClick={() => navigate(`/deposits/${id}/configure`)}
-                        className="px-2 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
-                        disabled={!hasPermission("edit deposits")}
-                    >
-                        Configure
-                    </button>
-                    <button
-                        onClick={() => navigate(`/deposits/${id}/edit`)}
-                        className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                        disabled={!hasPermission("edit deposits")}
-                    >
-                        Edit
-                    </button>
-                    <button
-                        onClick={() => handleDelete(row)}
-                        className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-                        disabled={!hasPermission("delete deposits")}
-                    >
-                        Delete
-                    </button>
+                <div className="flex items-center justify-end gap-1">
+                    {hasPermission("edit deposits") && (
+                        <button
+                            onClick={() => navigate(`/deposits/${id}/configure`)}
+                            className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                            title="Configure"
+                        >
+                            <Settings className="w-4 h-4" />
+                        </button>
+                    )}
+                    {hasPermission("edit deposits") && (
+                        <button
+                            onClick={() => navigate(`/deposits/${id}/edit`)}
+                            className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                            title="Edit"
+                        >
+                            <Pencil className="w-4 h-4" />
+                        </button>
+                    )}
+                    {hasPermission("delete deposits") && (
+                        <button
+                            onClick={() => handleDelete(row)}
+                            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="Delete"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             ),
         },

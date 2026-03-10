@@ -14,7 +14,7 @@ class WallController extends Controller
     {
         $deposit = Deposit::findOrFail($depositId);
         $walls = $deposit->walls()->orderBy('created_at', 'asc')->get();
-        
+
         return response()->json($walls);
     }
 
@@ -34,7 +34,7 @@ class WallController extends Controller
 
         $maxX = max($validated['x_start'], $validated['x_end']);
         $maxY = max($validated['y_start'], $validated['y_end']);
-        
+
         if ($maxX > $deposit->width) {
             return response()->json([
                 'message' => 'Wall extends beyond deposit width'
@@ -48,7 +48,7 @@ class WallController extends Controller
         }
 
         if (!isset($validated['thickness'])) {
-            $validated['thickness'] = 0.2; 
+            $validated['thickness'] = 0.2;
         }
 
         $validated['deposit_id'] = $depositId;
@@ -102,6 +102,7 @@ class WallController extends Controller
 
         $oldValues = $wall->only(array_keys($validated));
         $wall->update($validated);
+        $wall->refresh();
         $newValues = $wall->only(array_keys($validated));
 
         ActivityLogService::logUpdated($wall, $oldValues, $newValues);
@@ -112,11 +113,10 @@ class WallController extends Controller
     public function destroy($depositId, $wallId)
     {
         $wall = Wall::where('deposit_id', $depositId)->findOrFail($wallId);
-        
+
         ActivityLogService::logDeleted($wall);
         $wall->delete();
 
         return response()->json(['message' => 'Wall deleted successfully']);
     }
 }
-

@@ -21,10 +21,40 @@ export default function DepositConfigurator() {
     const [selectedDoor, setSelectedDoor] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const [shelfDragOrigin, setShelfDragOrigin] = useState(null); // { id, x, y } in meters
     const [newShelfSize, setNewShelfSize] = useState({ width: 1, height: 1 });
     const [drawingMode, setDrawingMode] = useState(null); // 'wall', 'door', or null
     const [wallStart, setWallStart] = useState(null);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [draggingWallEndpoint, setDraggingWallEndpoint] = useState(null); // { wall, which: 'start'|'end', x, y } in meters
+    const draggingWallEndpointRef = useRef(null);
+    const [wallForm, setWallForm] = useState({ name: "", thickness: "" });
+
+    useEffect(() => {
+        draggingWallEndpointRef.current = draggingWallEndpoint;
+    }, [draggingWallEndpoint]);
+
+    useEffect(() => {
+        if (selectedWall) {
+            setWallForm({
+                name: selectedWall.name || "",
+                thickness:
+                    selectedWall.thickness !== undefined &&
+                    selectedWall.thickness !== null
+                        ? String(selectedWall.thickness)
+                        : "0.2",
+            });
+        } else {
+            setWallForm({ name: "", thickness: "" });
+        }
+    }, [selectedWall]);
+
+    const GRID_STEP = 1;
+    const snapToGrid = (val, max) => {
+        const step = GRID_STEP;
+        const snapped = Math.round(val / step) * step;
+        return Math.max(0, Math.min(max, snapped));
+    };
 
     const { data: deposit, isLoading: depositLoading } = useQuery({
         queryKey: ["deposit", id],
@@ -200,6 +230,85 @@ export default function DepositConfigurator() {
         },
     });
 
+    const updateWallMutation = useMutation({
+        mutationFn: async ({ wallId, data }) => {
+            console.log("[Wall update] Request:", {
+                depositId: id,
+                wallId,
+                payload: data,
+                url: `/deposits/${id}/walls/${wallId}`,
+            });
+            const response = await api.put(
+                `/deposits/${id}/walls/${wallId}`,
+                data,
+            );
+            console.log("[Wall update] Response:", {
+                status: response.status,
+                data: response.data,
+                coords: response.data
+                    ? {
+                          x_start: response.data.x_start,
+                          y_start: response.data.y_start,
+                          x_end: response.data.x_end,
+                          y_end: response.data.y_end,
+                      }
+                    : null,
+            });
+            return response.data;
+        },
+        onSuccess: (updatedWall) => {
+            console.log("[Wall update] onSuccess:", {
+                updatedWallId: updatedWall?.id,
+                updatedWallCoords: updatedWall
+                    ? {
+                          x_start: updatedWall.x_start,
+                          y_start: updatedWall.y_start,
+                          x_end: updatedWall.x_end,
+                          y_end: updatedWall.y_end,
+                      }
+                    : null,
+            });
+            queryClient.setQueryData(["walls", id], (old) => {
+                const isArray = Array.isArray(old);
+                const list = isArray ? old : (old?.data ?? []);
+                console.log("[Wall update] setQueryData: old cache", {
+                    isArray,
+                    listLength: list.length,
+                    oldWallIds: list.map((w) => w.id),
+                });
+                const next = list.map((w) =>
+                    w.id === updatedWall.id ? { ...w, ...updatedWall } : w,
+                );
+                const updatedInList = next.find((w) => w.id === updatedWall.id);
+                console.log("[Wall update] setQueryData: after merge", {
+                    updatedInListCoords: updatedInList
+                        ? {
+                              x_start: updatedInList.x_start,
+                              y_start: updatedInList.y_start,
+                              x_end: updatedInList.x_end,
+                              y_end: updatedInList.y_end,
+                          }
+                        : null,
+                });
+                return isArray ? next : { ...old, data: next };
+            });
+            setSelectedWall(updatedWall);
+            setDraggingWallEndpoint(null);
+            toast.success("Wall updated");
+            queryClient.invalidateQueries({ queryKey: ["walls", id] });
+            console.log(
+                "[Wall update] invalidateQueries called for [walls, id]",
+            );
+        },
+        onError: (error) => {
+            toast.error("Failed to update wall", {
+                description:
+                    error.response?.data?.message || "An error occurred",
+            });
+            setDraggingWallEndpoint(null);
+        },
+    });
+
     const createDoorMutation = useMutation({
         mutationFn: async (doorData) => {
             const response = await api.post(`/deposits/${id}/doors`, doorData);
@@ -215,6 +324,35 @@ export default function DepositConfigurator() {
         },
         onError: (error) => {
             toast.error("Failed to create door", {
+                description:
+                    error.response?.data?.message || "An error occurred",
+            });
+        },
+    });
+
+    const updateDoorMutation = useMutation({
+        mutationFn: async ({ doorId, data }) => {
+            const response = await api.put(
+                `/deposits/${id}/doors/${doorId}`,
+                data,
+            );
+            return response.data;
+        },
+        onSuccess: (updatedDoor) => {
+            queryClient.setQueryData(["doors", id], (old) => {
+                const isArray = Array.isArray(old);
+                const list = isArray ? old : (old?.data ?? []);
+                const next = list.map((d) =>
+                    d.id === updatedDoor.id ? { ...d, ...updatedDoor } : d,
+                );
+                return isArray ? next : { ...old, data: next };
+            });
+            setSelectedDoor(updatedDoor);
+            toast.success("Door updated");
+            queryClient.invalidateQueries({ queryKey: ["doors", id] });
+        },
+        onError: (error) => {
+            toast.error("Failed to update door", {
                 description:
                     error.response?.data?.message || "An error occurred",
             });
@@ -291,6 +429,61 @@ export default function DepositConfigurator() {
 
     const pixelsToMeters = (pixels) => pixels / (50 * scale);
 
+    const [draggingDoorResize, setDraggingDoorResize] = useState(null);
+    const draggingDoorResizeRef = useRef(null);
+    const [draggingDoor, setDraggingDoor] = useState(null);
+    const draggingDoorRef = useRef(null);
+
+    useEffect(() => {
+        draggingDoorResizeRef.current = draggingDoorResize;
+    }, [draggingDoorResize]);
+
+    useEffect(() => {
+        draggingDoorRef.current = draggingDoor;
+    }, [draggingDoor]);
+
+    const snapDoorPointOnWall = ({ wall, xMeters, yMeters }) => {
+        const xStart = parseFloat(wall.x_start);
+        const yStart = parseFloat(wall.y_start);
+        const xEnd = parseFloat(wall.x_end);
+        const yEnd = parseFloat(wall.y_end);
+
+        const dx = xEnd - xStart;
+        const dy = yEnd - yStart;
+        const wallLength = Math.sqrt(dx * dx + dy * dy);
+        if (wallLength === 0) return null;
+
+        const tRaw =
+            ((xMeters - xStart) * dx + (yMeters - yStart) * dy) /
+            (wallLength * wallLength);
+        const t0 = Math.max(0, Math.min(1, tRaw));
+        const px = xStart + t0 * dx;
+        const py = yStart + t0 * dy;
+
+        const isHorizontal = Math.abs(dy) < Math.abs(dx);
+        const orientation = isHorizontal ? "horizontal" : "vertical";
+
+        if (isHorizontal) {
+            const snappedX = snapToGrid(px, deposit.width);
+            const t = Math.abs(dx) < 1e-9 ? 0 : (snappedX - xStart) / dx;
+            const tc = Math.max(0, Math.min(1, t));
+            return {
+                x_position: parseFloat((xStart + tc * dx).toFixed(2)),
+                y_position: parseFloat((yStart + tc * dy).toFixed(2)),
+                orientation,
+            };
+        }
+
+        const snappedY = snapToGrid(py, deposit.height);
+        const t = Math.abs(dy) < 1e-9 ? 0 : (snappedY - yStart) / dy;
+        const tc = Math.max(0, Math.min(1, t));
+        return {
+            x_position: parseFloat((xStart + tc * dx).toFixed(2)),
+            y_position: parseFloat((yStart + tc * dy).toFixed(2)),
+            orientation,
+        };
+    };
+
     const handleCanvasClick = (e) => {
         if (isDragging) return;
 
@@ -302,15 +495,21 @@ export default function DepositConfigurator() {
         const yMeters = pixelsToMeters(y);
 
         if (drawingMode === "wall") {
+            const snappedX = deposit
+                ? snapToGrid(xMeters, deposit.width)
+                : xMeters;
+            const snappedY = deposit
+                ? snapToGrid(yMeters, deposit.height)
+                : yMeters;
             if (!wallStart) {
-                setWallStart({ x: xMeters, y: yMeters });
-                toast.info("Click again to set wall end point");
+                setWallStart({ x: snappedX, y: snappedY });
+                toast.info("Click again on grid to set wall end point");
             } else {
                 createWallMutation.mutate({
                     x_start: wallStart.x,
                     y_start: wallStart.y,
-                    x_end: xMeters,
-                    y_end: yMeters,
+                    x_end: snappedX,
+                    y_end: snappedY,
                     thickness: 0.2,
                 });
             }
@@ -403,40 +602,19 @@ export default function DepositConfigurator() {
                 return;
             }
 
-            const xStart = parseFloat(clickedWall.x_start);
-            const yStart = parseFloat(clickedWall.y_start);
-            const xEnd = parseFloat(clickedWall.x_end);
-            const yEnd = parseFloat(clickedWall.y_end);
-
-            const dx = xEnd - xStart;
-            const dy = yEnd - yStart;
-            const wallLength = Math.sqrt(dx * dx + dy * dy);
-
-            if (wallLength === 0) {
+            const snapped = snapDoorPointOnWall({
+                wall: clickedWall,
+                xMeters,
+                yMeters,
+            });
+            if (!snapped) {
                 toast.error("Invalid wall");
                 return;
             }
 
-            const t = Math.max(
-                0,
-                Math.min(
-                    1,
-                    ((xMeters - xStart) * dx + (yMeters - yStart) * dy) /
-                        (wallLength * wallLength),
-                ),
-            );
-
-            const doorX = parseFloat((xStart + t * dx).toFixed(2));
-            const doorY = parseFloat((yStart + t * dy).toFixed(2));
-
-            const isHorizontal = Math.abs(dy) < Math.abs(dx);
-            const orientation = isHorizontal ? "horizontal" : "vertical";
-
             const doorData = {
-                x_position: doorX,
-                y_position: doorY,
+                ...snapped,
                 width: 0.9,
-                orientation: orientation,
             };
 
             const isBorderWall =
@@ -535,10 +713,56 @@ export default function DepositConfigurator() {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        if (drawingMode === "wall" && wallStart) {
-            setMousePosition({ x, y });
+        if (drawingMode === "wall" && wallStart && deposit) {
+            const snappedX = snapToGrid(pixelsToMeters(x), deposit.width);
+            const snappedY = snapToGrid(pixelsToMeters(y), deposit.height);
+            setMousePosition({
+                x: metersToPixels(snappedX),
+                y: metersToPixels(snappedY),
+            });
         } else if (drawingMode === "door") {
             setMousePosition({ x, y });
+        } else if (draggingWallEndpoint && deposit) {
+            const xMeters = snapToGrid(pixelsToMeters(x), deposit.width);
+            const yMeters = snapToGrid(pixelsToMeters(y), deposit.height);
+            setDraggingWallEndpoint((prev) =>
+                prev ? { ...prev, x: xMeters, y: yMeters } : null,
+            );
+        } else if (draggingDoor && deposit) {
+            const xMeters = pixelsToMeters(x);
+            const yMeters = pixelsToMeters(y);
+            const snapped = snapDoorPointOnWall({
+                wall: draggingDoor.wall,
+                xMeters,
+                yMeters,
+            });
+            if (!snapped) return;
+
+            setDraggingDoor((prev) =>
+                prev
+                    ? {
+                          ...prev,
+                          x: snapped.x_position,
+                          y: snapped.y_position,
+                      }
+                    : null,
+            );
+
+            setSelectedDoor((prev) =>
+                prev && prev.id === draggingDoor.door.id
+                    ? {
+                          ...prev,
+                          x_position: snapped.x_position,
+                          y_position: snapped.y_position,
+                      }
+                    : prev,
+            );
+        } else if (draggingDoorResize && deposit) {
+            const xMeters = snapToGrid(pixelsToMeters(x), deposit.width);
+            const yMeters = snapToGrid(pixelsToMeters(y), deposit.height);
+            setDraggingDoorResize((prev) =>
+                prev ? { ...prev, x: xMeters, y: yMeters } : null,
+            );
         }
     };
 
@@ -640,6 +864,11 @@ export default function DepositConfigurator() {
         e.stopPropagation();
         setIsDragging(true);
         setSelectedShelf(shelf);
+        setShelfDragOrigin({
+            id: shelf.id,
+            x: shelf.x_position,
+            y: shelf.y_position,
+        });
         const canvas = canvasRef.current;
         const rect = canvas.getBoundingClientRect();
         setDragStart({
@@ -664,37 +893,48 @@ export default function DepositConfigurator() {
         const maxX = Math.max(0, deposit.width - selectedShelf.width);
         const maxY = Math.max(0, deposit.height - selectedShelf.height);
 
-        const finalX = Math.min(xMeters, maxX);
-        const finalY = Math.min(yMeters, maxY);
+        const snappedX = snapToGrid(Math.min(xMeters, maxX), maxX);
+        const snappedY = snapToGrid(Math.min(yMeters, maxY), maxY);
 
         setSelectedShelf({
             ...selectedShelf,
-            x_position: finalX,
-            y_position: finalY,
+            x_position: snappedX,
+            y_position: snappedY,
         });
     };
 
     const handleMouseUp = () => {
         if (isDragging && selectedShelf) {
-            const finalShelf = {
-                ...selectedShelf,
-            };
-            updateShelfMutation.mutate(
-                {
-                    shelfId: finalShelf.id,
-                    data: {
-                        x_position: finalShelf.x_position,
-                        y_position: finalShelf.y_position,
+            const finalShelf = { ...selectedShelf };
+            const origin =
+                shelfDragOrigin && shelfDragOrigin.id === finalShelf.id
+                    ? shelfDragOrigin
+                    : null;
+
+            const moved =
+                !origin ||
+                Math.abs(finalShelf.x_position - origin.x) > 1e-3 ||
+                Math.abs(finalShelf.y_position - origin.y) > 1e-3;
+
+            if (moved) {
+                updateShelfMutation.mutate(
+                    {
+                        shelfId: finalShelf.id,
+                        data: {
+                            x_position: finalShelf.x_position,
+                            y_position: finalShelf.y_position,
+                        },
                     },
-                },
-                {
-                    onSuccess: () => {
-                        toast.success("Shelf position updated");
+                    {
+                        onSuccess: () => {
+                            toast.success("Shelf position updated");
+                        },
                     },
-                },
-            );
+                );
+            }
         }
         setIsDragging(false);
+        setShelfDragOrigin(null);
     };
 
     useEffect(() => {
@@ -710,6 +950,252 @@ export default function DepositConfigurator() {
             };
         }
     }, [isDragging, selectedShelf, dragStart, deposit]);
+
+    const handleWallEndpointDragStart = (wall, which) => {
+        if (!hasPermission("edit deposits")) return;
+        setDraggingWallEndpoint({
+            wall,
+            which,
+            x:
+                which === "start"
+                    ? parseFloat(wall.x_start)
+                    : parseFloat(wall.x_end),
+            y:
+                which === "start"
+                    ? parseFloat(wall.y_start)
+                    : parseFloat(wall.y_end),
+        });
+    };
+
+    const handleWallEndpointDragEnd = () => {
+        const ep = draggingWallEndpointRef.current;
+        if (!ep) return;
+        const { wall, which, x, y } = ep;
+        const round = (v) => parseFloat(Number(v).toFixed(2));
+        const data =
+            which === "start"
+                ? { x_start: round(x), y_start: round(y) }
+                : { x_end: round(x), y_end: round(y) };
+        console.log("[Wall dragEnd] Sending update:", {
+            wallId: wall.id,
+            which,
+            dragEndCoords: { x, y },
+            payload: data,
+        });
+        updateWallMutation.mutate({
+            wallId: wall.id,
+            data,
+        });
+        setDraggingWallEndpoint(null);
+        draggingWallEndpointRef.current = null;
+    };
+
+    const handleSaveWallDetails = () => {
+        if (!selectedWall || !hasPermission("edit deposits")) return;
+
+        const payload = {
+            name: wallForm.name || null,
+        };
+
+        const thicknessValue = parseFloat(wallForm.thickness);
+        if (!Number.isNaN(thicknessValue) && thicknessValue > 0) {
+            payload.thickness = thicknessValue;
+        }
+
+        updateWallMutation.mutate({
+            wallId: selectedWall.id,
+            data: payload,
+        });
+    };
+
+    const handleDoorResizeStart = (door, which) => {
+        if (!hasPermission("edit deposits")) return;
+        setDraggingDoorResize({
+            door,
+            which,
+            x: parseFloat(door.x_position),
+            y: parseFloat(door.y_position),
+        });
+    };
+
+    const handleDoorResizeEnd = () => {
+        const dr = draggingDoorResizeRef.current;
+        if (!dr) return;
+
+        const { door, which, x, y } = dr;
+        const doorX = parseFloat(door.x_position);
+        const doorY = parseFloat(door.y_position);
+        const currentW = parseFloat(door.width ?? 0.9);
+        const isHorizontal =
+            (door.orientation || "horizontal") === "horizontal";
+
+        const half = currentW / 2;
+        let startEdge, endEdge;
+        if (isHorizontal) {
+            startEdge = doorX - half;
+            endEdge = doorX + half;
+            const moved = x;
+            if (which === "start") startEdge = moved;
+            else endEdge = moved;
+            // snap edges to grid
+            startEdge = snapToGrid(startEdge, deposit.width);
+            endEdge = snapToGrid(endEdge, deposit.width);
+            if (endEdge < startEdge)
+                [startEdge, endEdge] = [endEdge, startEdge];
+            const newW = Math.max(
+                0.9,
+                parseFloat((endEdge - startEdge).toFixed(2)),
+            );
+            const newCenter = parseFloat(
+                ((startEdge + endEdge) / 2).toFixed(2),
+            );
+            updateDoorMutation.mutate({
+                doorId: door.id,
+                data: { x_position: newCenter, width: newW, y_position: doorY },
+            });
+        } else {
+            startEdge = doorY - half;
+            endEdge = doorY + half;
+            const moved = y;
+            if (which === "start") startEdge = moved;
+            else endEdge = moved;
+            startEdge = snapToGrid(startEdge, deposit.height);
+            endEdge = snapToGrid(endEdge, deposit.height);
+            if (endEdge < startEdge)
+                [startEdge, endEdge] = [endEdge, startEdge];
+            const newW = Math.max(
+                0.9,
+                parseFloat((endEdge - startEdge).toFixed(2)),
+            );
+            const newCenter = parseFloat(
+                ((startEdge + endEdge) / 2).toFixed(2),
+            );
+            updateDoorMutation.mutate({
+                doorId: door.id,
+                data: { y_position: newCenter, width: newW, x_position: doorX },
+            });
+        }
+
+        setDraggingDoorResize(null);
+        draggingDoorResizeRef.current = null;
+    };
+
+    const getWallForDoor = (door) => {
+        const wallList = (walls?.data || walls || []).filter(
+            (w) => w && typeof w.x_start !== "undefined",
+        );
+        if (door.wall_id) {
+            const w = wallList.find((w) => w.id === door.wall_id);
+            if (w) return w;
+        }
+
+        const orientation = door.orientation || "horizontal";
+        const x = parseFloat(door.x_position);
+        const y = parseFloat(door.y_position);
+
+        if (orientation === "horizontal") {
+            const distTop = Math.abs(y - 0);
+            const distBottom = Math.abs(y - deposit.height);
+            if (distTop <= distBottom) {
+                return {
+                    x_start: 0,
+                    y_start: 0,
+                    x_end: deposit.width,
+                    y_end: 0,
+                };
+            }
+            return {
+                x_start: deposit.width,
+                y_start: deposit.height,
+                x_end: 0,
+                y_end: deposit.height,
+            };
+        }
+
+        const distLeft = Math.abs(x - 0);
+        const distRight = Math.abs(x - deposit.width);
+        if (distLeft <= distRight) {
+            return {
+                x_start: 0,
+                y_start: deposit.height,
+                x_end: 0,
+                y_end: 0,
+            };
+        }
+        return {
+            x_start: deposit.width,
+            y_start: 0,
+            x_end: deposit.width,
+            y_end: deposit.height,
+        };
+    };
+
+    const handleDoorDragStart = (e, door) => {
+        if (drawingMode || !hasPermission("edit deposits")) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        e.stopPropagation();
+        const wall = getWallForDoor(door);
+        setDraggingDoor({
+            door,
+            wall,
+            x: parseFloat(door.x_position),
+            y: parseFloat(door.y_position),
+        });
+    };
+
+    useEffect(() => {
+        if (!draggingWallEndpoint) return;
+        const moveHandler = (e) => handleMouseMove(e);
+        const upHandler = () => handleWallEndpointDragEnd();
+        window.addEventListener("mousemove", moveHandler);
+        window.addEventListener("mouseup", upHandler);
+        return () => {
+            window.removeEventListener("mousemove", moveHandler);
+            window.removeEventListener("mouseup", upHandler);
+        };
+    }, [!!draggingWallEndpoint]);
+
+    const handleDoorDragEnd = () => {
+        const dr = draggingDoorRef.current;
+        if (!dr) return;
+        const { door, x, y } = dr;
+        updateDoorMutation.mutate({
+            doorId: door.id,
+            data: {
+                x_position: x,
+                y_position: y,
+            },
+        });
+        setDraggingDoor(null);
+        draggingDoorRef.current = null;
+    };
+
+    useEffect(() => {
+        if (!draggingDoor) return;
+        const moveHandler = (e) => handleMouseMove(e);
+        const upHandler = () => handleDoorDragEnd();
+        window.addEventListener("mousemove", moveHandler);
+        window.addEventListener("mouseup", upHandler);
+        return () => {
+            window.removeEventListener("mousemove", moveHandler);
+            window.removeEventListener("mouseup", upHandler);
+        };
+    }, [!!draggingDoor]);
+
+    useEffect(() => {
+        if (!draggingDoorResize) return;
+        const moveHandler = (e) => handleMouseMove(e);
+        const upHandler = () => handleDoorResizeEnd();
+        window.addEventListener("mousemove", moveHandler);
+        window.addEventListener("mouseup", upHandler);
+        return () => {
+            window.removeEventListener("mousemove", moveHandler);
+            window.removeEventListener("mouseup", upHandler);
+        };
+    }, [!!draggingDoorResize]);
 
     const handleDeleteShelf = () => {
         if (
@@ -778,32 +1264,23 @@ export default function DepositConfigurator() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <div className="flex items-start gap-3 min-w-0">
-                    <button
-                        type="button"
-                        onClick={() => navigate(-1)}
-                        className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        aria-label="Back"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <div className="min-w-0">
-                        <h1 className="text-3xl font-bold truncate">
-                            Deposit Configurator
-                        </h1>
-                        <p className="text-gray-600 mt-1 truncate">
-                            {deposit.name} - {deposit.width}m × {deposit.height}
-                            m
-                        </p>
-                    </div>
-                </div>
+            <div className="flex items-start gap-3 min-w-0 mb-6">
                 <button
-                    onClick={() => navigate("/deposits")}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label="Back"
                 >
-                    Back to Deposits
+                    <ArrowLeft className="w-5 h-5" />
                 </button>
+                <div className="min-w-0">
+                    <h1 className="text-3xl font-bold truncate">
+                        Deposit Configurator
+                    </h1>
+                    <p className="text-gray-600 mt-1 truncate">
+                        {deposit.name} - {deposit.width}m × {deposit.height}m
+                    </p>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -1011,6 +1488,18 @@ export default function DepositConfigurator() {
                                 drawingMode={drawingMode}
                                 wallStart={wallStart}
                                 mousePosition={mousePosition}
+                                draggingWallEndpoint={draggingWallEndpoint}
+                                onWallEndpointDragStart={
+                                    handleWallEndpointDragStart
+                                }
+                                draggingDoorResize={draggingDoorResize}
+                                onDoorResizeStart={handleDoorResizeStart}
+                                onDoorSelect={(door) => {
+                                    setSelectedDoor(door);
+                                    setSelectedShelf(null);
+                                    setSelectedWall(null);
+                                }}
+                                onDoorDragStart={handleDoorDragStart}
                                 allShelfProducts={allShelfProducts}
                                 onCanvasClick={handleCanvasClick}
                                 onMouseMove={handleMouseMove}
@@ -1024,10 +1513,10 @@ export default function DepositConfigurator() {
                         <p className="text-sm text-gray-500 mt-2 text-center">
                             {drawingMode === "wall" &&
                                 !wallStart &&
-                                "Click to set wall start point"}
+                                "Click on grid to set wall start"}
                             {drawingMode === "wall" &&
                                 wallStart &&
-                                "Click to set wall end point"}
+                                "Click on grid to set wall end"}
                             {drawingMode === "door" &&
                                 "Click on a wall to place door"}
                             {!drawingMode &&
@@ -1057,8 +1546,13 @@ export default function DepositConfigurator() {
                                     </label>
                                     <input
                                         type="text"
-                                        value={selectedWall.name || ""}
-                                        onChange={(e) => {}}
+                                        value={wallForm.name}
+                                        onChange={(e) =>
+                                            setWallForm((prev) => ({
+                                                ...prev,
+                                                name: e.target.value,
+                                            }))
+                                        }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                                         placeholder="Wall name (optional)"
                                     />
@@ -1111,9 +1605,16 @@ export default function DepositConfigurator() {
                                     </label>
                                     <input
                                         type="number"
-                                        value={selectedWall.thickness || 0.2}
-                                        readOnly
-                                        className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
+                                        value={wallForm.thickness}
+                                        onChange={(e) =>
+                                            setWallForm((prev) => ({
+                                                ...prev,
+                                                thickness: e.target.value,
+                                            }))
+                                        }
+                                        step="0.01"
+                                        min="0.01"
+                                        className="w-full px-2 py-1 border border-gray-300 rounded"
                                     />
                                 </div>
                                 <div>
@@ -1138,13 +1639,26 @@ export default function DepositConfigurator() {
                                         className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
                                     />
                                 </div>
-                                <button
-                                    onClick={handleDeleteWall}
-                                    className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                                    disabled={!hasPermission("edit deposits")}
-                                >
-                                    Delete Wall
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleDeleteWall}
+                                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                                        disabled={
+                                            !hasPermission("edit deposits")
+                                        }
+                                    >
+                                        Delete
+                                    </button>
+                                    <button
+                                        onClick={handleSaveWallDetails}
+                                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={
+                                            !hasPermission("edit deposits")
+                                        }
+                                    >
+                                        Save
+                                    </button>
+                                </div>
                             </div>
                         ) : selectedDoor ? (
                             <div className="space-y-4">

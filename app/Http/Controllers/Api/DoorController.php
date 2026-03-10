@@ -14,7 +14,7 @@ class DoorController extends Controller
     {
         $deposit = Deposit::findOrFail($depositId);
         $doors = $deposit->doors()->with('wall')->orderBy('created_at', 'asc')->get();
-        
+
         return response()->json($doors);
     }
 
@@ -32,14 +32,16 @@ class DoorController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $width = $validated['width'] ?? 0.9;
+
         if ($validated['orientation'] === 'horizontal') {
-            if ($validated['x_position'] + ($validated['width'] ?? 0.9) > $deposit->width) {
+            if (($validated['x_position'] - ($width / 2)) < 0 || ($validated['x_position'] + ($width / 2)) > $deposit->width) {
                 return response()->json([
                     'message' => 'Door extends beyond deposit width'
                 ], 422);
             }
         } else {
-            if ($validated['y_position'] + ($validated['width'] ?? 0.9) > $deposit->height) {
+            if (($validated['y_position'] - ($width / 2)) < 0 || ($validated['y_position'] + ($width / 2)) > $deposit->height) {
                 return response()->json([
                     'message' => 'Door extends beyond deposit height'
                 ], 422);
@@ -47,7 +49,7 @@ class DoorController extends Controller
         }
 
         if (!isset($validated['width'])) {
-            $validated['width'] = 0.9; 
+            $validated['width'] = 0.9;
         }
 
         $validated['deposit_id'] = $depositId;
@@ -85,13 +87,13 @@ class DoorController extends Controller
         $orientation = $validated['orientation'] ?? $door->orientation;
 
         if ($orientation === 'horizontal') {
-            if ($xPos + $width > $deposit->width) {
+            if (($xPos - ($width / 2)) < 0 || ($xPos + ($width / 2)) > $deposit->width) {
                 return response()->json([
                     'message' => 'Door extends beyond deposit width'
                 ], 422);
             }
         } else {
-            if ($yPos + $width > $deposit->height) {
+            if (($yPos - ($width / 2)) < 0 || ($yPos + ($width / 2)) > $deposit->height) {
                 return response()->json([
                     'message' => 'Door extends beyond deposit height'
                 ], 422);
@@ -100,6 +102,7 @@ class DoorController extends Controller
 
         $oldValues = $door->only(array_keys($validated));
         $door->update($validated);
+        $door->refresh();
         $newValues = $door->only(array_keys($validated));
 
         ActivityLogService::logUpdated($door, $oldValues, $newValues);
@@ -110,11 +113,10 @@ class DoorController extends Controller
     public function destroy($depositId, $doorId)
     {
         $door = Door::where('deposit_id', $depositId)->findOrFail($doorId);
-        
+
         ActivityLogService::logDeleted($door);
         $door->delete();
 
         return response()->json(['message' => 'Door deleted successfully']);
     }
 }
-

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Deposit;
+use App\Models\Wall;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -18,9 +19,9 @@ class DepositController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('code', 'like', '%' . $search . '%')
-                  ->orWhere('location', 'like', '%' . $search . '%')
-                  ->orWhere('description', 'like', '%' . $search . '%');
+                    ->orWhere('code', 'like', '%' . $search . '%')
+                    ->orWhere('location', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
             });
         }
 
@@ -68,7 +69,36 @@ class DepositController extends Controller
 
         ActivityLogService::logCreated($deposit, $validated);
 
+        $width = (float) ($deposit->width ?? 0);
+        $height = (float) ($deposit->height ?? 0);
+        if ($width > 0 && $height > 0) {
+            $this->createPerimeterWalls($deposit, $width, $height);
+        }
+
         return response()->json($deposit, 201);
+    }
+
+    private function createPerimeterWalls(Deposit $deposit, float $width, float $height): void
+    {
+        $thickness = 0.2;
+        $perimeter = [
+            ['name' => 'Top',    'x_start' => 0, 'y_start' => 0,         'x_end' => $width, 'y_end' => 0],
+            ['name' => 'Right',  'x_start' => $width, 'y_start' => 0,     'x_end' => $width, 'y_end' => $height],
+            ['name' => 'Bottom', 'x_start' => $width, 'y_start' => $height, 'x_end' => 0, 'y_end' => $height],
+            ['name' => 'Left',   'x_start' => 0, 'y_start' => $height,   'x_end' => 0, 'y_end' => 0],
+        ];
+
+        foreach ($perimeter as $wall) {
+            Wall::create([
+                'deposit_id' => $deposit->id,
+                'name' => $wall['name'],
+                'x_start' => $wall['x_start'],
+                'y_start' => $wall['y_start'],
+                'x_end' => $wall['x_end'],
+                'y_end' => $wall['y_end'],
+                'thickness' => $thickness,
+            ]);
+        }
     }
 
     public function show(Deposit $deposit)
@@ -119,4 +149,3 @@ class DepositController extends Controller
         return response()->json(['message' => 'Deposit deleted successfully']);
     }
 }
-
