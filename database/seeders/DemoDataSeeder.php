@@ -90,7 +90,8 @@ class DemoDataSeeder extends Seeder
                 [
                     'name' => $s['name'],
                     'phone' => $s['phone'],
-                    'address' => 'Str. Furnizor nr. 1',
+                    'billing_phone' => $s['phone'],
+                    'shipping_phone' => $s['phone'],
                     'contact_person' => 'Contact ' . $s['name'],
                 ]
             );
@@ -228,7 +229,8 @@ class DemoDataSeeder extends Seeder
                 [
                     'name' => $c['name'],
                     'phone' => '+40 21 ' . rand(100, 999) . ' ' . rand(1000, 9999),
-                    'address' => 'București',
+                    'billing_phone' => '+40 31 ' . rand(100, 999) . ' ' . rand(1000, 9999),
+                    'shipping_phone' => '+40 41 ' . rand(100, 999) . ' ' . rand(1000, 9999),
                     'contact_person' => 'Manager',
                 ]
             );

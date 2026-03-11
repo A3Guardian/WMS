@@ -19,7 +19,9 @@ import ProductList from "./features/products/ProductList";
 import InventoryPage from "./features/inventory/InventoryPage";
 import OrderList from "./features/orders/OrderList";
 import SupplierList from "./features/suppliers/SupplierList";
+import SupplierView from "./features/suppliers/SupplierView";
 import CustomerList from "./features/customers/CustomerList";
+import CustomerView from "./features/customers/CustomerView";
 import UserList from "./features/admin/UserList";
 import UserForm from "./features/admin/UserForm";
 import RoleList from "./features/admin/RoleList";
@@ -74,7 +76,9 @@ const routes = createRoutesFromElements(
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/orders" element={<OrderList />} />
                 <Route path="/suppliers" element={<SupplierList />} />
+                <Route path="/suppliers/:id" element={<SupplierView />} />
                 <Route path="/customers" element={<CustomerList />} />
+                <Route path="/customers/:id" element={<CustomerView />} />
                 <Route path="/tasks/create" element={<TaskForm />} />
                 <Route path="/tasks/:id/edit" element={<TaskForm />} />
                 <Route path="/tasks" element={<TaskList />} />

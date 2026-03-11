@@ -35,6 +35,10 @@ class ProductController extends Controller
             });
         }
 
+        if ($request->has('supplier_id')) {
+            $query->where('supplier_id', $request->supplier_id);
+        }
+
         return response()->json($query->paginate($request->per_page ?? 15));
     }
 

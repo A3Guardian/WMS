@@ -14,6 +14,7 @@ class OrderService
         return DB::transaction(function () use ($data) {
             $order = Order::create([
                 'supplier_id' => $data['supplier_id'],
+                'customer_id' => $data['customer_id'] ?? null,
                 'order_number' => $data['order_number'] ?? $this->generateOrderNumber(),
                 'status' => 'pending',
                 'notes' => $data['notes'] ?? null,

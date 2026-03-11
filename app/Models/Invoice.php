@@ -15,6 +15,7 @@ class Invoice extends Model
     protected $fillable = [
         'invoice_number',
         'supplier_id',
+        'customer_id',
         'type',
         'status',
         'issue_date',
@@ -42,6 +43,11 @@ class Invoice extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function transactions(): HasMany

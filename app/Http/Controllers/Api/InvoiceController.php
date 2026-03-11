@@ -12,7 +12,7 @@ class InvoiceController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Invoice::with('supplier');
+        $query = Invoice::with(['supplier', 'customer']);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -41,6 +41,10 @@ class InvoiceController extends Controller
             $query->where('supplier_id', $request->supplier_id);
         }
 
+        if ($request->has('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
+        }
+
         if ($request->has('date_from')) {
             $query->where('issue_date', '>=', $request->date_from);
         }
@@ -58,6 +62,7 @@ class InvoiceController extends Controller
     {
         $validated = $request->validate([
             'supplier_id' => 'nullable|exists:suppliers,id',
+            'customer_id' => 'nullable|exists:customers,id',
             'type' => 'required|in:income,expense',
             'status' => 'sometimes|in:draft,sent,paid,overdue,cancelled',
             'issue_date' => 'required|date',
@@ -81,18 +86,19 @@ class InvoiceController extends Controller
 
         ActivityLogService::logCreated($invoice, $validated);
 
-        return response()->json($invoice->load('supplier'), 201);
+        return response()->json($invoice->load(['supplier', 'customer']), 201);
     }
 
     public function show(Invoice $invoice)
     {
-        return response()->json($invoice->load('supplier', 'transactions'));
+        return response()->json($invoice->load(['supplier', 'customer', 'transactions']));
     }
 
     public function update(Request $request, Invoice $invoice)
     {
         $validated = $request->validate([
             'supplier_id' => 'nullable|exists:suppliers,id',
+            'customer_id' => 'nullable|exists:customers,id',
             'type' => 'sometimes|in:income,expense',
             'status' => 'sometimes|in:draft,sent,paid,overdue,cancelled',
             'issue_date' => 'sometimes|date',
@@ -113,7 +119,7 @@ class InvoiceController extends Controller
 
         ActivityLogService::logUpdated($invoice, $oldValues, $newValues);
 
-        return response()->json($invoice->load('supplier', 'transactions'));
+        return response()->json($invoice->load(['supplier', 'customer', 'transactions']));
     }
 
     public function destroy(Invoice $invoice)

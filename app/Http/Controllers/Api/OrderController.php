@@ -19,10 +19,18 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $query = Order::with(['items', 'supplier']);
+        $query = Order::with(['items', 'supplier', 'customer']);
 
         if ($request->has('status')) {
             $query->where('status', $request->status);
+        }
+
+        if ($request->has('supplier_id')) {
+            $query->where('supplier_id', $request->supplier_id);
+        }
+
+        if ($request->has('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
         }
 
         if ($request->has('search')) {
@@ -50,6 +58,7 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
+            'customer_id' => 'nullable|exists:customers,id',
             'order_number' => 'nullable|string|unique:orders,order_number',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
@@ -65,12 +74,12 @@ class OrderController extends Controller
             'status' => $order->status,
         ]);
 
-        return response()->json($order->load(['items', 'supplier']), 201);
+        return response()->json($order->load(['items.product', 'supplier', 'customer']), 201);
     }
 
     public function show(Order $order)
     {
-        return response()->json($order->load(['items.product', 'supplier']));
+        return response()->json($order->load(['items.product', 'supplier', 'customer']));
     }
 
     public function update(Request $request, Order $order)
@@ -90,7 +99,7 @@ class OrderController extends Controller
             $this->orderService->fulfillOrder($order);
         }
 
-        return response()->json($order->load(['items.product', 'supplier']));
+        return response()->json($order->load(['items.product', 'supplier', 'customer']));
     }
 
     public function destroy(Order $order)
