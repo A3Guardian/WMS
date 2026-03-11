@@ -27,7 +27,7 @@ export default function ProductMapModal({
     const currentGroup = depositList.find((g) => g.deposit_id === currentDepositId);
     const firstInventory = currentGroup?.items?.[0] ?? null;
 
-    const { data: depositDetails } = useQuery({
+    const { data: depositDetails, isLoading: depositLoading } = useQuery({
         queryKey: ['deposit', firstInventory?.deposit_id],
         queryFn: async () => {
             if (!firstInventory?.deposit_id) return null;
@@ -37,7 +37,7 @@ export default function ProductMapModal({
         enabled: !!firstInventory?.deposit_id && isOpen,
     });
 
-    const { data: mapShelves } = useQuery({
+    const { data: mapShelves, isLoading: shelvesLoading } = useQuery({
         queryKey: ['shelves', firstInventory?.deposit_id],
         queryFn: async () => {
             if (!firstInventory?.deposit_id) return [];
@@ -47,7 +47,7 @@ export default function ProductMapModal({
         enabled: !!firstInventory?.deposit_id && isOpen,
     });
 
-    const { data: mapWalls } = useQuery({
+    const { data: mapWalls, isLoading: wallsLoading } = useQuery({
         queryKey: ['walls', firstInventory?.deposit_id],
         queryFn: async () => {
             if (!firstInventory?.deposit_id) return [];
@@ -57,7 +57,7 @@ export default function ProductMapModal({
         enabled: !!firstInventory?.deposit_id && isOpen,
     });
 
-    const { data: mapDoors } = useQuery({
+    const { data: mapDoors, isLoading: doorsLoading } = useQuery({
         queryKey: ['doors', firstInventory?.deposit_id],
         queryFn: async () => {
             if (!firstInventory?.deposit_id) return [];
@@ -66,6 +66,10 @@ export default function ProductMapModal({
         },
         enabled: !!firstInventory?.deposit_id && isOpen,
     });
+
+    const isMapLoading =
+        !!firstInventory &&
+        (depositLoading || shelvesLoading || wallsLoading || doorsLoading);
 
     useEffect(() => {
         if (depositDetails && mapContainerRef.current && isOpen) {
@@ -137,7 +141,7 @@ export default function ProductMapModal({
         }}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
-                <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-6xl max-h-[90vh] overflow-hidden z-50 flex flex-col">
+                <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-6xl max-h-[90vh] min-h-[32rem] overflow-hidden z-50 flex flex-col">
                     <Dialog.Title className="text-2xl font-bold mb-2">
                         Product Location - {product.name}
                     </Dialog.Title>
@@ -167,54 +171,66 @@ export default function ProductMapModal({
                             })}
                         </div>
                     )}
-                    <div className="flex justify-between items-center mb-4">
-                        <div></div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-700">Zoom:</span>
-                            <button
-                                onClick={handleZoomOut}
-                                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"
-                                title="Zoom Out"
-                            >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
-                                </svg>
-                            </button>
-                            <span className="text-sm font-medium w-16 text-center">
-                                {Math.round(mapScale * 100)}%
-                            </span>
-                            <button
-                                onClick={handleZoomIn}
-                                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"
-                                title="Zoom In"
-                            >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-                                </svg>
-                            </button>
-                            <button
-                                onClick={handleZoomReset}
-                                className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-md"
-                                title="Reset Zoom"
-                            >
-                                Reset
-                            </button>
+                    {isMapLoading ? (
+                        <div className="flex-1 min-h-[320px] flex flex-col items-center justify-center gap-4 text-gray-500 bg-gray-50 rounded-lg">
+                            <div
+                                className="w-10 h-10 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"
+                                aria-hidden
+                            />
+                            <p className="text-sm font-medium">Loading map...</p>
                         </div>
-                    </div>
-                    {depositDetails && mapShelves && firstInventory ? (
+                    ) : depositDetails && mapShelves && firstInventory ? (
                         <div className="flex-1 overflow-hidden flex flex-col">
-                            <div className="mb-4">
-                                <p className="text-gray-600">
-                                    <strong>Deposit:</strong> {depositDetails.name} ({depositDetails.width}m × {depositDetails.height}m)
-                                </p>
-                                {firstInventory.shelf && (
+                            <div className="mb-4 flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+                                <div className="space-y-1">
                                     <p className="text-gray-600">
-                                        <strong>Shelf:</strong> {firstInventory.shelf.name} at ({firstInventory.shelf.x_position}m, {firstInventory.shelf.y_position}m)
+                                        <strong>Deposit:</strong> {depositDetails.name} ({depositDetails.width}m × {depositDetails.height}m)
                                     </p>
-                                )}
-                                <p className="text-sm text-gray-500 mt-1">
-                                    Use Ctrl+Scroll to zoom • Click and drag to pan (if implemented)
-                                </p>
+                                    {firstInventory.shelf && (
+                                        <p className="text-gray-600">
+                                            <strong>Shelf:</strong> {firstInventory.shelf.name} at ({firstInventory.shelf.x_position}m, {firstInventory.shelf.y_position}m)
+                                        </p>
+                                    )}
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Use Ctrl+Scroll to zoom • Click and drag to pan (if implemented)
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-700">Zoom:</span>
+                                    <button
+                                        onClick={handleZoomOut}
+                                        className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"
+                                        title="Zoom Out"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                                        </svg>
+                                    </button>
+                                    <span className="text-sm font-medium w-16 text-center">
+                                        {Math.round(
+                                            (baseScale > 0
+                                                ? (mapScale / baseScale) * 100
+                                                : mapScale * 100
+                                            )
+                                        )}%
+                                    </span>
+                                    <button
+                                        onClick={handleZoomIn}
+                                        className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"
+                                        title="Zoom In"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={handleZoomReset}
+                                        className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-md"
+                                        title="Reset Zoom"
+                                    >
+                                        Reset
+                                    </button>
+                                </div>
                             </div>
                             <ProductDepositMap
                                 depositDetails={depositDetails}
@@ -227,7 +243,7 @@ export default function ProductMapModal({
                             />
                         </div>
                     ) : (
-                        <div className="flex-1 flex items-center justify-center text-gray-500">
+                        <div className="flex-1 min-h-[320px] flex items-center justify-center text-gray-500">
                             <p>No inventory location found for this product.</p>
                         </div>
                     )}

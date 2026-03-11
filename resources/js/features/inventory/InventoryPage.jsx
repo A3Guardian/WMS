@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useFetch } from "../../hooks/useFetch";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import DataTable from "../../components/DataTable";
 import PageHeader from "../../components/PageHeader";
@@ -23,6 +23,19 @@ export default function InventoryPage() {
     const [perPage, setPerPage] = useState(20);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
+
+    const productIdForMap =
+        inventoryForMap?.product_id ?? inventoryForMap?.product?.id ?? null;
+
+    const { data: productForMap } = useQuery({
+        queryKey: ["product-for-map", productIdForMap],
+        queryFn: async () => {
+            if (!productIdForMap) return null;
+            const res = await api.get(`/products/${productIdForMap}`);
+            return res.data;
+        },
+        enabled: mapModalOpen && !!productIdForMap,
+    });
 
     const handlePerPageChange = (newPerPage) => {
         setPerPage(newPerPage);
@@ -232,12 +245,16 @@ export default function InventoryPage() {
                     setInventoryForMap(null);
                 }}
                 product={
-                    inventoryForMap
+                    productForMap ||
+                    (inventoryForMap && productIdForMap
                         ? {
-                              name: inventoryForMap.product?.name,
+                              id: productIdForMap,
+                              name:
+                                  inventoryForMap.product?.name ||
+                                  `Product #${productIdForMap}`,
                               inventories: [inventoryForMap],
                           }
-                        : null
+                        : null)
                 }
             />
         </div>
