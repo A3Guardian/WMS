@@ -18,6 +18,7 @@ class Product extends Model
         'description',
         'price',
         'supplier_id',
+        'origin',
         'images',
     ];
 

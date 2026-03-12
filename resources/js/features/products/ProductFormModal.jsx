@@ -20,6 +20,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
         sku: "",
         description: "",
         price: "",
+        origin: "purchased",
         supplier_id: "",
         inventories: [emptyInventoryRow()],
         images: [],
@@ -171,6 +172,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                 sku: product.sku || "",
                 description: product.description || "",
                 price: product.price ?? "",
+                origin: product.origin || "purchased",
                 supplier_id: product.supplier_id ?? "",
                 inventories,
                 images: Array.isArray(product.images) ? product.images : [],
@@ -181,6 +183,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                 sku: "",
                 description: "",
                 price: "",
+                origin: "purchased",
                 supplier_id: "",
                 inventories: [emptyInventoryRow()],
                 images: [],
@@ -194,6 +197,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
             sku: "",
             description: "",
             price: "",
+            origin: "purchased",
             supplier_id: "",
             inventories: [emptyInventoryRow()],
             images: [],
@@ -271,26 +275,23 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                 reorder_level: parseInt(row.reorder_level, 10) || 0,
             }));
 
+        const baseData = {
+            name: formData.name,
+            sku: formData.sku,
+            description: formData.description,
+            price: parseFloat(formData.price) || 0,
+            origin: formData.origin || "purchased",
+            supplier_id:
+                formData.origin === "purchased" || formData.origin === "both"
+                    ? formData.supplier_id || null
+                    : null,
+            inventories: inventoriesPayload,
+        };
+
         if (product) {
-            const submitData = {
-                name: formData.name,
-                sku: formData.sku,
-                description: formData.description,
-                price: parseFloat(formData.price) || 0,
-                supplier_id: formData.supplier_id || null,
-                inventories: inventoriesPayload,
-            };
-            updateMutation.mutate({ id: product.id, data: submitData });
+            updateMutation.mutate({ id: product.id, data: baseData });
         } else {
-            const submitData = {
-                name: formData.name,
-                sku: formData.sku,
-                description: formData.description,
-                price: parseFloat(formData.price) || 0,
-                supplier_id: formData.supplier_id || null,
-                inventories: inventoriesPayload,
-            };
-            createMutation.mutate(submitData);
+            createMutation.mutate(baseData);
         }
     };
 
@@ -387,22 +388,83 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Supplier
+                                Product type *
                             </label>
-                            <SearchableSelect
-                                value={formData.supplier_id || ""}
-                                onChange={(v) =>
-                                    setFormData({
-                                        ...formData,
-                                        supplier_id: v || "",
-                                    })
-                                }
-                                fetchOptions={fetchSuppliers}
-                                displayValue={(opt) => opt?.name}
-                                placeholder="Select Supplier"
-                                cacheKey="product-suppliers"
-                            />
+                            <div className="flex flex-wrap gap-3 mt-1 text-sm">
+                                <label className="inline-flex items-center gap-2">
+                                    <input
+                                        type="radio"
+                                        name="origin"
+                                        value="purchased"
+                                        checked={formData.origin === "purchased"}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                origin: e.target.value,
+                                            })
+                                        }
+                                    />
+                                    <span>Cumpărat de la furnizor</span>
+                                </label>
+                                <label className="inline-flex items-center gap-2">
+                                    <input
+                                        type="radio"
+                                        name="origin"
+                                        value="manufactured"
+                                        checked={formData.origin === "manufactured"}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                origin: e.target.value,
+                                                supplier_id: "",
+                                            })
+                                        }
+                                    />
+                                    <span>Fabricat intern</span>
+                                </label>
+                                <label className="inline-flex items-center gap-2">
+                                    <input
+                                        type="radio"
+                                        name="origin"
+                                        value="both"
+                                        checked={formData.origin === "both"}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                origin: e.target.value,
+                                            })
+                                        }
+                                    />
+                                    <span>Atât cumpărat, cât și fabricat</span>
+                                </label>
+                            </div>
+                            <p className="mt-1 text-xs text-gray-500">
+                                Alege dacă produsul este cumpărat de la furnizor, fabricat în
+                                companie sau poate fi și cumpărat, și fabricat.
+                            </p>
                         </div>
+
+                        {(formData.origin === "purchased" ||
+                            formData.origin === "both") && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Supplier
+                                </label>
+                                <SearchableSelect
+                                    value={formData.supplier_id || ""}
+                                    onChange={(v) =>
+                                        setFormData({
+                                            ...formData,
+                                            supplier_id: v || "",
+                                        })
+                                    }
+                                    fetchOptions={fetchSuppliers}
+                                    displayValue={(opt) => opt?.name}
+                                    placeholder="Select Supplier"
+                                    cacheKey="product-suppliers"
+                                />
+                            </div>
+                        )}
 
                         <div className="border-t pt-4 mt-4">
                             <h3 className="text-lg font-semibold mb-2 text-gray-800">

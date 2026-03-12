@@ -119,6 +119,18 @@ export default function ProductViewModal({
                                 {product.supplier?.name || "-"}
                             </p>
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">
+                                Product type
+                            </label>
+                            <p className="mt-1 text-gray-900">
+                                {product.origin === "manufactured"
+                                    ? "Fabricat intern"
+                                    : product.origin === "both"
+                                    ? "Atât cumpărat, cât și fabricat"
+                                    : "Cumpărat de la furnizor"}
+                            </p>
+                        </div>
 
                         <div className="border-t pt-4 mt-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">

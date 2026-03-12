@@ -49,6 +49,7 @@ class ProductController extends Controller
             'sku' => 'required|string|unique:products,sku',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'origin' => 'required|string|in:purchased,manufactured,both',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'inventories' => 'nullable|array',
             'inventories.*.deposit_id' => 'required_with:inventories|nullable|exists:deposits,id',
@@ -83,7 +84,7 @@ class ProductController extends Controller
                 'quantity', 'deposit_id', 'shelf_id', 'reorder_level', 'inventories', 'inventories.*'
             ]));
             $productData = array_filter($productData, fn($key) => !str_starts_with((string)$key, 'inventories'), ARRAY_FILTER_USE_KEY);
-            $productData = collect($validated)->only(['name', 'sku', 'description', 'price', 'supplier_id'])->all();
+            $productData = collect($validated)->only(['name', 'sku', 'description', 'price', 'supplier_id', 'origin'])->all();
 
             $product = Product::create($productData);
 
@@ -138,6 +139,7 @@ class ProductController extends Controller
             'sku' => 'sometimes|required|string|unique:products,sku,' . $product->id,
             'description' => 'nullable|string',
             'price' => 'sometimes|required|numeric|min:0',
+            'origin' => 'sometimes|required|string|in:purchased,manufactured,both',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'inventories' => 'nullable|array',
             'inventories.*.id' => 'nullable|integer|exists:inventories,id',
@@ -150,7 +152,7 @@ class ProductController extends Controller
             'images.*.display_type' => 'nullable|integer|in:0,1',
         ]);
 
-        $productOnly = collect($validated)->only(['name', 'sku', 'description', 'price', 'supplier_id'])->all();
+        $productOnly = collect($validated)->only(['name', 'sku', 'description', 'price', 'supplier_id', 'origin'])->all();
         if (!empty($productOnly)) {
             $oldValues = $product->only(array_keys($productOnly));
             $product->update($productOnly);
