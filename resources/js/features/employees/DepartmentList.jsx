@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Pencil, Trash2, Plus, Users } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
+import DepartmentFormModal from "./DepartmentFormModal";
 
 export default function DepartmentList() {
     const navigate = useNavigate();
@@ -15,6 +17,9 @@ export default function DepartmentList() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [perPage, setPerPage] = useState(10);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState("create"); // "create" | "edit"
+    const [selectedDepartmentId, setSelectedDepartmentId] = useState(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -69,6 +74,23 @@ export default function DepartmentList() {
         }
     };
 
+    const handleOpenCreate = () => {
+        setSelectedDepartmentId(null);
+        setModalMode("create");
+        setModalOpen(true);
+    };
+
+    const handleOpenEdit = (department) => {
+        setSelectedDepartmentId(department.id);
+        setModalMode("edit");
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setSelectedDepartmentId(null);
+    };
+
     const columns = [
         {
             header: "Name",
@@ -87,21 +109,34 @@ export default function DepartmentList() {
         {
             header: "Actions",
             accessor: "id",
+            align: "center",
             cell: (id, row) => (
-                <div className="flex space-x-2">
+                <div className="flex items-center justify-center gap-2">
                     <button
-                        onClick={() => navigate(`/departments/${id}/edit`)}
-                        className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                        disabled={!hasPermission("edit employees")}
+                        type="button"
+                        onClick={() => navigate(`/departments/${id}`)}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
+                        title="View team"
                     >
-                        Edit
+                        <Users className="w-4 h-4" />
                     </button>
                     <button
+                        type="button"
+                        onClick={() => handleOpenEdit(row)}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
+                        title="Edit"
+                        disabled={!hasPermission("edit employees")}
+                    >
+                        <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                        type="button"
                         onClick={() => handleDelete(row)}
-                        className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                        className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
+                        title="Delete"
                         disabled={!hasPermission("delete employees")}
                     >
-                        Delete
+                        <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
             ),
@@ -123,9 +158,11 @@ export default function DepartmentList() {
                 actions={
                     hasPermission("create employees") && (
                         <button
-                            onClick={() => navigate("/departments/create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            type="button"
+                            onClick={handleOpenCreate}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
+                            <Plus className="w-4 h-4" />
                             Add Department
                         </button>
                     )
@@ -156,6 +193,12 @@ export default function DepartmentList() {
                     totalRecordName="departments"
                 />
             </div>
+            <DepartmentFormModal
+                isOpen={modalOpen}
+                onClose={handleCloseModal}
+                departmentId={selectedDepartmentId}
+                mode={modalMode}
+            />
         </div>
     );
 }

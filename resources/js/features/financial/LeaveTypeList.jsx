@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
+import LeaveTypeFormModal from "./LeaveTypeFormModal";
 
 export default function LeaveTypeList() {
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [search, setSearch] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingLeaveTypeId, setEditingLeaveTypeId] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["leave-types", page, perPage],
@@ -57,6 +59,21 @@ export default function LeaveTypeList() {
         ) {
             deleteMutation.mutate(leaveType.id);
         }
+    };
+
+    const handleOpenCreate = () => {
+        setEditingLeaveTypeId(null);
+        setModalOpen(true);
+    };
+
+    const handleOpenEdit = (leaveType) => {
+        setEditingLeaveTypeId(leaveType.id);
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setEditingLeaveTypeId(null);
     };
 
     const pageData = data?.data || [];
@@ -106,21 +123,26 @@ export default function LeaveTypeList() {
         {
             header: "Actions",
             accessor: "id",
+            align: "center",
             cell: (id, row) => (
-                <div className="flex space-x-2">
+                <div className="flex items-center justify-center gap-2">
                     <button
-                        onClick={() => navigate(`/leave-types/${id}/edit`)}
-                        className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                        type="button"
+                        onClick={() => handleOpenEdit(row)}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
+                        title="Edit"
                         disabled={!hasPermission("manage leave types")}
                     >
-                        Edit
+                        <Pencil className="w-4 h-4" />
                     </button>
                     <button
+                        type="button"
                         onClick={() => handleDelete(row)}
-                        className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                        className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
+                        title="Delete"
                         disabled={!hasPermission("manage leave types")}
                     >
-                        Delete
+                        <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
             ),
@@ -142,9 +164,11 @@ export default function LeaveTypeList() {
                 actions={
                     hasPermission("manage leave types") && (
                         <button
-                            onClick={() => navigate("/leave-types/create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            type="button"
+                            onClick={handleOpenCreate}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
+                            <Plus className="w-4 h-4" />
                             Add Leave Type
                         </button>
                     )
@@ -175,6 +199,12 @@ export default function LeaveTypeList() {
                     totalRecordName="leave types"
                 />
             </div>
+            <LeaveTypeFormModal
+                isOpen={modalOpen}
+                onClose={handleCloseModal}
+                leaveTypeId={editingLeaveTypeId}
+                mode={editingLeaveTypeId ? "edit" : "create"}
+            />
         </div>
     );
 }

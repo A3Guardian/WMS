@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -11,9 +11,9 @@ import {
     PAYROLL_STATUS_COLORS,
 } from "../../utils/constants";
 import PageHeader from "../../components/PageHeader";
+import PayrollRecordFormModal from "./PayrollRecordFormModal";
 
 export default function PayrollRecordList() {
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
@@ -23,6 +23,8 @@ export default function PayrollRecordList() {
     const [monthFilter, setMonthFilter] = useState("");
     const [yearFilter, setYearFilter] = useState("");
     const [search, setSearch] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingPayrollId, setEditingPayrollId] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: [
@@ -132,6 +134,21 @@ export default function PayrollRecordList() {
         );
     }, [pageData, search]);
 
+    const handleOpenCreate = () => {
+        setEditingPayrollId(null);
+        setModalOpen(true);
+    };
+
+    const handleOpenEdit = (record) => {
+        setEditingPayrollId(record.id);
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setEditingPayrollId(null);
+    };
+
     const columns = [
         {
             header: "Employee",
@@ -183,21 +200,26 @@ export default function PayrollRecordList() {
         {
             header: "Actions",
             accessor: "id",
+            align: "center",
             cell: (id, row) => (
-                <div className="flex space-x-2">
+                <div className="flex items-center justify-center gap-2">
                     <button
-                        onClick={() => navigate(`/payroll-records/${id}/edit`)}
-                        className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                        type="button"
+                        onClick={() => handleOpenEdit(row)}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
+                        title="Edit"
                         disabled={!hasPermission("manage payroll")}
                     >
-                        Edit
+                        <Pencil className="w-4 h-4" />
                     </button>
                     <button
+                        type="button"
                         onClick={() => handleDelete(row)}
-                        className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                        className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
+                        title="Delete"
                         disabled={!hasPermission("manage payroll")}
                     >
-                        Delete
+                        <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
             ),
@@ -222,9 +244,11 @@ export default function PayrollRecordList() {
                 actions={
                     hasPermission("manage payroll") && (
                         <button
-                            onClick={() => navigate("/payroll-records/create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            type="button"
+                            onClick={handleOpenCreate}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
+                            <Plus className="w-4 h-4" />
                             Create Payroll
                         </button>
                     )
@@ -340,6 +364,12 @@ export default function PayrollRecordList() {
                     totalRecordName="payroll records"
                 />
             </div>
+            <PayrollRecordFormModal
+                isOpen={modalOpen}
+                onClose={handleCloseModal}
+                payrollRecordId={editingPayrollId}
+                mode={editingPayrollId ? "edit" : "create"}
+            />
         </div>
     );
 }

@@ -31,8 +31,10 @@ import TaskList from "./features/tasks/TaskList";
 import TaskForm from "./features/tasks/TaskForm";
 import EmployeeList from "./features/employees/EmployeeList";
 import EmployeeForm from "./features/employees/EmployeeForm";
+import EmployeeView from "./features/employees/EmployeeView";
 import DepartmentList from "./features/employees/DepartmentList";
 import DepartmentForm from "./features/employees/DepartmentForm";
+import DepartmentView from "./features/employees/DepartmentView";
 import SalaryList from "./features/financial/SalaryList";
 import SalaryForm from "./features/financial/SalaryForm";
 import LeaveTypeList from "./features/financial/LeaveTypeList";
@@ -86,6 +88,7 @@ const routes = createRoutesFromElements(
                 <Route path="/tasks" element={<TaskList />} />
                 <Route path="/employees/create" element={<EmployeeForm />} />
                 <Route path="/employees/:id/edit" element={<EmployeeForm />} />
+                <Route path="/employees/:id" element={<EmployeeView />} />
                 <Route path="/employees" element={<EmployeeList />} />
                 <Route
                     path="/departments/create"
@@ -95,6 +98,7 @@ const routes = createRoutesFromElements(
                     path="/departments/:id/edit"
                     element={<DepartmentForm />}
                 />
+                <Route path="/departments/:id" element={<DepartmentView />} />
                 <Route path="/departments" element={<DepartmentList />} />
                 <Route path="/salaries/create" element={<SalaryForm />} />
                 <Route path="/salaries/:id/edit" element={<SalaryForm />} />

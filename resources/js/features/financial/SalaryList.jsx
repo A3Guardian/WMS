@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -9,9 +9,9 @@ import api from "../../utils/api";
 import { formatDate } from "../../utils/formatters";
 import { SALARY_TYPE_LABELS } from "../../utils/constants";
 import PageHeader from "../../components/PageHeader";
+import SalaryFormModal from "./SalaryFormModal";
 
 export default function SalaryList() {
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
@@ -20,6 +20,8 @@ export default function SalaryList() {
     const [employeeFilter, setEmployeeFilter] = useState("");
     const [typeFilter, setTypeFilter] = useState("");
     const [search, setSearch] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingSalaryId, setEditingSalaryId] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["salaries", page, perPage, employeeFilter, typeFilter],
@@ -76,6 +78,21 @@ export default function SalaryList() {
         );
     }, [pageData, search]);
 
+    const handleOpenCreate = () => {
+        setEditingSalaryId(null);
+        setModalOpen(true);
+    };
+
+    const handleOpenEdit = (salary) => {
+        setEditingSalaryId(salary.id);
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setEditingSalaryId(null);
+    };
+
     const columns = [
         {
             header: "Employee",
@@ -112,21 +129,26 @@ export default function SalaryList() {
         {
             header: "Actions",
             accessor: "id",
+            align: "center",
             cell: (id, row) => (
-                <div className="flex space-x-2">
+                <div className="flex items-center justify-center gap-2">
                     <button
-                        onClick={() => navigate(`/salaries/${id}/edit`)}
-                        className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                        type="button"
+                        onClick={() => handleOpenEdit(row)}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
+                        title="Edit"
                         disabled={!hasPermission("manage salaries")}
                     >
-                        Edit
+                        <Pencil className="w-4 h-4" />
                     </button>
                     <button
+                        type="button"
                         onClick={() => handleDelete(row)}
-                        className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                        className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
+                        title="Delete"
                         disabled={!hasPermission("manage salaries")}
                     >
-                        Delete
+                        <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
             ),
@@ -148,9 +170,11 @@ export default function SalaryList() {
                 actions={
                     hasPermission("manage salaries") && (
                         <button
-                            onClick={() => navigate("/salaries/create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            type="button"
+                            onClick={handleOpenCreate}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
+                            <Plus className="w-4 h-4" />
                             Add Salary
                         </button>
                     )
@@ -223,6 +247,12 @@ export default function SalaryList() {
                     totalRecordName="salary records"
                 />
             </div>
+            <SalaryFormModal
+                isOpen={modalOpen}
+                onClose={handleCloseModal}
+                salaryId={editingSalaryId}
+                mode={editingSalaryId ? "edit" : "create"}
+            />
         </div>
     );
 }

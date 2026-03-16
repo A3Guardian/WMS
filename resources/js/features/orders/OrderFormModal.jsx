@@ -172,10 +172,13 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
         >
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
-                <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto z-50">
-                    <Dialog.Title className="text-2xl font-bold mb-4">
+                <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl z-50">
+                    <Dialog.Title className="text-2xl font-bold mb-1">
                         {order ? "Editare comandă" : "Comandă nouă"}
                     </Dialog.Title>
+                    <Dialog.Description className="text-sm text-gray-500 mb-4">
+                        Completează detaliile comenzii și produsele asociate acesteia.
+                    </Dialog.Description>
                     {isEdit && order?.order_number && (
                         <p className="text-sm text-gray-500 mb-4">
                             Nr. comandă: <strong>{order.order_number}</strong>

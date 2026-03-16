@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Pencil, Trash2, Check, XCircle, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -13,9 +13,9 @@ import {
     LEAVE_STATUS,
 } from "../../utils/constants";
 import PageHeader from "../../components/PageHeader";
+import LeaveFormModal from "./LeaveFormModal";
 
 export default function LeaveList() {
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
@@ -23,6 +23,8 @@ export default function LeaveList() {
     const [employeeFilter, setEmployeeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [search, setSearch] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingLeaveId, setEditingLeaveId] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["leaves", page, perPage, employeeFilter, statusFilter],
@@ -126,6 +128,21 @@ export default function LeaveList() {
         }
     };
 
+    const handleOpenCreate = () => {
+        setEditingLeaveId(null);
+        setModalOpen(true);
+    };
+
+    const handleOpenEdit = (leave) => {
+        setEditingLeaveId(leave.id);
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setEditingLeaveId(null);
+    };
+
     const getStatusBadge = (status) => {
         const color = LEAVE_STATUS_COLORS[status] || "gray";
         const label = LEAVE_STATUS_LABELS[status] || status;
@@ -189,40 +206,53 @@ export default function LeaveList() {
         {
             header: "Actions",
             accessor: "id",
+            align: "center",
             cell: (id, row) => (
-                <div className="flex space-x-2">
+                <div className="flex items-center justify-center gap-2">
                     <button
-                        onClick={() => navigate(`/leaves/${id}/edit`)}
-                        className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                        disabled={!hasPermission("edit leaves")}
+                        type="button"
+                        onClick={() => handleOpenEdit(row)}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
+                        title="View / Edit"
+                        disabled={
+                            !hasPermission("edit leaves") &&
+                            !hasPermission("view leaves")
+                        }
                     >
-                        View
+                        <Pencil className="w-4 h-4" />
                     </button>
+
+                    {hasPermission("delete leaves") && (
+                        <button
+                            type="button"
+                            onClick={() => handleDelete(row)}
+                            className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50"
+                            title="Delete"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    )}
                     {row.status === LEAVE_STATUS.PENDING &&
                         hasPermission("edit leaves") && (
                             <>
                                 <button
+                                    type="button"
                                     onClick={() => handleApprove(row)}
-                                    className="px-2 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                                    className="p-1.5 text-green-600 hover:text-green-700 rounded hover:bg-green-50"
+                                    title="Approve"
                                 >
-                                    Approve
+                                    <Check className="w-4 h-4" />
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => handleReject(row)}
-                                    className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                                    className="p-1.5 text-red-600 hover:text-red-700 rounded hover:bg-red-50"
+                                    title="Reject"
                                 >
-                                    Reject
+                                    <XCircle className="w-4 h-4" />
                                 </button>
                             </>
                         )}
-                    {hasPermission("delete leaves") && (
-                        <button
-                            onClick={() => handleDelete(row)}
-                            className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-                        >
-                            Delete
-                        </button>
-                    )}
                 </div>
             ),
         },
@@ -243,9 +273,11 @@ export default function LeaveList() {
                 actions={
                     hasPermission("create leaves") && (
                         <button
-                            onClick={() => navigate("/leaves/create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            type="button"
+                            onClick={handleOpenCreate}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
+                            <Plus className="w-4 h-4" />
                             Request Leave
                         </button>
                     )
@@ -318,6 +350,12 @@ export default function LeaveList() {
                     totalRecordName="leave requests"
                 />
             </div>
+            <LeaveFormModal
+                isOpen={modalOpen}
+                onClose={handleCloseModal}
+                leaveId={editingLeaveId}
+                mode={editingLeaveId ? "edit" : "create"}
+            />
         </div>
     );
 }

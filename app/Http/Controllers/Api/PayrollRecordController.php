@@ -54,23 +54,47 @@ class PayrollRecordController extends Controller
             'deductions' => 'nullable|numeric|min:0',
             'bonuses' => 'nullable|numeric|min:0',
             'overtime_pay' => 'nullable|numeric|min:0',
+            'status' => 'sometimes|in:draft,processed,paid,cancelled',
             'notes' => 'nullable|string',
         ]);
+
+        $existing = PayrollRecord::withTrashed()
+            ->where('employee_id', $validated['employee_id'])
+            ->where('month', $validated['month'])
+            ->where('year', $validated['year'])
+            ->first();
+
+        if ($existing && $existing->trashed()) {
+            $payrollRecord = $existing;
+        } elseif ($existing) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => [
+                    'employee_id' => ['A payroll record for this employee and month already exists.'],
+                ],
+            ], 422);
+        } else {
+            $payrollRecord = new PayrollRecord();
+        }
 
         if (!isset($validated['base_salary'])) {
             $employee = \App\Models\Employee::find($validated['employee_id']);
             $validated['base_salary'] = $employee ? ($employee->salary ?? 0) : 0;
         }
 
-        $netSalary = $validated['base_salary'] 
-            + ($validated['bonuses'] ?? 0) 
-            + ($validated['overtime_pay'] ?? 0) 
+        $netSalary = $validated['base_salary']
+            + ($validated['bonuses'] ?? 0)
+            + ($validated['overtime_pay'] ?? 0)
             - ($validated['deductions'] ?? 0);
 
         $validated['net_salary'] = $netSalary;
-        $validated['status'] = 'draft';
+        $validated['status'] = $validated['status'] ?? 'draft';
 
-        $payrollRecord = PayrollRecord::create($validated);
+        $payrollRecord->fill($validated);
+        if ($payrollRecord->exists && $payrollRecord->trashed()) {
+            $payrollRecord->restore();
+        }
+        $payrollRecord->save();
         ActivityLogService::logCreated($payrollRecord);
 
         return response()->json($payrollRecord->load(['employee.user', 'employee.department']), 201);

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Eye, Pencil, Trash2, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import { formatDate } from "../../utils/formatters";
 import PageHeader from "../../components/PageHeader";
+import EmployeeFormModal from "./EmployeeFormModal";
 
 export default function EmployeeList() {
     const navigate = useNavigate();
@@ -19,6 +21,9 @@ export default function EmployeeList() {
     const [perPage, setPerPage] = useState(10);
     const [departmentFilter, setDepartmentFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState("create"); // "create" | "edit" | "view"
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -83,6 +88,27 @@ export default function EmployeeList() {
         }
     };
 
+    const handleOpenCreate = () => {
+        setSelectedEmployeeId(null);
+        setModalMode("create");
+        setModalOpen(true);
+    };
+
+    const handleOpenEdit = (employee) => {
+        setSelectedEmployeeId(employee.id);
+        setModalMode("edit");
+        setModalOpen(true);
+    };
+
+    const handleOpenView = (employee) => {
+        navigate(`/employees/${employee.id}`);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setSelectedEmployeeId(null);
+    };
+
     const columns = [
         {
             header: "Employee Code",
@@ -91,14 +117,6 @@ export default function EmployeeList() {
         {
             header: "Name",
             accessor: (row) => row.user?.name || "N/A",
-        },
-        {
-            header: "Email",
-            accessor: (row) => row.user?.email || "N/A",
-        },
-        {
-            header: "Department",
-            accessor: (row) => row.department?.name || "N/A",
         },
         {
             header: "Position",
@@ -133,36 +151,35 @@ export default function EmployeeList() {
             },
         },
         {
-            header: "Hire Date",
-            accessor: "hire_date",
-            cell: (value) => formatDate(value),
-        },
-        {
-            header: "Salary",
-            accessor: "salary",
-            cell: (value) =>
-                value
-                    ? `$${parseFloat(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                    : "N/A",
-        },
-        {
             header: "Actions",
             accessor: "id",
-            cell: (id, row) => (
-                <div className="flex space-x-2">
+            cell: (_id, row) => (
+                <div className="flex items-center gap-2">
                     <button
-                        onClick={() => navigate(`/employees/${id}/edit`)}
-                        className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                        disabled={!hasPermission("edit employees")}
+                        type="button"
+                        onClick={() => handleOpenView(row)}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
+                        title="View"
                     >
-                        Edit
+                        <Eye className="w-4 h-4" />
                     </button>
                     <button
+                        type="button"
+                        onClick={() => handleOpenEdit(row)}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
+                        title="Edit"
+                        disabled={!hasPermission("edit employees")}
+                    >
+                        <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                        type="button"
                         onClick={() => handleDelete(row)}
-                        className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                        className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
+                        title="Delete"
                         disabled={!hasPermission("delete employees")}
                     >
-                        Delete
+                        <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
             ),
@@ -184,9 +201,11 @@ export default function EmployeeList() {
                 actions={
                     hasPermission("create employees") && (
                         <button
-                            onClick={() => navigate("/employees/create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            type="button"
+                            onClick={handleOpenCreate}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
+                            <Plus className="w-4 h-4" />
                             Add Employee
                         </button>
                     )
@@ -259,6 +278,12 @@ export default function EmployeeList() {
                     totalRecordName="employees"
                 />
             </div>
+            <EmployeeFormModal
+                isOpen={modalOpen}
+                onClose={handleCloseModal}
+                employeeId={selectedEmployeeId}
+                mode={modalMode}
+            />
         </div>
     );
 }
