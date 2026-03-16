@@ -60,6 +60,11 @@ export default function SettingsPage() {
         cui: "",
         phone: "",
         address: "",
+        city: "",
+        county: "",
+        email: "",
+        bank: "",
+        iban: "",
     });
     const [smtp, setSmtp] = useState({
         host: "",
@@ -90,6 +95,11 @@ export default function SettingsPage() {
                       cui: settings.company.cui ?? "",
                       phone: settings.company.phone ?? "",
                       address: settings.company.address ?? "",
+                      city: settings.company.city ?? "",
+                      county: settings.company.county ?? "",
+                      email: settings.company.email ?? "",
+                      bank: settings.company.bank ?? "",
+                      iban: settings.company.iban ?? "",
                       _synced: true,
                   },
         );
@@ -98,6 +108,11 @@ export default function SettingsPage() {
         settings?.company?.cui,
         settings?.company?.phone,
         settings?.company?.address,
+        settings?.company?.city,
+        settings?.company?.county,
+        settings?.company?.email,
+        settings?.company?.bank,
+        settings?.company?.iban,
     ]);
 
     useEffect(() => {
@@ -140,6 +155,11 @@ export default function SettingsPage() {
             "company.cui": company.cui,
             "company.phone": company.phone,
             "company.address": company.address,
+            "company.city": company.city,
+            "company.county": company.county,
+            "company.email": company.email,
+            "company.bank": company.bank,
+            "company.iban": company.iban,
         });
     };
 
@@ -287,7 +307,8 @@ export default function SettingsPage() {
                         Companie
                     </h2>
                     <p className="text-gray-600 text-sm mb-4">
-                        Detalii companie: nume, CUI, telefon, locație.
+                        Detalii companie pentru facturi: nume, CUI, adresă,
+                        oras, județ, email, bancă, IBAN.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="sm:col-span-2">
@@ -341,6 +362,23 @@ export default function SettingsPage() {
                                 placeholder="+40 ..."
                             />
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Email
+                            </label>
+                            <input
+                                type="email"
+                                value={company.email}
+                                onChange={(e) =>
+                                    setCompany((c) => ({
+                                        ...c,
+                                        email: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="contact@firma.ro"
+                            />
+                        </div>
                         <div className="sm:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Adresă / Locație
@@ -356,6 +394,74 @@ export default function SettingsPage() {
                                 rows={2}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Adresa sediului social"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Oraș
+                            </label>
+                            <input
+                                type="text"
+                                value={company.city}
+                                onChange={(e) =>
+                                    setCompany((c) => ({
+                                        ...c,
+                                        city: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="București"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Județ
+                            </label>
+                            <input
+                                type="text"
+                                value={company.county}
+                                onChange={(e) =>
+                                    setCompany((c) => ({
+                                        ...c,
+                                        county: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="București"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Bancă
+                            </label>
+                            <input
+                                type="text"
+                                value={company.bank}
+                                onChange={(e) =>
+                                    setCompany((c) => ({
+                                        ...c,
+                                        bank: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Ex: BCR"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                IBAN
+                            </label>
+                            <input
+                                type="text"
+                                value={company.iban}
+                                onChange={(e) =>
+                                    setCompany((c) => ({
+                                        ...c,
+                                        iban: e.target.value,
+                                    }))
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="RO49 AAAA 1B31 0075 9384 0000"
                             />
                         </div>
                     </div>

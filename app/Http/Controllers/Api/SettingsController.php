@@ -17,6 +17,11 @@ class SettingsController extends Controller
         'company.cui',
         'company.phone',
         'company.address',
+        'company.city',
+        'company.county',
+        'company.email',
+        'company.bank',
+        'company.iban',
         'smtp.host',
         'smtp.port',
         'smtp.username',
@@ -60,6 +65,11 @@ class SettingsController extends Controller
                 'cui' => $raw['company.cui'] ?? '',
                 'phone' => $raw['company.phone'] ?? '',
                 'address' => $raw['company.address'] ?? '',
+                'city' => $raw['company.city'] ?? '',
+                'county' => $raw['company.county'] ?? '',
+                'email' => $raw['company.email'] ?? '',
+                'bank' => $raw['company.bank'] ?? '',
+                'iban' => $raw['company.iban'] ?? '',
             ],
             'smtp' => [
                 'host' => $raw['smtp.host'] ?? '',
@@ -82,6 +92,11 @@ class SettingsController extends Controller
             'company.cui',
             'company.phone',
             'company.address',
+            'company.city',
+            'company.county',
+            'company.email',
+            'company.bank',
+            'company.iban',
             'smtp.host',
             'smtp.port',
             'smtp.username',
@@ -96,6 +111,11 @@ class SettingsController extends Controller
             'company.cui' => 'nullable|string|max:50',
             'company.phone' => 'nullable|string|max:50',
             'company.address' => 'nullable|string',
+            'company.city' => 'nullable|string|max:100',
+            'company.county' => 'nullable|string|max:100',
+            'company.email' => 'nullable|string|email|max:255',
+            'company.bank' => 'nullable|string|max:255',
+            'company.iban' => 'nullable|string|max:50',
             'smtp.host' => 'nullable|string|max:255',
             'smtp.port' => 'nullable|string|max:10',
             'smtp.username' => 'nullable|string|max:255',
@@ -137,6 +157,31 @@ class SettingsController extends Controller
         $logoUrl = asset('storage/' . $path);
         return response()->json([
             'path' => $path,
+            'logo_url' => $logoUrl,
+        ]);
+    }
+
+    public function invoiceData(): JsonResponse
+    {
+        $settings = Setting::all()->keyBy('key');
+        $raw = [];
+        foreach (['app.logo', 'company.name', 'company.cui', 'company.phone', 'company.address', 'company.city', 'company.county', 'company.email', 'company.bank', 'company.iban'] as $k) {
+            $raw[$k] = $settings->get($k)?->value;
+        }
+        $logoPath = $raw['app.logo'] ?? null;
+        $logoUrl = $logoPath ? asset('storage/' . $logoPath) : null;
+        return response()->json([
+            'company' => [
+                'name' => $raw['company.name'] ?? '',
+                'cui' => $raw['company.cui'] ?? '',
+                'phone' => $raw['company.phone'] ?? '',
+                'address' => $raw['company.address'] ?? '',
+                'city' => $raw['company.city'] ?? '',
+                'county' => $raw['company.county'] ?? '',
+                'email' => $raw['company.email'] ?? '',
+                'bank' => $raw['company.bank'] ?? '',
+                'iban' => $raw['company.iban'] ?? '',
+            ],
             'logo_url' => $logoUrl,
         ]);
     }

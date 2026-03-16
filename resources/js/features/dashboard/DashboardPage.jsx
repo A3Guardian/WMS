@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "../../utils/api";
 import { useAuth } from "../auth/AuthContext";
 import { usePermissions } from "../../hooks/usePermissions";
+import EmployeeDashboard from "./EmployeeDashboard";
 
 const statCards = [
     {
@@ -93,7 +94,11 @@ function StatCard({ path, label, icon, count, isLoading }) {
 
 export default function DashboardPage() {
     const { user } = useAuth();
-    const { hasPermission } = usePermissions();
+    const { hasPermission, hasRole } = usePermissions();
+
+    if (hasRole("Employee")) {
+        return <EmployeeDashboard />;
+    }
 
     const products = useStatCount(
         "/products",

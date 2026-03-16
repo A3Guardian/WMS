@@ -93,7 +93,20 @@ export default function TaskList() {
     };
 
     const columns = [
-        { key: "title", label: "Title" },
+        {
+            key: "title",
+            label: "Title",
+            render: (value, row) => (
+                <div className="flex items-center gap-2">
+                    <span>{value}</span>
+                    {row.order_id && (
+                        <span className="text-xs font-medium bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">
+                            Comandă
+                        </span>
+                    )}
+                </div>
+            ),
+        },
         {
             key: "assigned_to.name",
             label: "Assigned To",
@@ -107,10 +120,10 @@ export default function TaskList() {
         {
             key: "order.order_number",
             label: "Order",
-            render: (value) =>
-                value ? (
+            render: (value, row) =>
+                value && row.order ? (
                     <Link
-                        to={`/orders`}
+                        to={`/orders/${row.order.id}`}
                         className="text-blue-600 hover:underline"
                     >
                         {value}

@@ -241,7 +241,7 @@ class DemoDataSeeder extends Seeder
         $order = Order::firstOrCreate(
             ['order_number' => $orderNumber],
             [
-                'supplier_id' => $supplier1->id,
+                'customer_id' => Customer::first()?->id,
                 'status' => 'completed',
                 'notes' => 'Comandă demo',
                 'total_amount' => 0,
@@ -261,7 +261,7 @@ class DemoDataSeeder extends Seeder
         $order2 = Order::firstOrCreate(
             ['order_number' => $order2Number],
             [
-                'supplier_id' => $supplier2->id,
+                'customer_id' => Customer::skip(1)->first()?->id,
                 'status' => 'pending',
                 'notes' => null,
                 'total_amount' => 0,

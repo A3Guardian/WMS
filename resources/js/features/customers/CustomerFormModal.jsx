@@ -108,6 +108,7 @@ export default function CustomerFormModal({
     isOpen,
     onClose,
     customer = null,
+    onCreated = null,
 }) {
     const queryClient = useQueryClient();
     const isEdit = !!customer;
@@ -123,9 +124,12 @@ export default function CustomerFormModal({
             const res = await api.post("/customers", payload);
             return res.data;
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["customers"] });
             toast.success("Customer created");
+            if (typeof onCreated === "function") {
+                onCreated(data);
+            }
             onClose();
         },
         onError: (err) => {

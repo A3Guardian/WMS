@@ -18,6 +18,7 @@ import DashboardPage from "./features/dashboard/DashboardPage";
 import ProductList from "./features/products/ProductList";
 import InventoryPage from "./features/inventory/InventoryPage";
 import OrderList from "./features/orders/OrderList";
+import OrderView from "./features/orders/OrderView";
 import SupplierList from "./features/suppliers/SupplierList";
 import SupplierView from "./features/suppliers/SupplierView";
 import CustomerList from "./features/customers/CustomerList";
@@ -75,6 +76,7 @@ const routes = createRoutesFromElements(
                 <Route path="/products" element={<ProductList />} />
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/orders" element={<OrderList />} />
+                <Route path="/orders/:id" element={<OrderView />} />
                 <Route path="/suppliers" element={<SupplierList />} />
                 <Route path="/suppliers/:id" element={<SupplierView />} />
                 <Route path="/customers" element={<CustomerList />} />

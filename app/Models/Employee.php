@@ -61,4 +61,9 @@ class Employee extends Model
     {
         return $this->hasMany(PayrollRecord::class);
     }
+
+    public function assignedOrders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'assigned_to');
+    }
 }

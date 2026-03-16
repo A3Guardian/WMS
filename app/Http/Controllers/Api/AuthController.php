@@ -112,7 +112,7 @@ class AuthController extends Controller
         $roles = $user->roles->pluck('name')->toArray();
         $avatarUrl = $user->avatar ? asset('storage/' . $user->avatar) : null;
 
-        return [
+        $data = [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
@@ -123,6 +123,13 @@ class AuthController extends Controller
             'roles' => $roles,
             'permissions' => $permissions,
         ];
+
+        $employee = $user->employee;
+        if ($employee) {
+            $data['employee_id'] = $employee->id;
+        }
+
+        return $data;
     }
 }
 

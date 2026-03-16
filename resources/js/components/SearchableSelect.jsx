@@ -97,17 +97,29 @@ export default function SearchableSelect({
     });
 
     const { data: selectedData } = useQuery({
-        queryKey: ["searchable-select-selected", uniqueCacheKey, value],
+        queryKey:
+            cacheKey != null && cacheKey !== ""
+                ? ["searchable-select-selected", uniqueCacheKey]
+                : ["searchable-select-selected", uniqueCacheKey, value],
         queryFn: async () => {
-            if (!value) return null;
+            if (!cacheKey && !value) return null;
             const params = new URLSearchParams();
             params.append("per_page", "100");
             const result = await fetchOptions(params.toString());
-            const list = result?.data || [];
-            return list.find((opt) => getValue(opt) === value);
+            if (cacheKey != null && cacheKey !== "") {
+                return result;
+            }
+            const list = result?.data ?? result ?? [];
+            return Array.isArray(list)
+                ? list.find((opt) => getValue(opt) === value) ?? null
+                : null;
         },
-        enabled: isRemote && !!value && !open,
-        staleTime: 5000,
+        enabled:
+            isRemote &&
+            !open &&
+            (cacheKey != null && cacheKey !== "" ? true : !!value),
+        staleTime: 60000,
+        gcTime: 300000,
     });
 
     const options = React.useMemo(() => {
@@ -126,18 +138,27 @@ export default function SearchableSelect({
     const selectedOption = React.useMemo(() => {
         const found = options.find((opt) => getValue(opt) == value);
         if (found) return found;
-        return isRemote ? selectedData : null;
-    }, [options, selectedData, value, isRemote]);
+        if (!isRemote) return null;
+        if (cacheKey != null && cacheKey !== "" && selectedData) {
+            const list = selectedData?.data ?? selectedData;
+            if (Array.isArray(list))
+                return list.find((opt) => getValue(opt) == value) ?? null;
+            return null;
+        }
+        return selectedData ?? null;
+    }, [options, selectedData, value, isRemote, cacheKey]);
 
     useEffect(() => {
-        if (selectedOption) setSelectedLabel(getLabel(selectedOption));
-        else if (value && isRemote) setSelectedLabel("Loading...");
-        else setSelectedLabel("");
-    }, [selectedOption, value, isRemote]);
+        if (selectedOption) {
+            setSelectedLabel(getLabel(selectedOption));
+        } else {
+            setSelectedLabel("");
+        }
+    }, [selectedOption]);
 
     const handleSelect = (option) => {
         const optionValue = getValue(option);
-        onChange(optionValue);
+        onChange(optionValue, option);
         setOpen(false);
         setSearchQuery("");
     };

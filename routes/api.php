@@ -59,6 +59,10 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::put('/orders/{order}', [OrderController::class, 'update'])->middleware('permission:edit orders,web');
     Route::patch('/orders/{order}', [OrderController::class, 'update'])->middleware('permission:edit orders,web');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->middleware('permission:delete orders,web');
+    Route::post('/orders/{order}/documents', [OrderController::class, 'uploadDocument'])->middleware('permission:edit orders,web');
+    Route::delete('/orders/{order}/documents/{document}', [OrderController::class, 'deleteDocument'])->middleware('permission:edit orders,web');
+    Route::put('/orders/{order}/assign', [OrderController::class, 'assign'])->middleware('permission:edit orders,web');
+    Route::post('/orders/{order}/generate-invoice', [OrderController::class, 'generateInvoice'])->middleware('permission:edit orders,web');
 
     Route::get('/suppliers', [SupplierController::class, 'index'])->middleware('permission:view suppliers,web');
     Route::post('/suppliers', [SupplierController::class, 'store'])->middleware('permission:create suppliers,web');
@@ -183,6 +187,7 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index']);
     Route::put('/settings', [SettingsController::class, 'update']);
     Route::post('/settings/logo', [SettingsController::class, 'uploadLogo']);
+    Route::get('/settings/invoice-data', [SettingsController::class, 'invoiceData']);
 
     Route::prefix('admin')->middleware('permission:view roles|view permissions|view users,web')->group(function () {
         Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:view roles,web');

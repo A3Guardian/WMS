@@ -52,9 +52,9 @@ const menuStructure = [
         items: [
             { path: '/products', label: 'Produse', iconKey: 'products', permission: 'view products' },
             { path: '/inventory', label: 'Inventar', iconKey: 'inventory', permission: 'view inventory' },
-            { path: '/orders', label: 'Comenzi', iconKey: 'orders', permission: 'view orders' },
-            { path: '/suppliers', label: 'Furnizori', iconKey: 'suppliers', permission: 'view suppliers' },
-            { path: '/customers', label: 'Clienți', iconKey: 'customers', permission: 'view customers' },
+            { path: '/orders', label: 'Comenzi', iconKey: 'orders', permission: 'view orders', hideForEmployee: true },
+            { path: '/suppliers', label: 'Furnizori', iconKey: 'suppliers', permission: 'view suppliers', hideForEmployee: true },
+            { path: '/customers', label: 'Clienți', iconKey: 'customers', permission: 'view customers', hideForEmployee: true },
             { path: '/deposits', label: 'Depozite', iconKey: 'deposits', permission: 'view deposits' },
         ],
     },
@@ -111,7 +111,7 @@ const menuStructure = [
 
 export default function Sidebar({ isOpen, onClose }) {
     const location = useLocation();
-    const { hasPermission, isAdmin } = usePermissions();
+    const { hasPermission, hasRole, isAdmin } = usePermissions();
     const [openGroups, setOpenGroups] = useState(() => ({}));
 
     useEffect(() => {
@@ -128,6 +128,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
     const canSeeItem = (item) => {
         if (item.adminOnly && !isAdmin()) return false;
+        if (item.hideForEmployee && hasRole('Employee')) return false;
         if (item.permission === null) return true;
         return hasPermission(item.permission);
     };

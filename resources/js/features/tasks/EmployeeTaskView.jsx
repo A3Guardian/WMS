@@ -107,7 +107,17 @@ export default function EmployeeTaskView() {
         <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-2">
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 break-words">{task.title}</h3>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 break-words">{task.title}</h3>
+                        {task.order_id && (
+                            <Link
+                                to={`/orders/${task.order.id}`}
+                                className="text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-2 py-0.5 rounded"
+                            >
+                                Comandă
+                            </Link>
+                        )}
+                    </div>
                     {task.description && (
                         <p className="text-sm sm:text-base text-gray-600 mb-3 line-clamp-2 break-words">{task.description}</p>
                     )}
@@ -131,7 +141,7 @@ export default function EmployeeTaskView() {
                         <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                        Order: <Link to="/orders" className="text-blue-600 hover:underline ml-1">{task.order.order_number}</Link>
+                        Comandă: <Link to={`/orders/${task.order.id}`} className="text-blue-600 hover:underline ml-1">{task.order.order_number}</Link>
                     </div>
                 )}
                 {task.due_date && (
