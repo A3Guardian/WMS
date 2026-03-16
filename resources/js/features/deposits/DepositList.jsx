@@ -8,6 +8,7 @@ import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function DepositList() {
     const navigate = useNavigate();
@@ -18,6 +19,8 @@ export default function DepositList() {
     const [statusFilter, setStatusFilter] = useState("");
     const [locationFilter, setLocationFilter] = useState("");
     const [search, setSearch] = useState("");
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [depositToDelete, setDepositToDelete] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["deposits", page, perPage, statusFilter, locationFilter],
@@ -55,14 +58,16 @@ export default function DepositList() {
         setPage(1);
     };
 
-    const handleDelete = (deposit) => {
-        if (
-            window.confirm(
-                `Are you sure you want to delete deposit "${deposit.name}"?`,
-            )
-        ) {
-            deleteMutation.mutate(deposit.id);
-        }
+    const handleDeleteClick = (deposit) => {
+        setDepositToDelete(deposit);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!depositToDelete) return;
+        deleteMutation.mutate(depositToDelete.id, {
+            onSettled: () => setDepositToDelete(null),
+        });
     };
 
     const getStatusColor = (status) => {
@@ -152,7 +157,7 @@ export default function DepositList() {
                     )}
                     {hasPermission("delete deposits") && (
                         <button
-                            onClick={() => handleDelete(row)}
+                            onClick={() => handleDeleteClick(row)}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete"
                         >
@@ -247,6 +252,19 @@ export default function DepositList() {
                     totalRecordName="deposits"
                 />
             </div>
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete deposit?"
+                description={
+                    depositToDelete
+                        ? `Are you sure you want to delete deposit "${depositToDelete.name}"?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
+            />
         </div>
     );
 }

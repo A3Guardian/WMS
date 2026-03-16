@@ -10,6 +10,7 @@ import api from "../../utils/api";
 import { formatDate } from "../../utils/formatters";
 import PageHeader from "../../components/PageHeader";
 import EmployeeFormModal from "./EmployeeFormModal";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function EmployeeList() {
     const navigate = useNavigate();
@@ -24,6 +25,8 @@ export default function EmployeeList() {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState("create"); // "create" | "edit" | "view"
     const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [employeeToDelete, setEmployeeToDelete] = useState(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -78,14 +81,16 @@ export default function EmployeeList() {
         },
     });
 
-    const handleDelete = (employee) => {
-        if (
-            window.confirm(
-                `Are you sure you want to delete employee ${employee.employee_code}?`,
-            )
-        ) {
-            deleteMutation.mutate(employee.id);
-        }
+    const handleDeleteClick = (employee) => {
+        setEmployeeToDelete(employee);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!employeeToDelete) return;
+        deleteMutation.mutate(employeeToDelete.id, {
+            onSettled: () => setEmployeeToDelete(null),
+        });
     };
 
     const handleOpenCreate = () => {
@@ -174,7 +179,7 @@ export default function EmployeeList() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleDelete(row)}
+                        onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
                         title="Delete"
                         disabled={!hasPermission("delete employees")}
@@ -283,6 +288,19 @@ export default function EmployeeList() {
                 onClose={handleCloseModal}
                 employeeId={selectedEmployeeId}
                 mode={modalMode}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete employee?"
+                description={
+                    employeeToDelete
+                        ? `Are you sure you want to delete employee ${employeeToDelete.employee_code}?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

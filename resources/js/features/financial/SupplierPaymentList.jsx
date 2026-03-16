@@ -8,6 +8,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import { formatDate, formatCurrency } from "../../utils/formatters";
 import PageHeader from "../../components/PageHeader";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function SupplierPaymentList() {
     const navigate = useNavigate();
@@ -21,6 +22,8 @@ export default function SupplierPaymentList() {
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
     const [search, setSearch] = useState("");
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [paymentToDelete, setPaymentToDelete] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: [
@@ -70,14 +73,16 @@ export default function SupplierPaymentList() {
         },
     });
 
-    const handleDelete = (payment) => {
-        if (
-            window.confirm(
-                `Are you sure you want to delete payment ${payment.transaction_number}?`,
-            )
-        ) {
-            deleteMutation.mutate(payment.id);
-        }
+    const handleDeleteClick = (payment) => {
+        setPaymentToDelete(payment);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!paymentToDelete) return;
+        deleteMutation.mutate(paymentToDelete.id, {
+            onSettled: () => setPaymentToDelete(null),
+        });
     };
 
     const getTypeColor = (type) => {
@@ -179,7 +184,7 @@ export default function SupplierPaymentList() {
                         Edit
                     </button>
                     <button
-                        onClick={() => handleDelete(row)}
+                        onClick={() => handleDeleteClick(row)}
                         className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                         disabled={!hasPermission("delete payments")}
                     >
@@ -335,6 +340,19 @@ export default function SupplierPaymentList() {
                     totalRecordName="payments"
                 />
             </div>
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete payment?"
+                description={
+                    paymentToDelete
+                        ? `Are you sure you want to delete payment ${paymentToDelete.transaction_number}?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
+            />
         </div>
     );
 }

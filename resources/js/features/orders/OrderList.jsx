@@ -11,6 +11,7 @@ import OrderFormModal from "./OrderFormModal";
 import { Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { usePermissions } from "../../hooks/usePermissions";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 const STATUS_OPTIONS = [
     { value: "", label: "Toate" },
@@ -34,6 +35,8 @@ export default function OrderList() {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingOrder, setEditingOrder] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [orderToDelete, setOrderToDelete] = useState(null);
 
     const params = new URLSearchParams();
     params.set("per_page", String(perPage));
@@ -106,16 +109,20 @@ export default function OrderList() {
         setEditingOrder(null);
     };
 
-    const handleDelete = (order) => {
-        if (
-            !window.confirm(
-                `Sigur vrei să ștergi comanda ${order.order_number || order.id}?`,
-            )
-        ) {
-            return;
-        }
-        setDeletingId(order.id);
-        deleteMutation.mutate(order.id);
+    const handleDeleteClick = (order) => {
+        setOrderToDelete(order);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!orderToDelete) return;
+        setDeletingId(orderToDelete.id);
+        deleteMutation.mutate(orderToDelete.id, {
+            onSettled: () => {
+                setDeletingId(null);
+                setOrderToDelete(null);
+            },
+        });
     };
 
     const columns = [
@@ -163,7 +170,7 @@ export default function OrderList() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleDelete(row)}
+                        onClick={() => handleDeleteClick(row)}
                         disabled={deletingId === row.id}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
                         title="Șterge"
@@ -302,6 +309,19 @@ export default function OrderList() {
                 isOpen={modalOpen}
                 onClose={handleCloseModal}
                 order={editingOrder}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Ștergi comanda?"
+                description={
+                    orderToDelete
+                        ? `Sigur vrei să ștergi comanda ${orderToDelete.order_number || orderToDelete.id}?`
+                        : ""
+                }
+                confirmLabel="Da, șterge"
+                cancelLabel="Anulează"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

@@ -9,6 +9,7 @@ import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import api from "../../utils/api";
 import CustomerFormModal from "./CustomerFormModal";
 import { useNavigate } from "react-router-dom";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function CustomerList() {
     const queryClient = useQueryClient();
@@ -20,6 +21,8 @@ export default function CustomerList() {
     const [perPage, setPerPage] = useState(20);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [customerToDelete, setCustomerToDelete] = useState(null);
 
     const handlePerPageChange = (newPerPage) => {
         setPerPage(newPerPage);
@@ -54,10 +57,16 @@ export default function CustomerList() {
         },
     });
 
-    const handleDelete = (row) => {
-        if (window.confirm(`Delete customer "${row.name}"?`)) {
-            deleteMutation.mutate(row.id);
-        }
+    const handleDeleteClick = (row) => {
+        setCustomerToDelete(row);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!customerToDelete) return;
+        deleteMutation.mutate(customerToDelete.id, {
+            onSettled: () => setCustomerToDelete(null),
+        });
     };
 
     const columns = [
@@ -92,7 +101,7 @@ export default function CustomerList() {
                     )}
                     {hasPermission("delete customers") && (
                         <button
-                            onClick={() => handleDelete(row)}
+                            onClick={() => handleDeleteClick(row)}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete"
                         >
@@ -167,6 +176,19 @@ export default function CustomerList() {
                     setSelectedCustomer(null);
                 }}
                 customer={selectedCustomer}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete customer?"
+                description={
+                    customerToDelete
+                        ? `Delete customer "${customerToDelete.name}"?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

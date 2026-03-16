@@ -12,6 +12,7 @@ import {
 } from "../../utils/constants";
 import PageHeader from "../../components/PageHeader";
 import PayrollRecordFormModal from "./PayrollRecordFormModal";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function PayrollRecordList() {
     const queryClient = useQueryClient();
@@ -25,6 +26,8 @@ export default function PayrollRecordList() {
     const [search, setSearch] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
     const [editingPayrollId, setEditingPayrollId] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [payrollToDelete, setPayrollToDelete] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: [
@@ -76,14 +79,16 @@ export default function PayrollRecordList() {
         },
     });
 
-    const handleDelete = (payrollRecord) => {
-        if (
-            window.confirm(
-                `Are you sure you want to delete this payroll record?`,
-            )
-        ) {
-            deleteMutation.mutate(payrollRecord.id);
-        }
+    const handleDeleteClick = (payrollRecord) => {
+        setPayrollToDelete(payrollRecord);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!payrollToDelete) return;
+        deleteMutation.mutate(payrollToDelete.id, {
+            onSettled: () => setPayrollToDelete(null),
+        });
     };
 
     const getStatusBadge = (status) => {
@@ -214,7 +219,7 @@ export default function PayrollRecordList() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleDelete(row)}
+                        onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
                         title="Delete"
                         disabled={!hasPermission("manage payroll")}
@@ -369,6 +374,15 @@ export default function PayrollRecordList() {
                 onClose={handleCloseModal}
                 payrollRecordId={editingPayrollId}
                 mode={editingPayrollId ? "edit" : "create"}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete payroll record?"
+                description="Are you sure you want to delete this payroll record?"
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

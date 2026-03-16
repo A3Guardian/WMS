@@ -6,6 +6,7 @@ import DataTable from "../../components/DataTable";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function UserList() {
     const navigate = useNavigate();
@@ -15,6 +16,8 @@ export default function UserList() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [perPage, setPerPage] = useState(20);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -60,10 +63,16 @@ export default function UserList() {
         },
     });
 
-    const handleDelete = async (userId) => {
-        if (window.confirm("Are you sure you want to delete this user?")) {
-            deleteMutation.mutate(userId);
-        }
+    const handleDeleteClick = (row) => {
+        setUserToDelete(row);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!userToDelete) return;
+        deleteMutation.mutate(userToDelete.id, {
+            onSettled: () => setUserToDelete(null),
+        });
     };
 
     if (!hasPermission("view users")) {
@@ -103,7 +112,7 @@ export default function UserList() {
                     )}
                     {hasPermission("delete users") && (
                         <button
-                            onClick={() => handleDelete(row.id)}
+                            onClick={() => handleDeleteClick(row)}
                             disabled={deleteMutation.isPending}
                             className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                         >
@@ -186,6 +195,19 @@ export default function UserList() {
                     totalRecordName="users"
                 />
             </div>
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete user?"
+                description={
+                    userToDelete
+                        ? `Are you sure you want to delete user ${userToDelete.email}?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
+            />
         </div>
     );
 }

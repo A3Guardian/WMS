@@ -9,6 +9,7 @@ import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import api from "../../utils/api";
 import SupplierFormModal from "./SupplierFormModal";
 import { useNavigate } from "react-router-dom";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function SupplierList() {
     const queryClient = useQueryClient();
@@ -20,6 +21,8 @@ export default function SupplierList() {
     const [perPage, setPerPage] = useState(20);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [supplierToDelete, setSupplierToDelete] = useState(null);
 
     const handlePerPageChange = (newPerPage) => {
         setPerPage(newPerPage);
@@ -55,10 +58,16 @@ export default function SupplierList() {
         },
     });
 
-    const handleDelete = (row) => {
-        if (window.confirm(`Delete supplier "${row.name}"?`)) {
-            deleteMutation.mutate(row.id);
-        }
+    const handleDeleteClick = (row) => {
+        setSupplierToDelete(row);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!supplierToDelete) return;
+        deleteMutation.mutate(supplierToDelete.id, {
+            onSettled: () => setSupplierToDelete(null),
+        });
     };
 
     const columns = [
@@ -93,7 +102,7 @@ export default function SupplierList() {
                     )}
                     {hasPermission("delete suppliers") && (
                         <button
-                            onClick={() => handleDelete(row)}
+                            onClick={() => handleDeleteClick(row)}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete"
                         >
@@ -168,6 +177,19 @@ export default function SupplierList() {
                     setSelectedSupplier(null);
                 }}
                 supplier={selectedSupplier}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete supplier?"
+                description={
+                    supplierToDelete
+                        ? `Delete supplier "${supplierToDelete.name}"?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

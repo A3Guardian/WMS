@@ -10,6 +10,7 @@ import ProductFormModal from "./ProductFormModal";
 import ProductViewModal from "./ProductViewModal";
 import ProductMapModal from "./ProductMapModal";
 import PageHeader from "../../components/PageHeader";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function ProductList() {
     const queryClient = useQueryClient();
@@ -22,6 +23,8 @@ export default function ProductList() {
     const [perPage, setPerPage] = useState(20);
     const [page, setPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [productToDelete, setProductToDelete] = useState(null);
 
     const handlePerPageChange = (newPerPage) => {
         setPerPage(newPerPage);
@@ -77,12 +80,16 @@ export default function ProductList() {
         setIsMapModalOpen(true);
     };
 
-    const handleDelete = (product) => {
-        if (
-            window.confirm(`Are you sure you want to delete "${product.name}"?`)
-        ) {
-            deleteMutation.mutate(product.id);
-        }
+    const handleDeleteClick = (product) => {
+        setProductToDelete(product);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!productToDelete) return;
+        deleteMutation.mutate(productToDelete.id, {
+            onSettled: () => setProductToDelete(null),
+        });
     };
 
     const columns = [
@@ -169,7 +176,7 @@ export default function ProductList() {
                     )}
                     {hasPermission("delete products") && (
                         <button
-                            onClick={() => handleDelete(row)}
+                            onClick={() => handleDeleteClick(row)}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete"
                         >
@@ -282,6 +289,19 @@ export default function ProductList() {
                     setSelectedProduct(null);
                 }}
                 product={selectedProduct}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete product?"
+                description={
+                    productToDelete
+                        ? `Are you sure you want to delete "${productToDelete.name}"?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

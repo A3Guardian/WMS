@@ -8,6 +8,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
 import DepartmentFormModal from "./DepartmentFormModal";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function DepartmentList() {
     const navigate = useNavigate();
@@ -20,6 +21,8 @@ export default function DepartmentList() {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState("create"); // "create" | "edit"
     const [selectedDepartmentId, setSelectedDepartmentId] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [departmentToDelete, setDepartmentToDelete] = useState(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -64,14 +67,16 @@ export default function DepartmentList() {
         },
     });
 
-    const handleDelete = (department) => {
-        if (
-            window.confirm(
-                `Are you sure you want to delete department "${department.name}"?`,
-            )
-        ) {
-            deleteMutation.mutate(department.id);
-        }
+    const handleDeleteClick = (department) => {
+        setDepartmentToDelete(department);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!departmentToDelete) return;
+        deleteMutation.mutate(departmentToDelete.id, {
+            onSettled: () => setDepartmentToDelete(null),
+        });
     };
 
     const handleOpenCreate = () => {
@@ -131,7 +136,7 @@ export default function DepartmentList() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleDelete(row)}
+                        onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
                         title="Delete"
                         disabled={!hasPermission("delete employees")}
@@ -198,6 +203,19 @@ export default function DepartmentList() {
                 onClose={handleCloseModal}
                 departmentId={selectedDepartmentId}
                 mode={modalMode}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete department?"
+                description={
+                    departmentToDelete
+                        ? `Are you sure you want to delete department "${departmentToDelete.name}"?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

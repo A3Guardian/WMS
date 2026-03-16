@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
 import DataTable from "../../components/DataTable";
 import PageHeader from "../../components/PageHeader";
@@ -10,6 +11,8 @@ import api from "../../utils/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import EmployeeTaskView from "./EmployeeTaskView";
+import TaskFormModal from "./TaskFormModal";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function TaskList() {
     const { hasRole, hasPermission } = usePermissions();
@@ -25,6 +28,11 @@ export default function TaskList() {
     const [perPage, setPerPage] = useState(20);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState("create"); // "create" | "edit"
+    const [selectedTaskId, setSelectedTaskId] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [taskToDelete, setTaskToDelete] = useState(null);
 
     const handlePerPageChange = (newPerPage) => {
         setPerPage(newPerPage);
@@ -64,11 +72,37 @@ export default function TaskList() {
         },
     });
 
-    const handleDelete = async (taskId) => {
-        if (window.confirm("Are you sure you want to delete this task?")) {
-            setDeletingId(taskId);
-            deleteMutation.mutate(taskId);
-        }
+    const handleDeleteClick = (task) => {
+        setTaskToDelete(task);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!taskToDelete) return;
+        setDeletingId(taskToDelete.id);
+        deleteMutation.mutate(taskToDelete.id, {
+            onSettled: () => {
+                setDeletingId(null);
+                setTaskToDelete(null);
+            },
+        });
+    };
+
+    const handleOpenCreate = () => {
+        setSelectedTaskId(null);
+        setModalMode("create");
+        setModalOpen(true);
+    };
+
+    const handleOpenEdit = (task) => {
+        setSelectedTaskId(task.id);
+        setModalMode("edit");
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setSelectedTaskId(null);
     };
 
     const getStatusBadge = (status) => {
@@ -151,20 +185,25 @@ export default function TaskList() {
             key: "actions",
             label: "Actions",
             render: (value, row) => (
-                <div className="flex space-x-2">
-                    <Link
-                        to={`/tasks/${row.id}/edit`}
-                        className="text-blue-600 hover:text-blue-800 font-medium"
+                <div className="flex items-center justify-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => handleOpenEdit(row)}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
+                        title="Edit"
+                        disabled={!hasPermission("edit tasks")}
                     >
-                        Edit
-                    </Link>
+                        <Pencil className="w-4 h-4" />
+                    </button>
                     {hasPermission("delete tasks") && (
                         <button
-                            onClick={() => handleDelete(row.id)}
+                            type="button"
+                            onClick={() => handleDeleteClick(row)}
                             disabled={deletingId === row.id}
-                            className="text-red-600 hover:text-red-800 font-medium disabled:opacity-50"
+                            className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
+                            title="Delete"
                         >
-                            {deletingId === row.id ? "Deleting..." : "Delete"}
+                            <Trash2 className="w-4 h-4" />
                         </button>
                     )}
                 </div>
@@ -195,12 +234,14 @@ export default function TaskList() {
                 title="Tasks"
                 actions={
                     hasPermission("create tasks") && (
-                        <Link
-                            to="/tasks/create"
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            Create Task
-                        </Link>
+                    <button
+                        type="button"
+                        onClick={handleOpenCreate}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Create Task
+                    </button>
                     )
                 }
             />
@@ -223,6 +264,21 @@ export default function TaskList() {
                     totalRecordName="tasks"
                 />
             </div>
+            <TaskFormModal
+                isOpen={modalOpen}
+                onClose={handleCloseModal}
+                taskId={selectedTaskId}
+                mode={modalMode}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete task?"
+                description="Are you sure you want to delete this task?"
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
+            />
         </div>
     );
 }

@@ -14,6 +14,7 @@ import {
 } from "../../utils/constants";
 import PageHeader from "../../components/PageHeader";
 import LeaveFormModal from "./LeaveFormModal";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function LeaveList() {
     const queryClient = useQueryClient();
@@ -25,6 +26,8 @@ export default function LeaveList() {
     const [search, setSearch] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
     const [editingLeaveId, setEditingLeaveId] = useState(null);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [leaveToDelete, setLeaveToDelete] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["leaves", page, perPage, employeeFilter, statusFilter],
@@ -102,13 +105,7 @@ export default function LeaveList() {
     });
 
     const handleApprove = (leave) => {
-        if (
-            window.confirm(
-                `Approve leave request for ${leave.employee?.user?.name || leave.employee?.employee_code}?`,
-            )
-        ) {
-            approveMutation.mutate(leave.id);
-        }
+        approveMutation.mutate(leave.id);
     };
 
     const handleReject = (leave) => {
@@ -118,14 +115,16 @@ export default function LeaveList() {
         }
     };
 
-    const handleDelete = (leave) => {
-        if (
-            window.confirm(
-                `Are you sure you want to delete this leave request?`,
-            )
-        ) {
-            deleteMutation.mutate(leave.id);
-        }
+    const handleDeleteClick = (leave) => {
+        setLeaveToDelete(leave);
+        setConfirmDeleteOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!leaveToDelete) return;
+        deleteMutation.mutate(leaveToDelete.id, {
+            onSettled: () => setLeaveToDelete(null),
+        });
     };
 
     const handleOpenCreate = () => {
@@ -225,7 +224,7 @@ export default function LeaveList() {
                     {hasPermission("delete leaves") && (
                         <button
                             type="button"
-                            onClick={() => handleDelete(row)}
+                            onClick={() => handleDeleteClick(row)}
                             className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50"
                             title="Delete"
                         >
@@ -355,6 +354,15 @@ export default function LeaveList() {
                 onClose={handleCloseModal}
                 leaveId={editingLeaveId}
                 mode={editingLeaveId ? "edit" : "create"}
+            />
+            <ConfirmDialog
+                open={confirmDeleteOpen}
+                onOpenChange={setConfirmDeleteOpen}
+                title="Delete leave request?"
+                description="Are you sure you want to delete this leave request?"
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

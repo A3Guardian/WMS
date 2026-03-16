@@ -7,6 +7,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
 import LeaveTypeFormModal from "./LeaveTypeFormModal";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function LeaveTypeList() {
     const queryClient = useQueryClient();
@@ -16,6 +17,8 @@ export default function LeaveTypeList() {
     const [search, setSearch] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
     const [editingLeaveTypeId, setEditingLeaveTypeId] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [leaveTypeToDelete, setLeaveTypeToDelete] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["leave-types", page, perPage],
@@ -51,14 +54,16 @@ export default function LeaveTypeList() {
         },
     });
 
-    const handleDelete = (leaveType) => {
-        if (
-            window.confirm(
-                `Are you sure you want to delete leave type "${leaveType.name}"?`,
-            )
-        ) {
-            deleteMutation.mutate(leaveType.id);
-        }
+    const handleDeleteClick = (leaveType) => {
+        setLeaveTypeToDelete(leaveType);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!leaveTypeToDelete) return;
+        deleteMutation.mutate(leaveTypeToDelete.id, {
+            onSettled: () => setLeaveTypeToDelete(null),
+        });
     };
 
     const handleOpenCreate = () => {
@@ -137,7 +142,7 @@ export default function LeaveTypeList() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleDelete(row)}
+                        onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
                         title="Delete"
                         disabled={!hasPermission("manage leave types")}
@@ -204,6 +209,19 @@ export default function LeaveTypeList() {
                 onClose={handleCloseModal}
                 leaveTypeId={editingLeaveTypeId}
                 mode={editingLeaveTypeId ? "edit" : "create"}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete leave type?"
+                description={
+                    leaveTypeToDelete
+                        ? `Are you sure you want to delete leave type "${leaveTypeToDelete.name}"?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

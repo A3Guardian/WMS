@@ -8,6 +8,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import { formatDate, formatCurrency } from "../../utils/formatters";
 import PageHeader from "../../components/PageHeader";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function InvoiceList() {
     const navigate = useNavigate();
@@ -22,6 +23,8 @@ export default function InvoiceList() {
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
     const [search, setSearch] = useState("");
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [invoiceToDelete, setInvoiceToDelete] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: [
@@ -73,14 +76,16 @@ export default function InvoiceList() {
         setPage(1);
     };
 
-    const handleDelete = (invoice) => {
-        if (
-            window.confirm(
-                `Are you sure you want to delete invoice ${invoice.invoice_number}?`,
-            )
-        ) {
-            deleteMutation.mutate(invoice.id);
-        }
+    const handleDeleteClick = (invoice) => {
+        setInvoiceToDelete(invoice);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!invoiceToDelete) return;
+        deleteMutation.mutate(invoiceToDelete.id, {
+            onSettled: () => setInvoiceToDelete(null),
+        });
     };
 
     const getStatusColor = (status) => {
@@ -173,7 +178,7 @@ export default function InvoiceList() {
                         Edit
                     </button>
                     <button
-                        onClick={() => handleDelete(row)}
+                        onClick={() => handleDeleteClick(row)}
                         className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                         disabled={!hasPermission("delete invoices")}
                     >
@@ -335,6 +340,19 @@ export default function InvoiceList() {
                     totalRecordName="invoices"
                 />
             </div>
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete invoice?"
+                description={
+                    invoiceToDelete
+                        ? `Are you sure you want to delete invoice ${invoiceToDelete.invoice_number}?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
+            />
         </div>
     );
 }

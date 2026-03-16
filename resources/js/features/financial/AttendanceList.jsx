@@ -10,6 +10,7 @@ import { formatDate, formatDateTime } from "../../utils/formatters";
 import { ATTENDANCE_STATUS_LABELS } from "../../utils/constants";
 import PageHeader from "../../components/PageHeader";
 import AttendanceFormModal from "./AttendanceFormModal";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function AttendanceList() {
     const queryClient = useQueryClient();
@@ -23,6 +24,8 @@ export default function AttendanceList() {
     const [search, setSearch] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
     const [editingAttendanceId, setEditingAttendanceId] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [attendanceToDelete, setAttendanceToDelete] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: [
@@ -70,14 +73,16 @@ export default function AttendanceList() {
         setPage(1);
     };
 
-    const handleDelete = (attendance) => {
-        if (
-            window.confirm(
-                `Are you sure you want to delete this attendance record?`,
-            )
-        ) {
-            deleteMutation.mutate(attendance.id);
-        }
+    const handleDeleteClick = (attendance) => {
+        setAttendanceToDelete(attendance);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!attendanceToDelete) return;
+        deleteMutation.mutate(attendanceToDelete.id, {
+            onSettled: () => setAttendanceToDelete(null),
+        });
     };
 
     const handleOpenCreate = () => {
@@ -174,7 +179,7 @@ export default function AttendanceList() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleDelete(row)}
+                        onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
                         title="Delete"
                         disabled={!hasPermission("manage attendance")}
@@ -308,6 +313,15 @@ export default function AttendanceList() {
                 onClose={handleCloseModal}
                 attendanceId={editingAttendanceId}
                 mode={editingAttendanceId ? "edit" : "create"}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete attendance record?"
+                description="Are you sure you want to delete this attendance record?"
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

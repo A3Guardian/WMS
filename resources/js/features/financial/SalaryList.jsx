@@ -10,6 +10,7 @@ import { formatDate } from "../../utils/formatters";
 import { SALARY_TYPE_LABELS } from "../../utils/constants";
 import PageHeader from "../../components/PageHeader";
 import SalaryFormModal from "./SalaryFormModal";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function SalaryList() {
     const queryClient = useQueryClient();
@@ -22,6 +23,8 @@ export default function SalaryList() {
     const [search, setSearch] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
     const [editingSalaryId, setEditingSalaryId] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [salaryToDelete, setSalaryToDelete] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["salaries", page, perPage, employeeFilter, typeFilter],
@@ -59,14 +62,16 @@ export default function SalaryList() {
         },
     });
 
-    const handleDelete = (salary) => {
-        if (
-            window.confirm(
-                `Are you sure you want to delete this salary record?`,
-            )
-        ) {
-            deleteMutation.mutate(salary.id);
-        }
+    const handleDeleteClick = (salary) => {
+        setSalaryToDelete(salary);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!salaryToDelete) return;
+        deleteMutation.mutate(salaryToDelete.id, {
+            onSettled: () => setSalaryToDelete(null),
+        });
     };
 
     const pageData = data?.data || [];
@@ -143,7 +148,7 @@ export default function SalaryList() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleDelete(row)}
+                        onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
                         title="Delete"
                         disabled={!hasPermission("manage salaries")}
@@ -252,6 +257,15 @@ export default function SalaryList() {
                 onClose={handleCloseModal}
                 salaryId={editingSalaryId}
                 mode={editingSalaryId ? "edit" : "create"}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete salary record?"
+                description="Are you sure you want to delete this salary record?"
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

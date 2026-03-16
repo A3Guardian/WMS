@@ -10,6 +10,7 @@ import ProductMapModal from "../products/ProductMapModal";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import { History, Plus, Pencil, Trash2, MapPin } from "lucide-react";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function InventoryPage() {
     const queryClient = useQueryClient();
@@ -23,6 +24,8 @@ export default function InventoryPage() {
     const [perPage, setPerPage] = useState(20);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [inventoryToDelete, setInventoryToDelete] = useState(null);
 
     const productIdForMap =
         inventoryForMap?.product_id ?? inventoryForMap?.product?.id ?? null;
@@ -57,17 +60,16 @@ export default function InventoryPage() {
         },
     });
 
-    const handleDelete = (row) => {
-        const location =
-            [row.deposit?.name, row.shelf?.name].filter(Boolean).join(" – ") ||
-            "this location";
-        if (
-            window.confirm(
-                `Delete inventory for "${row.product?.name}" at ${location}?`,
-            )
-        ) {
-            deleteMutation.mutate(row.id);
-        }
+    const handleDeleteClick = (row) => {
+        setInventoryToDelete(row);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!inventoryToDelete) return;
+        deleteMutation.mutate(inventoryToDelete.id, {
+            onSettled: () => setInventoryToDelete(null),
+        });
     };
 
     const columns = [
@@ -140,7 +142,7 @@ export default function InventoryPage() {
                                 <Pencil className="w-4 h-4" />
                             </button>
                             <button
-                                onClick={() => handleDelete(row)}
+                                onClick={() => handleDeleteClick(row)}
                                 className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                 title="Delete"
                             >
@@ -256,6 +258,19 @@ export default function InventoryPage() {
                           }
                         : null)
                 }
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="Delete inventory record?"
+                description={
+                    inventoryToDelete
+                        ? `Delete inventory for "${inventoryToDelete.product?.name}" at ${[inventoryToDelete.deposit?.name, inventoryToDelete.shelf?.name].filter(Boolean).join(" – ") || "this location"}?`
+                        : ""
+                }
+                confirmLabel="Yes, delete"
+                cancelLabel="Cancel"
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );
