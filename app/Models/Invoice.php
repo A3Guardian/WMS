@@ -54,5 +54,10 @@ class Invoice extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(InvoiceItem::class)->orderBy('position');
+    }
 }
 

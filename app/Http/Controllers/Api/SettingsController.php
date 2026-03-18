@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
@@ -106,7 +107,9 @@ class SettingsController extends Controller
             'smtp.from_name',
         ];
         $validated = $request->validate([
+            'app' => 'sometimes|array',
             'app.locale' => 'nullable|string|in:ro,en',
+            'company' => 'sometimes|array',
             'company.name' => 'nullable|string|max:255',
             'company.cui' => 'nullable|string|max:50',
             'company.phone' => 'nullable|string|max:50',
@@ -116,6 +119,7 @@ class SettingsController extends Controller
             'company.email' => 'nullable|string|email|max:255',
             'company.bank' => 'nullable|string|max:255',
             'company.iban' => 'nullable|string|max:50',
+            'smtp' => 'sometimes|array',
             'smtp.host' => 'nullable|string|max:255',
             'smtp.port' => 'nullable|string|max:10',
             'smtp.username' => 'nullable|string|max:255',
@@ -126,7 +130,8 @@ class SettingsController extends Controller
         ]);
 
         $userId = $request->user()?->id;
-        foreach ($validated as $key => $value) {
+        $flat = Arr::dot($validated);
+        foreach ($flat as $key => $value) {
             if (! in_array($key, $allowed)) {
                 continue;
             }

@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -9,9 +10,12 @@ import api from "../../utils/api";
 import { formatDate, formatCurrency } from "../../utils/formatters";
 import PageHeader from "../../components/PageHeader";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import SupplierPaymentFormModal from "./SupplierPaymentFormModal";
 
 export default function SupplierPaymentList() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { id: routePaymentId } = useParams();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
@@ -24,6 +28,9 @@ export default function SupplierPaymentList() {
     const [search, setSearch] = useState("");
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [paymentToDelete, setPaymentToDelete] = useState(null);
+    const [formModalOpen, setFormModalOpen] = useState(false);
+    const [formModalMode, setFormModalMode] = useState("create"); // "create" | "edit"
+    const [selectedPaymentId, setSelectedPaymentId] = useState(null);
 
     const { data, isLoading, error } = useQuery({
         queryKey: [
@@ -85,6 +92,41 @@ export default function SupplierPaymentList() {
         });
     };
 
+    const handleOpenCreate = () => {
+        setSelectedPaymentId(null);
+        setFormModalMode("create");
+        setFormModalOpen(true);
+    };
+
+    const handleOpenEdit = (payment) => {
+        setSelectedPaymentId(payment?.id);
+        setFormModalMode("edit");
+        setFormModalOpen(true);
+    };
+
+    const handleCloseFormModal = () => {
+        setFormModalOpen(false);
+        setSelectedPaymentId(null);
+        if (
+            location.pathname.endsWith("/create") ||
+            location.pathname.endsWith("/edit")
+        ) {
+            navigate("/payments");
+        }
+    };
+
+    useEffect(() => {
+        if (location.pathname.endsWith("/payments/create")) {
+            handleOpenCreate();
+            return;
+        }
+        if (location.pathname.endsWith("/edit") && routePaymentId) {
+            setSelectedPaymentId(routePaymentId);
+            setFormModalMode("edit");
+            setFormModalOpen(true);
+        }
+    }, [location.pathname, routePaymentId]);
+
     const getTypeColor = (type) => {
         const colors = {
             payment: "bg-blue-100 text-blue-800",
@@ -122,8 +164,21 @@ export default function SupplierPaymentList() {
             accessor: "transaction_number",
         },
         {
-            header: "Supplier",
-            accessor: (row) => row.supplier?.name || "N/A",
+            header: "Partner",
+            accessor: (row) => {
+                if (row?.category === "customer_payment") {
+                    return (
+                        row.customer?.company_name ||
+                        row.customer?.name ||
+                        "N/A"
+                    );
+                }
+                return (
+                    row.supplier?.company_name ||
+                    row.supplier?.name ||
+                    "N/A"
+                );
+            },
         },
         {
             header: "Invoice",
@@ -175,21 +230,27 @@ export default function SupplierPaymentList() {
             header: "Actions",
             accessor: "id",
             cell: (id, row) => (
-                <div className="flex space-x-2">
-                    <button
-                        onClick={() => navigate(`/payments/${id}/edit`)}
-                        className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                        disabled={!hasPermission("edit payments")}
-                    >
-                        Edit
-                    </button>
-                    <button
-                        onClick={() => handleDeleteClick(row)}
-                        className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-                        disabled={!hasPermission("delete payments")}
-                    >
-                        Delete
-                    </button>
+                <div className="flex items-center justify-end gap-1">
+                    {hasPermission("edit payments") && (
+                        <button
+                            type="button"
+                            onClick={() => handleOpenEdit(row)}
+                            className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                            title="Edit"
+                        >
+                            <Pencil className="w-4 h-4" />
+                        </button>
+                    )}
+                    {hasPermission("delete payments") && (
+                        <button
+                            type="button"
+                            onClick={() => handleDeleteClick(row)}
+                            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="Delete"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             ),
         },
@@ -206,13 +267,15 @@ export default function SupplierPaymentList() {
     return (
         <div>
             <PageHeader
-                title="Supplier Payments"
+                title="Payments"
                 actions={
                     hasPermission("create payments") && (
                         <button
-                            onClick={() => navigate("/payments/create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            type="button"
+                            onClick={handleOpenCreate}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-flex items-center gap-2"
                         >
+                            <Plus className="w-4 h-4" />
                             Add Payment
                         </button>
                     )
@@ -352,6 +415,12 @@ export default function SupplierPaymentList() {
                 confirmLabel="Yes, delete"
                 cancelLabel="Cancel"
                 onConfirm={handleConfirmDelete}
+            />
+            <SupplierPaymentFormModal
+                isOpen={formModalOpen}
+                onClose={handleCloseFormModal}
+                paymentId={selectedPaymentId}
+                mode={formModalMode}
             />
         </div>
     );

@@ -205,7 +205,7 @@ const menuStructure = [
             },
             {
                 path: "/payments",
-                label: "Plăți furnizori",
+                label: "Plăți",
                 iconKey: "payments",
                 permission: "view payments",
             },

@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\Product;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class InvoiceController extends Controller
@@ -18,10 +21,10 @@ class InvoiceController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('invoice_number', 'like', '%' . $search . '%')
-                  ->orWhere('description', 'like', '%' . $search . '%')
-                  ->orWhereHas('supplier', function ($q) use ($search) {
-                      $q->where('name', 'like', '%' . $search . '%');
-                  });
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('supplier', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    });
             });
         }
 
@@ -75,6 +78,17 @@ class InvoiceController extends Controller
             'category' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'notes' => 'nullable|string',
+            'items' => 'nullable|array',
+            'items.*.item_type' => 'required_with:items|in:product,service',
+            'items.*.product_id' => 'nullable|exists:products,id',
+            'items.*.name' => 'nullable|string|max:255',
+            'items.*.sku' => 'nullable|string|max:255',
+            'items.*.description' => 'nullable|string',
+            'items.*.quantity' => 'required_with:items|numeric|min:0.001',
+            'items.*.unit' => 'nullable|string|max:50',
+            'items.*.unit_price' => 'required_with:items|numeric|min:0',
+            'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
+            'items.*.discount_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
         if (!isset($validated['invoice_number'])) {
@@ -82,20 +96,46 @@ class InvoiceController extends Controller
             $validated['invoice_number'] = $prefix . '-' . strtoupper(Str::random(8));
         }
 
-        $invoice = Invoice::create($validated);
+        $itemsInput = $validated['items'] ?? [];
+        unset($validated['items']);
 
-        ActivityLogService::logCreated($invoice, $validated);
+        return DB::transaction(function () use ($validated, $itemsInput) {
+            $invoice = Invoice::create($validated);
 
-        return response()->json($invoice->load(['supplier', 'customer']), 201);
+            $this->syncItems($invoice, $itemsInput);
+
+            ActivityLogService::logCreated($invoice, $validated);
+
+            return response()->json(
+                $invoice->load(['supplier', 'customer', 'items.product']),
+                201
+            );
+        });
     }
 
     public function show(Invoice $invoice)
     {
-        return response()->json($invoice->load(['supplier', 'customer', 'transactions']));
+        return response()->json($invoice->load([
+            'supplier',
+            'customer',
+            'transactions',
+            'items.product',
+        ]));
     }
 
     public function update(Request $request, Invoice $invoice)
     {
+        $immutableAllowedKeys = ['status', 'paid_date'];
+        if ($invoice->status !== 'draft') {
+            $attempted = array_keys($request->all());
+            $disallowed = array_values(array_diff($attempted, $immutableAllowedKeys));
+            if (!empty($disallowed)) {
+                return response()->json([
+                    'message' => 'This invoice cannot be modified unless it is in draft status.',
+                ], 422);
+            }
+        }
+
         $validated = $request->validate([
             'supplier_id' => 'nullable|exists:suppliers,id',
             'customer_id' => 'nullable|exists:customers,id',
@@ -111,15 +151,87 @@ class InvoiceController extends Controller
             'category' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'notes' => 'nullable|string',
+            'items' => 'nullable|array',
+            'items.*.item_type' => 'required_with:items|in:product,service',
+            'items.*.product_id' => 'nullable|exists:products,id',
+            'items.*.name' => 'nullable|string|max:255',
+            'items.*.sku' => 'nullable|string|max:255',
+            'items.*.description' => 'nullable|string',
+            'items.*.quantity' => 'required_with:items|numeric|min:0.001',
+            'items.*.unit' => 'nullable|string|max:50',
+            'items.*.unit_price' => 'required_with:items|numeric|min:0',
+            'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
+            'items.*.discount_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        $oldValues = $invoice->only(array_keys($validated));
-        $invoice->update($validated);
-        $newValues = $invoice->only(array_keys($validated));
+        $itemsInput = $validated['items'] ?? null;
+        unset($validated['items']);
 
-        ActivityLogService::logUpdated($invoice, $oldValues, $newValues);
+        return DB::transaction(function () use ($invoice, $validated, $itemsInput) {
+            $oldValues = $invoice->only(array_keys($validated));
+            $invoice->update($validated);
+            $newValues = $invoice->only(array_keys($validated));
 
-        return response()->json($invoice->load(['supplier', 'customer', 'transactions']));
+            if (is_array($itemsInput)) {
+                $this->syncItems($invoice, $itemsInput);
+            }
+
+            ActivityLogService::logUpdated($invoice, $oldValues, $newValues);
+
+            return response()->json($invoice->load([
+                'supplier',
+                'customer',
+                'transactions',
+                'items.product',
+            ]));
+        });
+    }
+
+    private function syncItems(Invoice $invoice, array $itemsInput): void
+    {
+        $invoice->items()->delete();
+
+        foreach (array_values($itemsInput) as $idx => $item) {
+            $itemType = $item['item_type'] ?? 'product';
+
+            $product = null;
+            if (!empty($item['product_id'])) {
+                $product = Product::find($item['product_id']);
+            }
+
+            $quantity = (float) ($item['quantity'] ?? 0);
+            $unitPrice = (float) ($item['unit_price'] ?? 0);
+            $taxRate = (float) ($item['tax_rate'] ?? 0);
+            $discountRate = (float) ($item['discount_rate'] ?? 0);
+
+            $base = $quantity * $unitPrice;
+            $discount = $base * ($discountRate / 100);
+            $lineSubtotal = max(0, $base - $discount);
+            $lineTax = $lineSubtotal * ($taxRate / 100);
+            $lineTotal = $lineSubtotal + $lineTax;
+
+            $snapshotName = $item['name']
+                ?? ($product?->name)
+                ?? ($itemType === 'service' ? 'Service' : 'Product');
+
+            InvoiceItem::create([
+                'invoice_id' => $invoice->id,
+                'position' => $idx,
+                'item_type' => $itemType,
+                'product_id' => $product?->id,
+                'name' => $snapshotName,
+                'sku' => $item['sku'] ?? ($product?->sku),
+                'description' => $item['description'] ?? ($product?->description),
+                'quantity' => $quantity,
+                'unit' => $item['unit'] ?? null,
+                'unit_price' => $unitPrice,
+                'tax_rate' => $taxRate,
+                'discount_rate' => $discountRate,
+                'line_subtotal' => $lineSubtotal,
+                'line_tax' => $lineTax,
+                'line_total' => $lineTotal,
+            ]);
+        }
     }
 
     public function destroy(Invoice $invoice)
@@ -130,4 +242,3 @@ class InvoiceController extends Controller
         return response()->json(['message' => 'Invoice deleted successfully']);
     }
 }
-

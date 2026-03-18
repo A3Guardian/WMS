@@ -24,7 +24,6 @@ import SupplierView from "./features/suppliers/SupplierView";
 import CustomerList from "./features/customers/CustomerList";
 import CustomerView from "./features/customers/CustomerView";
 import UserList from "./features/admin/UserList";
-import UserForm from "./features/admin/UserForm";
 import RoleList from "./features/admin/RoleList";
 import SettingsPage from "./features/admin/SettingsPage";
 import TaskList from "./features/tasks/TaskList";
@@ -47,10 +46,9 @@ import PayrollRecordList from "./features/financial/PayrollRecordList";
 import PayrollRecordForm from "./features/financial/PayrollRecordForm";
 import FinancialDashboard from "./features/financial/FinancialDashboard";
 import InvoiceList from "./features/financial/InvoiceList";
-import InvoiceForm from "./features/financial/InvoiceForm";
+import InvoiceView from "./features/financial/InvoiceView";
 import CostReports from "./features/financial/CostReports";
 import SupplierPaymentList from "./features/financial/SupplierPaymentList";
-import SupplierPaymentForm from "./features/financial/SupplierPaymentForm";
 import DepositList from "./features/deposits/DepositList";
 import DepositForm from "./features/deposits/DepositForm";
 import DepositConfigurator from "./features/deposits/DepositConfigurator";
@@ -134,18 +132,13 @@ const routes = createRoutesFromElements(
                     path="/financial/dashboard"
                     element={<FinancialDashboard />}
                 />
-                <Route path="/invoices/create" element={<InvoiceForm />} />
-                <Route path="/invoices/:id/edit" element={<InvoiceForm />} />
+                <Route path="/invoices/create" element={<InvoiceList />} />
+                <Route path="/invoices/:id/edit" element={<InvoiceList />} />
+                <Route path="/invoices/:id" element={<InvoiceView />} />
                 <Route path="/invoices" element={<InvoiceList />} />
                 <Route path="/cost-reports" element={<CostReports />} />
-                <Route
-                    path="/payments/create"
-                    element={<SupplierPaymentForm />}
-                />
-                <Route
-                    path="/payments/:id/edit"
-                    element={<SupplierPaymentForm />}
-                />
+                <Route path="/payments/create" element={<SupplierPaymentList />} />
+                <Route path="/payments/:id/edit" element={<SupplierPaymentList />} />
                 <Route path="/payments" element={<SupplierPaymentList />} />
                 <Route path="/deposits/create" element={<DepositForm />} />
                 <Route path="/deposits/:id/edit" element={<DepositForm />} />
@@ -156,9 +149,11 @@ const routes = createRoutesFromElements(
                 <Route path="/deposits" element={<DepositList />} />
                 <Route path="/admin/settings" element={<SettingsPage />} />
                 <Route path="/admin/users" element={<UserList />} />
-                <Route path="/admin/users/create" element={<UserForm />} />
-                <Route path="/admin/users/:id/edit" element={<UserForm />} />
+                <Route path="/admin/users/create" element={<UserList />} />
+                <Route path="/admin/users/:id/edit" element={<UserList />} />
                 <Route path="/admin/roles" element={<RoleList />} />
+                <Route path="/admin/roles/create" element={<RoleList />} />
+                <Route path="/admin/roles/:id/edit" element={<RoleList />} />
             </Route>
         </Route>
     </Route>,

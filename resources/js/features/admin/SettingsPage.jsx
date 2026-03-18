@@ -25,12 +25,44 @@ export default function SettingsPage() {
             const res = await api.put("/settings", payload);
             return res.data;
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
+            queryClient.setQueryData(["settings"], data);
+            setGeneral({ locale: data?.app?.locale || "ro", _synced: true });
+            setCompany({
+                name: data?.company?.name ?? "",
+                cui: data?.company?.cui ?? "",
+                phone: data?.company?.phone ?? "",
+                address: data?.company?.address ?? "",
+                city: data?.company?.city ?? "",
+                county: data?.company?.county ?? "",
+                email: data?.company?.email ?? "",
+                bank: data?.company?.bank ?? "",
+                iban: data?.company?.iban ?? "",
+                _synced: true,
+            });
+            setSmtp({
+                host: data?.smtp?.host ?? "",
+                port: data?.smtp?.port ?? "587",
+                username: data?.smtp?.username ?? "",
+                password: "",
+                encryption: data?.smtp?.encryption ?? "tls",
+                from_address: data?.smtp?.from_address ?? "",
+                from_name: data?.smtp?.from_name ?? "",
+                _synced: true,
+            });
             queryClient.invalidateQueries({ queryKey: ["settings"] });
             toast.success("Setările au fost salvate.");
         },
         onError: (err) => {
-            toast.error(err.response?.data?.message || "Eroare la salvare.");
+            const message = err.response?.data?.message || "Eroare la salvare.";
+            const errors = err.response?.data?.errors;
+            const details = errors
+                ? Object.values(errors).flat().filter(Boolean).join("\n")
+                : null;
+            toast.error(
+                message,
+                details ? { description: details } : undefined,
+            );
         },
     });
 
@@ -146,33 +178,37 @@ export default function SettingsPage() {
     };
 
     const saveGeneral = () => {
-        updateMutation.mutate({ "app.locale": general.locale });
+        updateMutation.mutate({ app: { locale: general.locale } });
     };
 
     const saveCompany = () => {
         updateMutation.mutate({
-            "company.name": company.name,
-            "company.cui": company.cui,
-            "company.phone": company.phone,
-            "company.address": company.address,
-            "company.city": company.city,
-            "company.county": company.county,
-            "company.email": company.email,
-            "company.bank": company.bank,
-            "company.iban": company.iban,
+            company: {
+                name: company.name,
+                cui: company.cui,
+                phone: company.phone,
+                address: company.address,
+                city: company.city,
+                county: company.county,
+                email: company.email,
+                bank: company.bank,
+                iban: company.iban,
+            },
         });
     };
 
     const saveSmtp = () => {
         const payload = {
-            "smtp.host": smtp.host,
-            "smtp.port": smtp.port,
-            "smtp.username": smtp.username,
-            "smtp.encryption": smtp.encryption,
-            "smtp.from_address": smtp.from_address,
-            "smtp.from_name": smtp.from_name,
+            smtp: {
+                host: smtp.host,
+                port: smtp.port,
+                username: smtp.username,
+                encryption: smtp.encryption,
+                from_address: smtp.from_address,
+                from_name: smtp.from_name,
+            },
         };
-        if (smtp.password) payload["smtp.password"] = smtp.password;
+        if (smtp.password) payload.smtp.password = smtp.password;
         updateMutation.mutate(payload);
     };
 

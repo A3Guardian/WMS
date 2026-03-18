@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\Salary;
+use App\Models\User;
 use App\Services\ActivityLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class EmployeeController extends Controller
@@ -70,23 +72,60 @@ class EmployeeController extends Controller
             'emergency_contact_name' => 'nullable|string|max:255',
             'emergency_contact_phone' => 'nullable|string|max:255',
             'status' => 'sometimes|in:active,inactive,terminated,on_leave',
+            'create_account' => 'sometimes|boolean',
+            'account_name' => 'required_if:create_account,true|string|max:255',
+            'account_email' => 'required_if:create_account,true|string|email|max:255|unique:users,email',
+            'account_password' => 'required_if:create_account,true|string|min:8',
         ]);
 
-        $employee = Employee::create($validated);
-        
-        if (isset($validated['salary']) && $validated['salary'] > 0) {
-            Salary::create([
-                'employee_id' => $employee->id,
-                'amount' => $validated['salary'],
-                'effective_date' => $validated['hire_date'],
-                'type' => 'base',
-                'notes' => 'Initial salary set during employee creation',
+        $createAccount = (bool) ($validated['create_account'] ?? false);
+        $accountName = $validated['account_name'] ?? null;
+        $accountEmail = $validated['account_email'] ?? null;
+        $accountPassword = $validated['account_password'] ?? null;
+
+        unset($validated['create_account'], $validated['account_name'], $validated['account_email'], $validated['account_password']);
+
+        if ($createAccount && !empty($validated['user_id'])) {
+            throw ValidationException::withMessages([
+                'user_id' => ['You cannot link an existing user and create a new account at the same time.'],
             ]);
         }
-        
-        ActivityLogService::logCreated($employee);
 
-        return response()->json($employee->load(['user', 'department']), 201);
+        return DB::transaction(function () use ($validated, $createAccount, $accountName, $accountEmail, $accountPassword) {
+            if ($createAccount) {
+                $user = User::create([
+                    'name' => $accountName,
+                    'email' => $accountEmail,
+                    'password' => Hash::make($accountPassword),
+                    'email_verified_at' => now(),
+                ]);
+
+                // Assign default Employee role if available
+                try {
+                    $user->assignRole('Employee');
+                } catch (\Throwable $e) {
+                    // ignore if roles not set up yet
+                }
+
+                $validated['user_id'] = $user->id;
+            }
+
+            $employee = Employee::create($validated);
+
+            if (isset($validated['salary']) && $validated['salary'] > 0) {
+                Salary::create([
+                    'employee_id' => $employee->id,
+                    'amount' => $validated['salary'],
+                    'effective_date' => $validated['hire_date'],
+                    'type' => 'base',
+                    'notes' => 'Initial salary set during employee creation',
+                ]);
+            }
+
+            ActivityLogService::logCreated($employee);
+
+            return response()->json($employee->load(['user', 'department']), 201);
+        });
     }
 
     public function show(Employee $employee): JsonResponse

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
@@ -13,6 +14,7 @@ export default function EmployeeFormModal({
     employeeId = null,
     mode = "create", // "create" | "edit" | "view"
 }) {
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
 
@@ -57,6 +59,10 @@ export default function EmployeeFormModal({
         emergency_contact_name: "",
         emergency_contact_phone: "",
         status: "active",
+        create_account: false,
+        account_name: "",
+        account_email: "",
+        account_password: "",
     };
 
     const {
@@ -78,14 +84,40 @@ export default function EmployeeFormModal({
                 user_id: formValues.user_id || null,
                 department_id: formValues.department_id || null,
                 salary: formValues.salary ? parseFloat(formValues.salary) : null,
+                create_account: !!formValues.create_account,
+                account_name: formValues.create_account
+                    ? formValues.account_name
+                    : null,
+                account_email: formValues.create_account
+                    ? formValues.account_email
+                    : null,
+                account_password: formValues.create_account
+                    ? formValues.account_password
+                    : null,
             };
+
+            if (submitData.create_account) {
+                submitData.user_id = null;
+            }
 
             if (isEdit) {
                 await api.put(`/employees/${employeeId}`, submitData);
                 toast.success("Employee updated successfully");
             } else {
-                await api.post("/employees", submitData);
-                toast.success("Employee created successfully");
+                const res = await api.post("/employees", submitData);
+                const created = res.data;
+                const createdUserId = created?.user?.id || created?.user_id;
+                if (submitData.create_account && createdUserId) {
+                    toast.success("Employee created + account created", {
+                        action: {
+                            label: "Open user",
+                            onClick: () =>
+                                navigate(`/admin/users/${createdUserId}/edit`),
+                        },
+                    });
+                } else {
+                    toast.success("Employee created successfully");
+                }
             }
 
             queryClient.invalidateQueries({ queryKey: ["employees"] });
@@ -126,6 +158,10 @@ export default function EmployeeFormModal({
                 emergency_contact_phone:
                     employeeData.emergency_contact_phone || "",
                 status: employeeData.status || "active",
+                create_account: false,
+                account_name: "",
+                account_email: "",
+                account_password: "",
             });
         } else if (!employeeId && (mode === "create" || !mode)) {
             setValues(initialValues);
@@ -229,7 +265,7 @@ export default function EmployeeFormModal({
                                         `${user.name} (${user.email})`
                                     }
                                     emptyMessage="No users found."
-                                    disabled={disabled}
+                                    disabled={disabled || values.create_account}
                                 />
                                 {errors.user_id && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -237,6 +273,99 @@ export default function EmployeeFormModal({
                                     </p>
                                 )}
                             </div>
+
+                            {!isEdit &&
+                                !isView &&
+                                hasPermission("create users") && (
+                                    <div className="md:col-span-2">
+                                        <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                                            <input
+                                                type="checkbox"
+                                                checked={!!values.create_account}
+                                                onChange={(e) =>
+                                                    setValues({
+                                                        ...values,
+                                                        create_account:
+                                                            e.target.checked,
+                                                    })
+                                                }
+                                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                            />
+                                            Create account to platform
+                                        </label>
+                                        <p className="mt-1 text-xs text-gray-500">
+                                            This will create a platform user and
+                                            link it to this employee.
+                                        </p>
+                                    </div>
+                                )}
+
+                            {values.create_account && !isEdit && !isView && (
+                                <>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Account name{" "}
+                                            <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={values.account_name}
+                                            onChange={(e) =>
+                                                setValues({
+                                                    ...values,
+                                                    account_name:
+                                                        e.target.value,
+                                                })
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                                            required
+                                            disabled={disabled}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Account email{" "}
+                                            <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            value={values.account_email}
+                                            onChange={(e) =>
+                                                setValues({
+                                                    ...values,
+                                                    account_email:
+                                                        e.target.value,
+                                                })
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                                            required
+                                            disabled={disabled}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Account password{" "}
+                                            <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="password"
+                                            value={values.account_password}
+                                            onChange={(e) =>
+                                                setValues({
+                                                    ...values,
+                                                    account_password:
+                                                        e.target.value,
+                                                })
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                                            minLength={8}
+                                            required
+                                            autoComplete="new-password"
+                                            disabled={disabled}
+                                        />
+                                    </div>
+                                </>
+                            )}
 
                             <div>
                                 <label

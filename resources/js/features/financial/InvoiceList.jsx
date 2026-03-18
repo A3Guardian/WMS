@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { Eye, Pencil, Trash2, Plus, Download } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -9,9 +10,13 @@ import api from "../../utils/api";
 import { formatDate, formatCurrency } from "../../utils/formatters";
 import PageHeader from "../../components/PageHeader";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import InvoiceFormModal from "./InvoiceFormModal";
+import { generateInvoicePdf } from "../../utils/invoicePdf";
 
 export default function InvoiceList() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { id: routeInvoiceId } = useParams();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
@@ -25,6 +30,44 @@ export default function InvoiceList() {
     const [search, setSearch] = useState("");
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+    const [formModalOpen, setFormModalOpen] = useState(false);
+    const [formModalMode, setFormModalMode] = useState("create"); // "create" | "edit"
+    const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
+
+    const handleOpenCreate = () => {
+        setSelectedInvoiceId(null);
+        setFormModalMode("create");
+        setFormModalOpen(true);
+    };
+
+    const handleOpenEdit = (invoice) => {
+        setSelectedInvoiceId(invoice?.id);
+        setFormModalMode("edit");
+        setFormModalOpen(true);
+    };
+
+    const handleCloseFormModal = () => {
+        setFormModalOpen(false);
+        setSelectedInvoiceId(null);
+        if (
+            location.pathname.endsWith("/create") ||
+            location.pathname.endsWith("/edit")
+        ) {
+            navigate("/invoices");
+        }
+    };
+
+    useEffect(() => {
+        if (location.pathname.endsWith("/invoices/create")) {
+            handleOpenCreate();
+            return;
+        }
+        if (location.pathname.endsWith("/edit") && routeInvoiceId) {
+            setSelectedInvoiceId(routeInvoiceId);
+            setFormModalMode("edit");
+            setFormModalOpen(true);
+        }
+    }, [location.pathname, routeInvoiceId]);
 
     const { data, isLoading, error } = useQuery({
         queryKey: [
@@ -88,6 +131,28 @@ export default function InvoiceList() {
         });
     };
 
+    const handleDownloadInvoice = async (invoiceId) => {
+        try {
+            const [invRes, settingsRes] = await Promise.all([
+                api.get(`/invoices/${invoiceId}`),
+                api.get("/settings/invoice-data"),
+            ]);
+            const inv = invRes.data;
+            const settings = settingsRes.data;
+            await generateInvoicePdf({
+                invoice: inv,
+                items: inv?.items ?? [],
+                company: settings?.company ?? {},
+                logoUrl: settings?.logo_url ?? null,
+            });
+            toast.success("Invoice downloaded");
+        } catch (e) {
+            toast.error(
+                e.response?.data?.message || "Failed to download invoice",
+            );
+        }
+    };
+
     const getStatusColor = (status) => {
         const colors = {
             draft: "bg-gray-100 text-gray-800",
@@ -120,8 +185,24 @@ export default function InvoiceList() {
             accessor: "invoice_number",
         },
         {
-            header: "Supplier",
-            accessor: (row) => row.supplier?.name || "N/A",
+            header: "Partner",
+            accessor: (row) => {
+                if (row?.type === "income") {
+                    return (
+                        row.customer?.company_name ||
+                        row.customer?.name ||
+                        "N/A"
+                    );
+                }
+                if (row?.type === "expense") {
+                    return (
+                        row.supplier?.company_name ||
+                        row.supplier?.name ||
+                        "N/A"
+                    );
+                }
+                return "N/A";
+            },
         },
         {
             header: "Type",
@@ -169,21 +250,44 @@ export default function InvoiceList() {
             header: "Actions",
             accessor: "id",
             cell: (id, row) => (
-                <div className="flex space-x-2">
+                <div className="flex items-center justify-end gap-1">
                     <button
-                        onClick={() => navigate(`/invoices/${id}/edit`)}
-                        className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                        disabled={!hasPermission("edit invoices")}
+                        type="button"
+                        onClick={() => navigate(`/invoices/${id}`)}
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        title="View invoice"
                     >
-                        Edit
+                        <Eye className="w-4 h-4" />
                     </button>
                     <button
-                        onClick={() => handleDeleteClick(row)}
-                        className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-                        disabled={!hasPermission("delete invoices")}
+                        type="button"
+                        onClick={() => handleDownloadInvoice(id)}
+                        className="p-2 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 rounded transition-colors"
+                        title="Download invoice"
                     >
-                        Delete
+                        <Download className="w-4 h-4" />
                     </button>
+                    {hasPermission("edit invoices") && (
+                        <button
+                            type="button"
+                            onClick={() => handleOpenEdit(row)}
+                            className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                            title="Edit invoice"
+                            disabled={row?.status !== "draft"}
+                        >
+                            <Pencil className="w-4 h-4" />
+                        </button>
+                    )}
+                    {hasPermission("delete invoices") && (
+                        <button
+                            type="button"
+                            onClick={() => handleDeleteClick(row)}
+                            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="Delete invoice"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             ),
         },
@@ -204,9 +308,11 @@ export default function InvoiceList() {
                 actions={
                     hasPermission("create invoices") && (
                         <button
-                            onClick={() => navigate("/invoices/create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            type="button"
+                            onClick={handleOpenCreate}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-flex items-center gap-2"
                         >
+                            <Plus className="w-4 h-4" />
                             Add Invoice
                         </button>
                     )
@@ -352,6 +458,12 @@ export default function InvoiceList() {
                 confirmLabel="Yes, delete"
                 cancelLabel="Cancel"
                 onConfirm={handleConfirmDelete}
+            />
+            <InvoiceFormModal
+                isOpen={formModalOpen}
+                onClose={handleCloseFormModal}
+                invoiceId={selectedInvoiceId}
+                mode={formModalMode}
             />
         </div>
     );

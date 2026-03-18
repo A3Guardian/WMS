@@ -12,7 +12,7 @@ class PaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Transaction::with(['supplier', 'invoice']);
+        $query = Transaction::with(['supplier', 'customer', 'invoice']);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -22,6 +22,10 @@ class PaymentController extends Controller
                   ->orWhere('reference_number', 'like', '%' . $search . '%')
                   ->orWhereHas('supplier', function ($q) use ($search) {
                       $q->where('name', 'like', '%' . $search . '%');
+                  })
+                  ->orWhereHas('customer', function ($q) use ($search) {
+                      $q->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('company_name', 'like', '%' . $search . '%');
                   });
             });
         }
@@ -36,6 +40,10 @@ class PaymentController extends Controller
 
         if ($request->has('supplier_id')) {
             $query->where('supplier_id', $request->supplier_id);
+        }
+
+        if ($request->has('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
         }
 
         if ($request->has('date_from')) {
@@ -55,6 +63,7 @@ class PaymentController extends Controller
     {
         $validated = $request->validate([
             'supplier_id' => 'nullable|exists:suppliers,id',
+            'customer_id' => 'nullable|exists:customers,id',
             'invoice_id' => 'nullable|exists:invoices,id',
             'type' => 'required|in:payment,receipt,refund,adjustment',
             'category' => 'required|in:supplier_payment,customer_payment,salary,expense,income,other',
@@ -75,18 +84,19 @@ class PaymentController extends Controller
 
         ActivityLogService::logCreated($transaction, $validated);
 
-        return response()->json($transaction->load('supplier', 'invoice'), 201);
+        return response()->json($transaction->load('supplier', 'customer', 'invoice'), 201);
     }
 
     public function show(Transaction $payment)
     {
-        return response()->json($payment->load('supplier', 'invoice'));
+        return response()->json($payment->load('supplier', 'customer', 'invoice'));
     }
 
     public function update(Request $request, Transaction $payment)
     {
         $validated = $request->validate([
             'supplier_id' => 'nullable|exists:suppliers,id',
+            'customer_id' => 'nullable|exists:customers,id',
             'invoice_id' => 'nullable|exists:invoices,id',
             'type' => 'sometimes|in:payment,receipt,refund,adjustment',
             'category' => 'sometimes|in:supplier_payment,customer_payment,salary,expense,income,other',
@@ -104,7 +114,7 @@ class PaymentController extends Controller
 
         ActivityLogService::logUpdated($payment, $oldValues, $newValues);
 
-        return response()->json($payment->load('supplier', 'invoice'));
+        return response()->json($payment->load('supplier', 'customer', 'invoice'));
     }
 
     public function destroy(Transaction $payment)

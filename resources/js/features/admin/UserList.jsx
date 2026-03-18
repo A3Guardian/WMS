@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import UserFormModal from "./UserFormModal";
 
 export default function UserList() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { id: routeUserId } = useParams();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const [page, setPage] = useState(1);
@@ -18,6 +22,9 @@ export default function UserList() {
     const [perPage, setPerPage] = useState(20);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
+    const [formModalOpen, setFormModalOpen] = useState(false);
+    const [formModalMode, setFormModalMode] = useState("create"); // "create" | "edit"
+    const [selectedUserId, setSelectedUserId] = useState(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -75,6 +82,41 @@ export default function UserList() {
         });
     };
 
+    const handleOpenCreate = () => {
+        setSelectedUserId(null);
+        setFormModalMode("create");
+        setFormModalOpen(true);
+    };
+
+    const handleOpenEdit = (row) => {
+        setSelectedUserId(row?.id);
+        setFormModalMode("edit");
+        setFormModalOpen(true);
+    };
+
+    const handleCloseFormModal = () => {
+        setFormModalOpen(false);
+        setSelectedUserId(null);
+        if (
+            location.pathname.endsWith("/create") ||
+            location.pathname.endsWith("/edit")
+        ) {
+            navigate("/admin/users");
+        }
+    };
+
+    useEffect(() => {
+        if (location.pathname.endsWith("/admin/users/create")) {
+            handleOpenCreate();
+            return;
+        }
+        if (location.pathname.endsWith("/edit") && routeUserId) {
+            setSelectedUserId(routeUserId);
+            setFormModalMode("edit");
+            setFormModalOpen(true);
+        }
+    }, [location.pathname, routeUserId]);
+
     if (!hasPermission("view users")) {
         return (
             <div className="text-red-500 p-4">
@@ -99,24 +141,26 @@ export default function UserList() {
             key: "actions",
             label: "Actions",
             render: (_, row) => (
-                <div className="flex space-x-2">
+                <div className="flex items-center justify-end gap-1">
                     {hasPermission("edit users") && (
                         <button
-                            onClick={() =>
-                                navigate(`/admin/users/${row.id}/edit`)
-                            }
-                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                            type="button"
+                            onClick={() => handleOpenEdit(row)}
+                            className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                            title="Edit"
                         >
-                            Edit
+                            <Pencil className="w-4 h-4" />
                         </button>
                     )}
                     {hasPermission("delete users") && (
                         <button
+                            type="button"
                             onClick={() => handleDeleteClick(row)}
                             disabled={deleteMutation.isPending}
-                            className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                            title="Delete"
                         >
-                            Delete
+                            <Trash2 className="w-4 h-4" />
                         </button>
                     )}
                 </div>
@@ -162,9 +206,11 @@ export default function UserList() {
                 actions={
                     hasPermission("create users") && (
                         <button
-                            onClick={() => navigate("/admin/users/create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            type="button"
+                            onClick={handleOpenCreate}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 inline-flex items-center gap-2"
                         >
+                            <Plus className="w-4 h-4" />
                             Create User
                         </button>
                     )
@@ -207,6 +253,12 @@ export default function UserList() {
                 confirmLabel="Yes, delete"
                 cancelLabel="Cancel"
                 onConfirm={handleConfirmDelete}
+            />
+            <UserFormModal
+                isOpen={formModalOpen}
+                onClose={handleCloseFormModal}
+                userId={selectedUserId}
+                mode={formModalMode}
             />
         </div>
     );
