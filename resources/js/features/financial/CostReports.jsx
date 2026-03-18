@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
     BarChart,
@@ -31,6 +31,7 @@ const COLORS = [
 
 export default function CostReports() {
     const { t } = useTranslation();
+    const exportRef = useRef(null);
     const [dateFrom, setDateFrom] = useState(
         new Date(new Date().getFullYear(), new Date().getMonth(), 1)
             .toISOString()
@@ -64,15 +65,18 @@ export default function CostReports() {
         },
     });
 
-    const { data: invoicesData } = useQuery({
+    const {
+        data: invoicesData,
+        isError: isInvoicesError,
+        error: invoicesError,
+    } = useQuery({
         queryKey: ["invoices-report", dateFrom, dateTo, supplierId, category],
         queryFn: async () => {
-            const params = new URLSearchParams({
-                type: "expense",
-                per_page: "100",
-            });
-            if (dateFrom) params.append("date_from", dateFrom);
-            if (dateTo) params.append("date_to", dateTo);
+            const params = new URLSearchParams();
+            params.set("type", "expense");
+            params.set("per_page", "100");
+            params.set("date_from", dateFrom);
+            params.set("date_to", dateTo);
             if (supplierId) params.append("supplier_id", supplierId);
             if (category) params.append("category", category);
             const response = await api.get(`/invoices?${params.toString()}`);
@@ -80,85 +84,60 @@ export default function CostReports() {
         },
     });
 
-    const fetchSuppliers = (params) => api.get("/suppliers?" + params).then((r) => r.data);
+    const fetchSuppliers = (params) =>
+        api.get("/suppliers?" + params).then((r) => r.data);
 
     const handleExportPDF = async () => {
         try {
-            const { default: jsPDF } = await import("jspdf");
-            const { default: autoTable } = await import("jspdf-autotable");
+            const el = exportRef.current;
+            if (!el) return;
 
-            const doc = new jsPDF();
+            const win = window.open("", "_blank", "noopener,noreferrer");
+            if (!win) return;
 
-            doc.setFontSize(18);
-            doc.text(t("costReports.export.pdf.title"), 14, 22);
-            doc.setFontSize(12);
-            doc.text(
-                t("costReports.export.period", {
-                    from: formatDate(dateFrom),
-                    to: formatDate(dateTo),
-                }),
-                14,
-                30,
-            );
+            const styles = Array.from(
+                document.querySelectorAll('link[rel="stylesheet"], style'),
+            )
+                .map((n) => n.outerHTML)
+                .join("\n");
 
-            if (dashboardData?.summary) {
-                doc.setFontSize(14);
-                doc.text(t("costReports.export.summary"), 14, 45);
-                doc.setFontSize(10);
-                let yPos = 52;
-                doc.text(
-                    t("costReports.export.totalExpenses", {
-                        value: formatCurrency(
-                            dashboardData.summary.total_expenses,
-                        ),
-                    }),
-                    14,
-                    yPos,
-                );
-                yPos += 7;
-                doc.text(
-                    t("costReports.export.totalIncome", {
-                        value: formatCurrency(dashboardData.summary.total_income),
-                    }),
-                    14,
-                    yPos,
-                );
-                yPos += 7;
-                doc.text(
-                    t("costReports.export.net", {
-                        value: formatCurrency(dashboardData.summary.net_profit),
-                    }),
-                    14,
-                    yPos,
-                );
+            const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${t("costReports.export.pdf.title")}</title>
+    ${styles}
+    <style>
+      @media print {
+        [data-no-print] { display: none !important; }
+        body { background: #fff !important; }
+      }
+    </style>
+  </head>
+  <body>
+    ${el.outerHTML}
+  </body>
+</html>`;
 
-                if (invoicesData?.data?.length > 0) {
-                    yPos += 10;
-                    autoTable(doc, {
-                        startY: yPos,
-                        head: [
-                            [
-                                t("costReports.export.table.invoiceNumber"),
-                                t("costReports.export.table.supplier"),
-                                t("costReports.export.table.category"),
-                                t("costReports.export.table.date"),
-                                t("costReports.export.table.amount"),
-                            ],
-                        ],
-                        body: invoicesData.data.map((inv) => [
-                            inv.invoice_number,
-                            inv.supplier?.name || t("common.na"),
-                            inv.category || t("common.na"),
-                            formatDate(inv.issue_date),
-                            formatCurrency(inv.total_amount),
-                        ]),
-                    });
+            win.document.open();
+            win.document.write(html);
+            win.document.close();
+
+            const tryPrint = () => {
+                try {
+                    win.focus();
+                    win.print();
+                    return true;
+                } catch {
+                    return false;
                 }
-            }
+            };
 
-            doc.save(
-                `${t("costReports.export.filePrefix")}-${dateFrom}-${dateTo}.pdf`,
-            );
+            setTimeout(() => {
+                if (tryPrint()) return;
+                setTimeout(() => tryPrint(), 750);
+            }, 250);
         } catch (error) {
             console.error("Export error:", error);
         }
@@ -166,7 +145,8 @@ export default function CostReports() {
 
     const handleExportExcel = async () => {
         try {
-            const { default: XLSX } = await import("xlsx");
+            const xlsxModule = await import("xlsx");
+            const XLSX = xlsxModule.default ?? xlsxModule;
 
             const worksheet = XLSX.utils.json_to_sheet(
                 (invoicesData?.data || []).map((inv) => ({
@@ -207,11 +187,12 @@ export default function CostReports() {
     const invoices = invoicesData?.data || [];
 
     return (
-        <div>
+        <div ref={exportRef}>
             <PageHeader
                 title={t("costReports.title")}
                 actions={
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2" data-no-print>
+                        {/*
                         <button
                             onClick={handleExportPDF}
                             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
@@ -219,6 +200,7 @@ export default function CostReports() {
                             <Download className="inline mr-2" size={16} />
                             {t("costReports.actions.exportPdf")}
                         </button>
+                        */}
                         <button
                             onClick={handleExportExcel}
                             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
@@ -232,6 +214,13 @@ export default function CostReports() {
 
             {/* Filters */}
             <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+                {isInvoicesError && (
+                    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                        {invoicesError?.response?.data?.message ||
+                            invoicesError?.message ||
+                            t("common.genericError")}
+                    </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -276,7 +265,9 @@ export default function CostReports() {
                             type="text"
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
-                            placeholder={t("costReports.filters.categoryPlaceholder")}
+                            placeholder={t(
+                                "costReports.filters.categoryPlaceholder",
+                            )}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
                     </div>
@@ -376,22 +367,34 @@ export default function CostReports() {
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    {t("costReports.expenseInvoices.table.invoiceNumber")}
+                                    {t(
+                                        "costReports.expenseInvoices.table.invoiceNumber",
+                                    )}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    {t("costReports.expenseInvoices.table.supplier")}
+                                    {t(
+                                        "costReports.expenseInvoices.table.supplier",
+                                    )}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    {t("costReports.expenseInvoices.table.category")}
+                                    {t(
+                                        "costReports.expenseInvoices.table.category",
+                                    )}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    {t("costReports.expenseInvoices.table.date")}
+                                    {t(
+                                        "costReports.expenseInvoices.table.date",
+                                    )}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    {t("costReports.expenseInvoices.table.status")}
+                                    {t(
+                                        "costReports.expenseInvoices.table.status",
+                                    )}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    {t("costReports.expenseInvoices.table.amount")}
+                                    {t(
+                                        "costReports.expenseInvoices.table.amount",
+                                    )}
                                 </th>
                             </tr>
                         </thead>
@@ -403,7 +406,8 @@ export default function CostReports() {
                                             {inv.invoice_number}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {inv.supplier?.name || t("common.na")}
+                                            {inv.supplier?.name ||
+                                                t("common.na")}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {inv.category || t("common.na")}
@@ -422,9 +426,13 @@ export default function CostReports() {
                                                           : "bg-gray-100 text-gray-800"
                                                 }`}
                                             >
-                                                {t(`invoices.status.${inv.status}`, {
-                                                    defaultValue: inv.status.toUpperCase(),
-                                                })}
+                                                {t(
+                                                    `invoices.status.${inv.status}`,
+                                                    {
+                                                        defaultValue:
+                                                            inv.status.toUpperCase(),
+                                                    },
+                                                )}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

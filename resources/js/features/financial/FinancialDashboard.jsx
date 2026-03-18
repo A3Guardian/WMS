@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
     LineChart,
@@ -39,6 +39,7 @@ const COLORS = [
 
 export default function FinancialDashboard() {
     const { t } = useTranslation();
+    const exportRef = useRef(null);
     const [dateFrom, setDateFrom] = useState(
         new Date(new Date().getFullYear(), new Date().getMonth(), 1)
             .toISOString()
@@ -76,100 +77,55 @@ export default function FinancialDashboard() {
 
     const handleExportPDF = async () => {
         try {
-            const params = new URLSearchParams({
-                date_from: dateFrom,
-                date_to: dateTo,
-                type: "pdf",
-            });
-            if (supplierId) params.append("supplier_id", supplierId);
-            if (category) params.append("category", category);
-            const response = await api.get(
-                `/financial/export?${params.toString()}`,
-            );
+            const el = exportRef.current;
+            if (!el) return;
 
-            const { default: jsPDF } = await import("jspdf");
-            const { default: autoTable } = await import("jspdf-autotable");
+            const win = window.open("", "_blank", "noopener,noreferrer");
+            if (!win) return;
 
-            const doc = new jsPDF();
+            const styles = Array.from(
+                document.querySelectorAll('link[rel="stylesheet"], style'),
+            )
+                .map((n) => n.outerHTML)
+                .join("\n");
 
-            doc.setFontSize(18);
-            doc.text(t("financialDashboard.export.pdf.title"), 14, 22);
-            doc.setFontSize(12);
-            doc.text(
-                t("financialDashboard.export.period", {
-                    from: formatDate(dateFrom),
-                    to: formatDate(dateTo),
-                }),
-                14,
-                30,
-            );
+            const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${t("financialDashboard.export.pdf.title")}</title>
+    ${styles}
+    <style>
+      @media print {
+        [data-no-print] { display: none !important; }
+        body { background: #fff !important; }
+      }
+    </style>
+  </head>
+  <body>
+    ${el.outerHTML}
+  </body>
+</html>`;
 
-            if (dashboardData?.summary) {
-                doc.setFontSize(14);
-                doc.text(t("financialDashboard.export.summary"), 14, 45);
-                doc.setFontSize(10);
-                let yPos = 52;
-                doc.text(
-                    t("financialDashboard.export.totalIncome", {
-                        value: formatCurrency(dashboardData.summary.total_income),
-                    }),
-                    14,
-                    yPos,
-                );
-                yPos += 7;
-                doc.text(
-                    t("financialDashboard.export.totalExpenses", {
-                        value: formatCurrency(
-                            dashboardData.summary.total_expenses,
-                        ),
-                    }),
-                    14,
-                    yPos,
-                );
-                yPos += 7;
-                doc.text(
-                    t("financialDashboard.export.netProfit", {
-                        value: formatCurrency(dashboardData.summary.net_profit),
-                    }),
-                    14,
-                    yPos,
-                );
-                yPos += 7;
-                doc.text(
-                    t("financialDashboard.export.stockValue", {
-                        value: formatCurrency(dashboardData.summary.stock_value),
-                    }),
-                    14,
-                    yPos,
-                );
+            win.document.open();
+            win.document.write(html);
+            win.document.close();
 
-                if (response.data?.data?.length > 0) {
-                    yPos += 10;
-                    autoTable(doc, {
-                        startY: yPos,
-                        head: [
-                            [
-                                t("financialDashboard.export.table.invoiceNumber"),
-                                t("financialDashboard.export.table.type"),
-                                t("financialDashboard.export.table.status"),
-                                t("financialDashboard.export.table.date"),
-                                t("financialDashboard.export.table.amount"),
-                            ],
-                        ],
-                        body: response.data.data.map((inv) => [
-                            inv.invoice_number,
-                            inv.type,
-                            inv.status,
-                            formatDate(inv.issue_date),
-                            formatCurrency(inv.total_amount),
-                        ]),
-                    });
+            const tryPrint = () => {
+                try {
+                    win.focus();
+                    win.print();
+                    return true;
+                } catch {
+                    return false;
                 }
-            }
+            };
 
-            doc.save(
-                `${t("financialDashboard.export.filePrefix")}-${dateFrom}-${dateTo}.pdf`,
-            );
+            setTimeout(() => {
+                if (tryPrint()) return;
+                setTimeout(() => tryPrint(), 750);
+            }, 250);
         } catch (error) {
             console.error("Export error:", error);
         }
@@ -188,7 +144,8 @@ export default function FinancialDashboard() {
                 `/financial/export?${params.toString()}`,
             );
 
-            const { default: XLSX } = await import("xlsx");
+            const xlsxModule = await import("xlsx");
+            const XLSX = xlsxModule.default ?? xlsxModule;
 
             const worksheet = XLSX.utils.json_to_sheet(
                 response.data.data.map((inv) => ({
@@ -238,11 +195,12 @@ export default function FinancialDashboard() {
         })) || [];
 
     return (
-        <div>
+        <div ref={exportRef}>
             <PageHeader
                 title={t("financialDashboard.title")}
                 actions={
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2" data-no-print>
+                        {/*
                         <button
                             onClick={handleExportPDF}
                             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
@@ -250,6 +208,7 @@ export default function FinancialDashboard() {
                             <Download className="inline mr-2" size={16} />
                             {t("financialDashboard.actions.exportPdf")}
                         </button>
+                        */}
                         <button
                             onClick={handleExportExcel}
                             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"

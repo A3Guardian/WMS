@@ -134,7 +134,11 @@ export default function RoleList() {
             render: (permissions) => {
                 if (!permissions || permissions.length === 0)
                     return t("roles.list.noPermissions");
-                return permissions.map((p) => p.name).join(", ");
+                return (
+                    <div className="whitespace-normal wrap-break-word">
+                        {permissions.map((p) => p.name).join(", ")}
+                    </div>
+                );
             },
         },
         {
