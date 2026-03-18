@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -14,6 +15,7 @@ export default function UserFormModal({
 }) {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const isEdit = mode === "edit";
 
     const { data: rolesData } = useQuery({
@@ -57,19 +59,21 @@ export default function UserFormModal({
 
                 if (isEdit) {
                     await api.put(`/admin/users/${userId}`, submitData);
-                    toast.success("User updated successfully");
+                    toast.success(t("users.toast.updated"));
                 } else {
                     await api.post("/admin/users", submitData);
-                    toast.success("User created successfully");
+                    toast.success(t("users.toast.created"));
                 }
 
                 queryClient.invalidateQueries({ queryKey: ["users"] });
                 onClose();
             } catch (error) {
                 const errorMessage =
-                    error.response?.data?.message || "An error occurred";
+                    error.response?.data?.message || t("common.genericError");
                 toast.error(
-                    isEdit ? "Failed to update user" : "Failed to create user",
+                    isEdit
+                        ? t("users.toast.updateFailed")
+                        : t("users.toast.createFailed"),
                     { description: errorMessage },
                 );
                 throw error;
@@ -104,7 +108,7 @@ export default function UserFormModal({
         setValues({ ...values, roles: newRoles });
     };
 
-    const title = isEdit ? "Edit User" : "Create User";
+    const title = isEdit ? t("users.modal.editTitle") : t("users.modal.createTitle");
 
     return (
         <Dialog.Root
@@ -120,13 +124,14 @@ export default function UserFormModal({
                         {title}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Manage user account and roles.
+                        {t("users.modal.description")}
                     </Dialog.Description>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Name <span className="text-red-500">*</span>
+                                {t("users.fields.name")}{" "}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
@@ -145,7 +150,8 @@ export default function UserFormModal({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Email <span className="text-red-500">*</span>
+                                {t("users.fields.email")}{" "}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="email"
@@ -164,7 +170,7 @@ export default function UserFormModal({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Password{" "}
+                                {t("users.fields.password")}{" "}
                                 {!isEdit && (
                                     <span className="text-red-500">*</span>
                                 )}
@@ -181,7 +187,7 @@ export default function UserFormModal({
                             />
                             {isEdit && (
                                 <p className="mt-1 text-sm text-gray-500">
-                                    Leave blank to keep current password.
+                                    {t("users.hints.keepPassword")}
                                 </p>
                             )}
                             {errors.password && (
@@ -193,12 +199,12 @@ export default function UserFormModal({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Roles
+                                {t("users.fields.roles")}
                             </label>
                             <div className="space-y-2 border border-gray-300 rounded-md p-4 max-h-60 overflow-y-auto">
                                 {roles.length === 0 ? (
                                     <p className="text-sm text-gray-500">
-                                        No roles available
+                                        {t("users.empty.roles")}
                                     </p>
                                 ) : (
                                     roles.map((role) => (
@@ -245,7 +251,7 @@ export default function UserFormModal({
                                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                                     onClick={onClose}
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -254,10 +260,10 @@ export default function UserFormModal({
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting
-                                    ? "Saving..."
+                                    ? t("common.saving")
                                     : isEdit
-                                      ? "Update User"
-                                      : "Create User"}
+                                      ? t("users.actions.update")
+                                      : t("users.actions.create")}
                             </button>
                         </div>
                     </form>

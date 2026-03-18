@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -15,6 +16,7 @@ export default function TaskFormModal({
     mode = "create",
 }) {
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
     const { hasPermission, hasRole } = usePermissions();
     const isEdit = mode === "edit";
     const isEmployee = hasRole("Employee");
@@ -80,23 +82,25 @@ export default function TaskFormModal({
                         "Content-Type": "multipart/form-data",
                     },
                 });
-                toast.success("Task updated successfully");
+                toast.success(t("tasks.form.toast.updated"));
             } else {
                 await api.post("/tasks", formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
                 });
-                toast.success("Task created successfully");
+                toast.success(t("tasks.form.toast.created"));
             }
 
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
             onClose();
         } catch (error) {
             const errorMessage =
-                error.response?.data?.message || "An error occurred";
+                error.response?.data?.message || t("common.genericError");
             toast.error(
-                isEdit ? "Failed to update task" : "Failed to create task",
+                isEdit
+                    ? t("tasks.form.toast.updateFailed")
+                    : t("tasks.form.toast.createFailed"),
                 {
                     description: errorMessage,
                 },
@@ -178,7 +182,7 @@ export default function TaskFormModal({
         return null;
     }
 
-    const title = isEdit ? "Edit Task" : "Create Task";
+    const title = isEdit ? t("tasks.form.editTitle") : t("tasks.form.createTitle");
 
     return (
         <Dialog.Root
@@ -196,7 +200,7 @@ export default function TaskFormModal({
                         {title}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Manage task details and assignment.
+                        {t("tasks.form.description")}
                     </Dialog.Description>
 
                     <form
@@ -210,7 +214,7 @@ export default function TaskFormModal({
                                         htmlFor="assigned_to"
                                         className="block text-sm font-medium text-gray-700 mb-1"
                                     >
-                                        Assign To{" "}
+                                        {t("tasks.form.fields.assignedTo")}{" "}
                                         <span className="text-red-500">*</span>
                                     </label>
                                     <SearchableSelect
@@ -229,11 +233,11 @@ export default function TaskFormModal({
                                             return response.data;
                                         }}
                                         searchParam="search"
-                                        placeholder="Select Employee"
+                                        placeholder={t("tasks.form.placeholders.selectEmployee")}
                                         displayValue={(user) =>
                                             `${user.name} (${user.email})`
                                         }
-                                        emptyMessage="No employees found."
+                                        emptyMessage={t("tasks.form.empty.employees")}
                                         disabled={isEdit && !canEditFull}
                                     />
                                     {errors.assigned_to && (
@@ -248,7 +252,7 @@ export default function TaskFormModal({
                                         htmlFor="order_id"
                                         className="block text-sm font-medium text-gray-700 mb-1"
                                     >
-                                        Order (Optional)
+                                        {t("tasks.form.fields.orderOptional")}
                                     </label>
                                     <SearchableSelect
                                         cacheKey="task-order-modal"
@@ -266,11 +270,11 @@ export default function TaskFormModal({
                                             return response.data;
                                         }}
                                         searchParam="search"
-                                        placeholder="No Order"
+                                        placeholder={t("tasks.form.placeholders.noOrder")}
                                         displayValue={(order) =>
-                                            `${order.order_number} - ${order.supplier?.name || "N/A"}`
+                                            `${order.order_number} - ${order.supplier?.name || t("common.na")}`
                                         }
-                                        emptyMessage="No orders found."
+                                        emptyMessage={t("tasks.form.empty.orders")}
                                         disabled={isEdit && !canEditFull}
                                     />
                                     {errors.order_id && (
@@ -285,7 +289,7 @@ export default function TaskFormModal({
                                         htmlFor="title"
                                         className="block text-sm font-medium text-gray-700 mb-1"
                                     >
-                                        Title{" "}
+                                        {t("tasks.form.fields.title")}{" "}
                                         <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -312,7 +316,7 @@ export default function TaskFormModal({
                                 htmlFor="description"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Description
+                                {t("tasks.form.fields.description")}
                             </label>
                             <textarea
                                 id="description"
@@ -335,7 +339,7 @@ export default function TaskFormModal({
                                     htmlFor="status"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Status
+                                    {t("tasks.form.fields.status")}
                                 </label>
                                 <SearchableSelect
                                     value={values.status}
@@ -351,9 +355,11 @@ export default function TaskFormModal({
                                         TASK_STATUS_LABELS,
                                     ).map(([value, label]) => ({
                                         value,
-                                        label,
+                                        label: t(`tasks.status.${value}`, {
+                                            defaultValue: label,
+                                        }),
                                     }))}
-                                    placeholder="Select status"
+                                    placeholder={t("tasks.form.placeholders.selectStatus")}
                                 />
                                 {errors.status && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -367,7 +373,7 @@ export default function TaskFormModal({
                                     htmlFor="due_date"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Due Date
+                                    {t("tasks.form.fields.dueDate")}
                                 </label>
                                 <input
                                     type="date"
@@ -391,7 +397,7 @@ export default function TaskFormModal({
                                     htmlFor="images"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Images
+                                    {t("tasks.form.fields.images")}
                                 </label>
                                 <input
                                     type="file"
@@ -411,7 +417,7 @@ export default function TaskFormModal({
                                 {existingImages.length > 0 && (
                                     <div className="mt-4">
                                         <p className="text-sm font-medium text-gray-700 mb-2">
-                                            Existing Images:
+                                            {t("tasks.form.images.existing")}
                                         </p>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                             {existingImages.map(
@@ -424,7 +430,9 @@ export default function TaskFormModal({
                                                             src={getImageUrl(
                                                                 imagePath,
                                                             )}
-                                                            alt={`Task image ${index + 1}`}
+                                                            alt={t("tasks.form.images.imageAlt", {
+                                                                number: index + 1,
+                                                            })}
                                                             className="w-full h-24 object-cover rounded border"
                                                         />
                                                     </div>
@@ -437,7 +445,7 @@ export default function TaskFormModal({
                                 {imagePreviews.length > 0 && (
                                     <div className="mt-4">
                                         <p className="text-sm font-medium text-gray-700 mb-2">
-                                            New Images:
+                                            {t("tasks.form.images.new")}
                                         </p>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                             {imagePreviews.map(
@@ -448,7 +456,9 @@ export default function TaskFormModal({
                                                     >
                                                         <img
                                                             src={preview}
-                                                            alt={`Preview ${index + 1}`}
+                                                            alt={t("tasks.form.images.previewAlt", {
+                                                                number: index + 1,
+                                                            })}
                                                             className="w-full h-24 object-cover rounded border"
                                                         />
                                                         <button
@@ -484,7 +494,7 @@ export default function TaskFormModal({
                                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                                     onClick={onClose}
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -493,10 +503,10 @@ export default function TaskFormModal({
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting
-                                    ? "Saving..."
+                                    ? t("common.saving")
                                     : isEdit
-                                      ? "Update Task"
-                                      : "Create Task"}
+                                      ? t("tasks.form.actions.update")
+                                      : t("tasks.form.actions.create")}
                             </button>
                         </div>
                     </form>

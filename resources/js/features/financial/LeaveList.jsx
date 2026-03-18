@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Pencil, Trash2, Check, XCircle, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
@@ -19,6 +20,7 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 export default function LeaveList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [employeeFilter, setEmployeeFilter] = useState("");
@@ -57,12 +59,12 @@ export default function LeaveList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["leaves"] });
-            toast.success("Leave approved successfully");
+            toast.success(t("leaves.toast.approved"));
         },
         onError: (error) => {
-            toast.error("Failed to approve leave", {
+            toast.error(t("leaves.toast.approveFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -77,12 +79,12 @@ export default function LeaveList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["leaves"] });
-            toast.success("Leave rejected successfully");
+            toast.success(t("leaves.toast.rejected"));
         },
         onError: (error) => {
-            toast.error("Failed to reject leave", {
+            toast.error(t("leaves.toast.rejectFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -94,12 +96,12 @@ export default function LeaveList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["leaves"] });
-            toast.success("Leave deleted successfully");
+            toast.success(t("leaves.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete leave", {
+            toast.error(t("leaves.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -109,7 +111,7 @@ export default function LeaveList() {
     };
 
     const handleReject = (leave) => {
-        const reason = window.prompt("Enter rejection reason:");
+        const reason = window.prompt(t("leaves.prompt.rejectionReason"));
         if (reason !== null && reason.trim()) {
             rejectMutation.mutate({ leaveId: leave.id, reason: reason.trim() });
         }
@@ -144,7 +146,9 @@ export default function LeaveList() {
 
     const getStatusBadge = (status) => {
         const color = LEAVE_STATUS_COLORS[status] || "gray";
-        const label = LEAVE_STATUS_LABELS[status] || status;
+        const label = t(`leaves.status.${status}`, {
+            defaultValue: LEAVE_STATUS_LABELS[status] || status,
+        });
 
         const colorClasses = {
             yellow: "bg-yellow-100 text-yellow-800",
@@ -173,37 +177,37 @@ export default function LeaveList() {
 
     const columns = [
         {
-            header: "Employee",
+            header: t("leaves.list.table.employee"),
             accessor: (row) =>
                 row.employee?.user?.name ||
                 row.employee?.employee_code ||
-                "N/A",
+                t("common.na"),
         },
         {
-            header: "Leave Type",
-            accessor: (row) => row.leave_type?.name || "N/A",
+            header: t("leaves.list.table.leaveType"),
+            accessor: (row) => row.leave_type?.name || t("common.na"),
         },
         {
-            header: "Start Date",
+            header: t("leaves.list.table.startDate"),
             accessor: "start_date",
             cell: (value) => formatDate(value),
         },
         {
-            header: "End Date",
+            header: t("leaves.list.table.endDate"),
             accessor: "end_date",
             cell: (value) => formatDate(value),
         },
         {
-            header: "Days",
+            header: t("leaves.list.table.days"),
             accessor: "days",
         },
         {
-            header: "Status",
+            header: t("leaves.list.table.status"),
             accessor: "status",
             cell: (value) => getStatusBadge(value),
         },
         {
-            header: "Actions",
+            header: t("leaves.list.table.actions"),
             accessor: "id",
             align: "center",
             cell: (id, row) => (
@@ -212,7 +216,7 @@ export default function LeaveList() {
                         type="button"
                         onClick={() => handleOpenEdit(row)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="View / Edit"
+                        title={t("leaves.actions.viewEdit")}
                         disabled={
                             !hasPermission("edit leaves") &&
                             !hasPermission("view leaves")
@@ -226,7 +230,7 @@ export default function LeaveList() {
                             type="button"
                             onClick={() => handleDeleteClick(row)}
                             className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50"
-                            title="Delete"
+                            title={t("leaves.actions.delete")}
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -238,7 +242,7 @@ export default function LeaveList() {
                                     type="button"
                                     onClick={() => handleApprove(row)}
                                     className="p-1.5 text-green-600 hover:text-green-700 rounded hover:bg-green-50"
-                                    title="Approve"
+                                    title={t("leaves.actions.approve")}
                                 >
                                     <Check className="w-4 h-4" />
                                 </button>
@@ -246,7 +250,7 @@ export default function LeaveList() {
                                     type="button"
                                     onClick={() => handleReject(row)}
                                     className="p-1.5 text-red-600 hover:text-red-700 rounded hover:bg-red-50"
-                                    title="Reject"
+                                    title={t("leaves.actions.reject")}
                                 >
                                     <XCircle className="w-4 h-4" />
                                 </button>
@@ -260,7 +264,7 @@ export default function LeaveList() {
     if (error) {
         return (
             <div className="text-red-500 p-4">
-                Error loading leaves: {error.message}
+                {t("leaves.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -268,7 +272,7 @@ export default function LeaveList() {
     return (
         <div>
             <PageHeader
-                title="Leaves"
+                title={t("leaves.list.title")}
                 actions={
                     hasPermission("create leaves") && (
                         <button
@@ -277,7 +281,7 @@ export default function LeaveList() {
                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
                             <Plus className="w-4 h-4" />
-                            Request Leave
+                            {t("leaves.actions.request")}
                         </button>
                     )
                 }
@@ -287,7 +291,7 @@ export default function LeaveList() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Employee
+                            {t("leaves.filters.employee")}
                         </label>
                         <SearchableSelect
                             value={employeeFilter}
@@ -301,15 +305,15 @@ export default function LeaveList() {
                                     .then((r) => r.data)
                             }
                             displayValue={(emp) =>
-                                `${emp.employee_code} - ${emp.user?.name || "N/A"}`
+                                `${emp.employee_code} - ${emp.user?.name || t("common.na")}`
                             }
-                            placeholder="All Employees"
+                            placeholder={t("leaves.filters.allEmployees")}
                             cacheKey="leave-list-employees"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Status
+                            {t("leaves.filters.status")}
                         </label>
                         <SearchableSelect
                             value={statusFilter}
@@ -318,12 +322,17 @@ export default function LeaveList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Statuses" },
+                                { value: "", label: t("leaves.filters.allStatuses") },
                                 ...Object.entries(LEAVE_STATUS_LABELS).map(
-                                    ([value, label]) => ({ value, label }),
+                                    ([value, label]) => ({
+                                        value,
+                                        label: t(`leaves.status.${value}`, {
+                                            defaultValue: label,
+                                        }),
+                                    }),
                                 ),
                             ]}
-                            placeholder="All Statuses"
+                            placeholder={t("leaves.filters.allStatuses")}
                         />
                     </div>
                 </div>
@@ -345,8 +354,8 @@ export default function LeaveList() {
                     }}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search leave requests..."
-                    totalRecordName="leave requests"
+                    searchPlaceholder={t("leaves.list.searchPlaceholder")}
+                    totalRecordName={t("leaves.list.totalRecordName")}
                 />
             </div>
             <LeaveFormModal
@@ -358,10 +367,10 @@ export default function LeaveList() {
             <ConfirmDialog
                 open={confirmDeleteOpen}
                 onOpenChange={setConfirmDeleteOpen}
-                title="Delete leave request?"
-                description="Are you sure you want to delete this leave request?"
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                title={t("leaves.confirmDelete.title")}
+                description={t("leaves.confirmDelete.description")}
+                confirmLabel={t("leaves.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

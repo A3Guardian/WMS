@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useFetch } from "../../hooks/useFetch";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import DataTable from "../../components/DataTable";
 import PageHeader from "../../components/PageHeader";
 import InventoryActivityModal from "./InventoryActivityModal";
@@ -16,6 +17,7 @@ export default function InventoryPage() {
     const queryClient = useQueryClient();
     const { data, loading, error } = useFetch("inventory", "/inventory");
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [activityModalOpen, setActivityModalOpen] = useState(false);
     const [formModalOpen, setFormModalOpen] = useState(false);
     const [mapModalOpen, setMapModalOpen] = useState(false);
@@ -50,12 +52,12 @@ export default function InventoryPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["inventory"] });
             queryClient.invalidateQueries({ queryKey: ["products"] });
-            toast.success("Inventory record deleted");
+            toast.success(t("inventory.toast.deleted"));
             setSelectedInventory(null);
         },
         onError: (err) => {
             toast.error(
-                err.response?.data?.message || "Failed to delete inventory",
+                err.response?.data?.message || t("inventory.toast.deleteFailed"),
             );
         },
     });
@@ -75,11 +77,11 @@ export default function InventoryPage() {
     const columns = [
         {
             key: "product",
-            label: "Product",
+            label: t("inventory.table.product"),
             render: (_, row) => (
                 <div>
                     <div className="font-medium text-gray-900">
-                        {row.product?.name ?? "-"}
+                        {row.product?.name ?? t("common.dash")}
                     </div>
                     {row.product?.sku && (
                         <div className="text-xs text-gray-500 mt-0.5">
@@ -89,21 +91,21 @@ export default function InventoryPage() {
                 </div>
             ),
         },
-        { key: "quantity", label: "Stock" },
+        { key: "quantity", label: t("inventory.table.stock") },
         {
             key: "location",
-            label: "Location",
+            label: t("inventory.table.location"),
             render: (_, row) => {
                 const parts = [row.deposit?.name, row.shelf?.name].filter(
                     Boolean,
                 );
-                return parts.length ? parts.join(" – ") : "-";
+                return parts.length ? parts.join(" – ") : t("common.dash");
             },
         },
-        { key: "reorder_level", label: "Reorder Level" },
+        { key: "reorder_level", label: t("inventory.table.reorderLevel") },
         {
             key: "actions",
-            label: "Actions",
+            label: t("inventory.table.actions"),
             align: "right",
             render: (_, row) => (
                 <div className="flex items-center justify-end gap-1">
@@ -113,7 +115,7 @@ export default function InventoryPage() {
                             setActivityModalOpen(true);
                         }}
                         className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="View history"
+                        title={t("inventory.actions.viewHistory")}
                     >
                         <History className="w-4 h-4" />
                     </button>
@@ -124,7 +126,7 @@ export default function InventoryPage() {
                                 setMapModalOpen(true);
                             }}
                             className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-                            title="View location in deposit"
+                            title={t("inventory.actions.viewLocation")}
                         >
                             <MapPin className="w-4 h-4" />
                         </button>
@@ -137,14 +139,14 @@ export default function InventoryPage() {
                                     setFormModalOpen(true);
                                 }}
                                 className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
-                                title="Edit inventory"
+                                title={t("inventory.actions.edit")}
                             >
                                 <Pencil className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => handleDeleteClick(row)}
                                 className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                title="Delete"
+                                title={t("inventory.actions.delete")}
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
@@ -165,7 +167,9 @@ export default function InventoryPage() {
                 className={`p-4 rounded ${isPermissionError ? "bg-yellow-50 text-yellow-800" : "bg-red-50 text-red-800"}`}
             >
                 <p className="font-semibold">
-                    {isPermissionError ? "Permission Denied" : "Error"}
+                    {isPermissionError
+                        ? t("inventory.errors.permissionDenied")
+                        : t("inventory.errors.error")}
                 </p>
                 <p>{errorMessage}</p>
             </div>
@@ -189,7 +193,7 @@ export default function InventoryPage() {
     return (
         <div>
             <PageHeader
-                title="Inventory"
+                title={t("inventory.title")}
                 actions={
                     hasPermission("manage inventory") && (
                         <button
@@ -200,7 +204,7 @@ export default function InventoryPage() {
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
                         >
                             <Plus className="w-5 h-5" />
-                            Add inventory
+                            {t("inventory.actions.add")}
                         </button>
                     )
                 }
@@ -214,14 +218,14 @@ export default function InventoryPage() {
                     onPerPageChange={handlePerPageChange}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search inventory..."
+                    searchPlaceholder={t("inventory.searchPlaceholder")}
                     pagination={{
                         currentPage: page,
                         lastPage,
                         total: filteredData.length,
                         onPageChange: setPage,
                     }}
-                    totalRecordName="inventory records"
+                    totalRecordName={t("inventory.totalRecordName")}
                 />
             </div>
             <InventoryActivityModal
@@ -262,14 +266,20 @@ export default function InventoryPage() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete inventory record?"
+                title={t("inventory.confirmDelete.title")}
                 description={
                     inventoryToDelete
-                        ? `Delete inventory for "${inventoryToDelete.product?.name}" at ${[inventoryToDelete.deposit?.name, inventoryToDelete.shelf?.name].filter(Boolean).join(" – ") || "this location"}?`
+                        ? t("inventory.confirmDelete.description", {
+                              name: inventoryToDelete.product?.name,
+                              location:
+                                  [inventoryToDelete.deposit?.name, inventoryToDelete.shelf?.name]
+                                      .filter(Boolean)
+                                      .join(" – ") || t("inventory.confirmDelete.thisLocation"),
+                          })
                         : ""
                 }
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                confirmLabel={t("inventory.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import PageHeader from "../../components/PageHeader";
@@ -10,6 +11,7 @@ import { Building2, Mail, Phone, MapPin, User } from "lucide-react";
 export default function SupplierView() {
     const { id } = useParams();
     const supplierId = id;
+    const { t } = useTranslation();
 
     const {
         data: supplier,
@@ -37,7 +39,7 @@ export default function SupplierView() {
         enabled: !!supplierId,
     });
 
-    const { data: productsData, isLoading: loadingProducts } = useQuery({
+    useQuery({
         queryKey: ["products", "by-supplier", supplierId],
         queryFn: async () => {
             const params = new URLSearchParams({
@@ -50,8 +52,6 @@ export default function SupplierView() {
     });
 
     const invoices = invoicesData?.data || [];
-    const products = productsData?.data || [];
-
     const invoiceCount = invoices.length;
     const totalInvoiced = invoices.reduce(
         (sum, inv) => sum + (Number(inv.total_amount ?? 0) || 0),
@@ -73,18 +73,18 @@ export default function SupplierView() {
     if (supplierError) {
         return (
             <div className="p-4 bg-red-50 text-red-800 rounded">
-                Failed to load supplier: {supplierError.message}
+                {t("suppliers.errors.loadFailed")}: {supplierError.message}
             </div>
         );
     }
 
     return (
         <div>
-            <PageHeader title={supplier?.name || "Supplier details"} />
+            <PageHeader title={supplier?.name || t("suppliers.view.title")} />
 
             <div className="bg-white shadow-md rounded-lg p-6 mb-6">
                 {loadingSupplier ? (
-                    <div className="text-gray-500">Loading supplier...</div>
+                    <div className="text-gray-500">{t("common.loading")}</div>
                 ) : (
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
@@ -93,10 +93,10 @@ export default function SupplierView() {
                             </span>
                             <div>
                                 <h2 className="text-lg font-semibold text-gray-900">
-                                    Company details
+                                    {t("suppliers.view.companyDetailsTitle")}
                                 </h2>
                                 <p className="text-sm text-gray-500">
-                                    Core information about this supplier.
+                                    {t("suppliers.view.companyDetailsDescription")}
                                 </p>
                             </div>
                         </div>
@@ -107,12 +107,12 @@ export default function SupplierView() {
                                     <User className="w-4 h-4 text-blue-500 mt-1" />
                                     <div>
                                         <div className="text-xs font-medium text-gray-500">
-                                            Name / Company
+                                            {t("suppliers.view.fields.nameOrCompany")}
                                         </div>
                                         <div className="text-sm text-gray-900">
                                             {supplier?.company_name ||
                                                 supplier?.name ||
-                                                "-"}
+                                                t("common.dash")}
                                         </div>
                                     </div>
                                 </div>
@@ -121,10 +121,10 @@ export default function SupplierView() {
                                     <User className="w-4 h-4 text-purple-500 mt-1" />
                                     <div>
                                         <div className="text-xs font-medium text-gray-500">
-                                            Contact person
+                                            {t("suppliers.view.fields.contactPerson")}
                                         </div>
                                         <div className="text-sm text-gray-900">
-                                            {supplier?.contact_person || "-"}
+                                            {supplier?.contact_person || t("common.dash")}
                                         </div>
                                     </div>
                                 </div>
@@ -133,10 +133,10 @@ export default function SupplierView() {
                                     <Mail className="w-4 h-4 text-emerald-500 mt-1" />
                                     <div>
                                         <div className="text-xs font-medium text-gray-500">
-                                            Email
+                                            {t("suppliers.table.email")}
                                         </div>
                                         <div className="text-sm text-gray-900">
-                                            {supplier?.email || "-"}
+                                            {supplier?.email || t("common.dash")}
                                         </div>
                                     </div>
                                 </div>
@@ -145,10 +145,10 @@ export default function SupplierView() {
                                     <Phone className="w-4 h-4 text-orange-500 mt-1" />
                                     <div>
                                         <div className="text-xs font-medium text-gray-500">
-                                            Main phone
+                                            {t("suppliers.view.fields.mainPhone")}
                                         </div>
                                         <div className="text-sm text-gray-900">
-                                            {supplier?.phone || "-"}
+                                            {supplier?.phone || t("common.dash")}
                                         </div>
                                     </div>
                                 </div>
@@ -159,10 +159,10 @@ export default function SupplierView() {
                                     <MapPin className="w-4 h-4 text-blue-500 mt-1" />
                                     <div className="flex-1">
                                         <div className="text-xs font-medium text-gray-500">
-                                            Billing address
+                                            {t("suppliers.view.fields.billingAddress")}
                                         </div>
                                         <div className="text-sm text-gray-900 whitespace-pre-line">
-                                            {supplier?.billing_address || "-"}
+                                            {supplier?.billing_address || t("common.dash")}
                                         </div>
                                         <div className="text-xs text-gray-600">
                                             {[
@@ -176,9 +176,9 @@ export default function SupplierView() {
 
                                         <div className="text-xs text-gray-600 mt-1">
                                             <span className="font-medium">
-                                                Phone:
+                                                {t("suppliers.table.phone")}:
                                             </span>{" "}
-                                            {supplier?.billing_phone || "-"}
+                                            {supplier?.billing_phone || t("common.dash")}
                                         </div>
                                     </div>
                                 </div>
@@ -187,10 +187,10 @@ export default function SupplierView() {
                                     <MapPin className="w-4 h-4 text-green-500 mt-1" />
                                     <div className="flex-1">
                                         <div className="text-xs font-medium text-gray-500">
-                                            Shipping address
+                                            {t("suppliers.view.fields.shippingAddress")}
                                         </div>
                                         <div className="text-sm text-gray-900 whitespace-pre-line">
-                                            {supplier?.shipping_address || "-"}
+                                            {supplier?.shipping_address || t("common.dash")}
                                         </div>
                                         <div className="text-xs text-gray-600">
                                             {[
@@ -204,9 +204,9 @@ export default function SupplierView() {
 
                                         <div className="text-xs text-gray-600 mt-1">
                                             <span className="font-medium">
-                                                Phone:
+                                                {t("suppliers.table.phone")}:
                                             </span>{" "}
-                                            {supplier?.shipping_phone || "-"}
+                                            {supplier?.shipping_phone || t("common.dash")}
                                         </div>
                                     </div>
                                 </div>
@@ -217,20 +217,20 @@ export default function SupplierView() {
                                     <Building2 className="w-4 h-4 text-amber-500 mt-1" />
                                     <div>
                                         <div className="text-xs font-medium text-gray-500">
-                                            Tax / Registration
+                                            {t("suppliers.view.fields.taxRegistration")}
                                         </div>
                                         <div className="text-xs text-gray-600">
                                             <span className="font-medium">
-                                                Tax:
+                                                {t("suppliers.view.fields.tax")}:
                                             </span>{" "}
-                                            {supplier?.tax_number || "-"}
+                                            {supplier?.tax_number || t("common.dash")}
                                         </div>
                                         <div className="text-xs text-gray-600">
                                             <span className="font-medium">
-                                                Reg:
+                                                {t("suppliers.view.fields.registration")}:
                                             </span>{" "}
                                             {supplier?.registration_number ||
-                                                "-"}
+                                                t("common.dash")}
                                         </div>
                                     </div>
                                 </div>
@@ -239,25 +239,25 @@ export default function SupplierView() {
                                     <Building2 className="w-4 h-4 text-cyan-600 mt-1" />
                                     <div>
                                         <div className="text-xs font-medium text-gray-500">
-                                            Banking
+                                            {t("suppliers.view.fields.banking")}
                                         </div>
                                         <div className="text-xs text-gray-600">
                                             <span className="font-medium">
-                                                Bank:
+                                                {t("suppliers.view.fields.bank")}:
                                             </span>{" "}
-                                            {supplier?.bank_name || "-"}
+                                            {supplier?.bank_name || t("common.dash")}
                                         </div>
                                         <div className="text-xs text-gray-600">
                                             <span className="font-medium">
                                                 IBAN:
                                             </span>{" "}
-                                            {supplier?.bank_iban || "-"}
+                                            {supplier?.bank_iban || t("common.dash")}
                                         </div>
                                         <div className="text-xs text-gray-600">
                                             <span className="font-medium">
                                                 SWIFT:
                                             </span>{" "}
-                                            {supplier?.bank_swift || "-"}
+                                            {supplier?.bank_swift || t("common.dash")}
                                         </div>
                                     </div>
                                 </div>
@@ -266,24 +266,24 @@ export default function SupplierView() {
                                     <User className="w-4 h-4 text-indigo-600 mt-1" />
                                     <div>
                                         <div className="text-xs font-medium text-gray-500">
-                                            Payment terms
+                                            {t("suppliers.view.fields.paymentTerms")}
                                         </div>
                                         <div className="text-xs text-gray-600">
                                             <span className="font-medium">
-                                                Days:
+                                                {t("suppliers.view.fields.days")}:
                                             </span>{" "}
                                             {supplier?.payment_terms_days ??
-                                                "-"}
+                                                t("common.dash")}
                                         </div>
                                         <div className="text-xs text-gray-600">
                                             <span className="font-medium">
-                                                Credit limit:
+                                                {t("suppliers.view.fields.creditLimit")}:
                                             </span>{" "}
                                             {supplier?.credit_limit != null
                                                 ? formatCurrency(
                                                       supplier.credit_limit,
                                                   )
-                                                : "-"}
+                                                : t("common.dash")}
                                         </div>
                                     </div>
                                 </div>
@@ -294,59 +294,65 @@ export default function SupplierView() {
             </div>
 
             <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-                <h2 className="text-lg font-semibold mb-4">Overview</h2>
+                <h2 className="text-lg font-semibold mb-4">
+                    {t("suppliers.view.overview.title")}
+                </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                     <div className="p-3 rounded-lg bg-slate-50">
                         <div className="text-xs font-semibold uppercase text-slate-500">
-                            Supplier ID
+                            {t("suppliers.view.overview.supplierId")}
                         </div>
                         <div className="mt-1 text-slate-900">
-                            {supplier?.id ?? "-"}
+                            {supplier?.id ?? t("common.dash")}
                         </div>
                         <div className="text-xs text-slate-500">
-                            Created:{" "}
+                            {t("suppliers.view.overview.created")}:{" "}
                             {supplier?.created_at
                                 ? formatDate(supplier.created_at)
-                                : "-"}
+                                : t("common.dash")}
                         </div>
                     </div>
                     <div className="p-3 rounded-lg bg-blue-50">
                         <div className="text-xs font-semibold uppercase text-blue-600">
-                            Invoices
+                            {t("suppliers.view.overview.invoices")}
                         </div>
                         <div className="mt-1 text-blue-900 font-semibold">
                             {invoiceCount}
                         </div>
                         <div className="text-xs text-blue-700">
-                            Total: {formatCurrency(totalInvoiced)}
+                            {t("suppliers.view.overview.total")}:{" "}
+                            {formatCurrency(totalInvoiced)}
                         </div>
                     </div>
                     <div className="p-3 rounded-lg bg-amber-50">
                         <div className="text-xs font-semibold uppercase text-amber-600">
-                            Outstanding
+                            {t("suppliers.view.overview.outstanding")}
                         </div>
                         <div className="mt-1 text-amber-900 font-semibold">
                             {formatCurrency(outstandingAmount)}
                         </div>
                         <div className="text-xs text-amber-700">
-                            Overdue invoices: {overdueCount}
+                            {t("suppliers.view.overview.overdueInvoices")}:{" "}
+                            {overdueCount}
                         </div>
                     </div>
                     <div className="p-3 rounded-lg bg-emerald-50">
                         <div className="text-xs font-semibold uppercase text-emerald-600">
-                            Credit
+                            {t("suppliers.view.overview.credit")}
                         </div>
                         <div className="mt-1 text-emerald-900 font-semibold">
-                            Limit:{" "}
+                            {t("suppliers.view.overview.limit")}:{" "}
                             {supplier?.credit_limit != null
                                 ? formatCurrency(supplier.credit_limit)
-                                : "-"}
+                                : t("common.dash")}
                         </div>
                         <div className="text-xs text-emerald-700">
-                            Terms:{" "}
+                            {t("suppliers.view.overview.terms")}:{" "}
                             {supplier?.payment_terms_days != null
-                                ? `${supplier.payment_terms_days} days`
-                                : "-"}
+                                ? t("suppliers.view.overview.termsDays", {
+                                      count: supplier.payment_terms_days,
+                                  })
+                                : t("common.dash")}
                         </div>
                     </div>
                 </div>
@@ -355,32 +361,33 @@ export default function SupplierView() {
             <div className="space-y-6">
                 <div className="bg-white shadow-md rounded-lg p-4">
                     <h2 className="text-lg font-semibold mb-3">
-                        Invoices from this supplier
+                        {t("suppliers.view.invoices.title")}
                     </h2>
                     <div className="border border-gray-200 rounded-lg overflow-hidden">
                         <DataTable
                             columns={[
                                 {
                                     key: "invoice_number",
-                                    label: "Invoice #",
+                                    label: t("suppliers.view.invoices.table.invoiceNumber"),
                                 },
                                 {
                                     key: "issue_date",
-                                    label: "Issue date",
+                                    label: t("suppliers.view.invoices.table.issueDate"),
                                     render: (v) => formatDate(v),
                                 },
                                 {
                                     key: "due_date",
-                                    label: "Due date",
-                                    render: (v) => (v ? formatDate(v) : "-"),
+                                    label: t("suppliers.view.invoices.table.dueDate"),
+                                    render: (v) =>
+                                        v ? formatDate(v) : t("common.dash"),
                                 },
                                 {
                                     key: "status",
-                                    label: "Status",
+                                    label: t("suppliers.view.invoices.table.status"),
                                 },
                                 {
                                     key: "total_amount",
-                                    label: "Total",
+                                    label: t("suppliers.view.invoices.table.total"),
                                     align: "right",
                                     render: (v) => formatCurrency(v),
                                 },
@@ -389,7 +396,7 @@ export default function SupplierView() {
                             loading={loadingInvoices}
                             perPage={10}
                             pagination={null}
-                            totalRecordName="invoices"
+                            totalRecordName={t("suppliers.view.invoices.totalRecordName")}
                         />
                     </div>
                 </div>

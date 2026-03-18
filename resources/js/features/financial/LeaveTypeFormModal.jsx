@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -14,6 +15,7 @@ export default function LeaveTypeFormModal({
 }) {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const isEdit = mode === "edit";
 
     const { data: leaveTypeData } = useQuery({
@@ -55,21 +57,21 @@ export default function LeaveTypeFormModal({
 
             if (isEdit) {
                 await api.put(`/leave-types/${leaveTypeId}`, submitData);
-                toast.success("Leave type updated successfully");
+                toast.success(t("leaveTypes.toast.updated"));
             } else {
                 await api.post("/leave-types", submitData);
-                toast.success("Leave type created successfully");
+                toast.success(t("leaveTypes.toast.created"));
             }
 
             queryClient.invalidateQueries({ queryKey: ["leave-types"] });
             onClose();
         } catch (error) {
             const errorMessage =
-                error.response?.data?.message || "An error occurred";
+                error.response?.data?.message || t("common.genericError");
             toast.error(
                 isEdit
-                    ? "Failed to update leave type"
-                    : "Failed to create leave type",
+                    ? t("leaveTypes.toast.updateFailed")
+                    : t("leaveTypes.toast.createFailed"),
                 {
                     description: errorMessage,
                 },
@@ -99,7 +101,9 @@ export default function LeaveTypeFormModal({
         return null;
     }
 
-    const title = isEdit ? "Edit Leave Type" : "Create Leave Type";
+    const title = isEdit
+        ? t("leaveTypes.modal.editTitle")
+        : t("leaveTypes.modal.createTitle");
 
     return (
         <Dialog.Root
@@ -115,14 +119,15 @@ export default function LeaveTypeFormModal({
                         {title}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Configure leave type limits and behavior.
+                        {t("leaveTypes.modal.description")}
                     </Dialog.Description>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Name <span className="text-red-500">*</span>
+                                    {t("leaveTypes.fields.name")}{" "}
+                                    <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -140,7 +145,7 @@ export default function LeaveTypeFormModal({
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Max Days Per Year{" "}
+                                    {t("leaveTypes.fields.maxDaysPerYear")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -173,7 +178,7 @@ export default function LeaveTypeFormModal({
                                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                     />
                                     <span className="ml-2 text-sm text-gray-700">
-                                        Allow Carry Forward
+                                        {t("leaveTypes.fields.allowCarryForward")}
                                     </span>
                                 </label>
                             </div>
@@ -192,14 +197,14 @@ export default function LeaveTypeFormModal({
                                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                     />
                                     <span className="ml-2 text-sm text-gray-700">
-                                        Active
+                                        {t("leaveTypes.fields.active")}
                                     </span>
                                 </label>
                             </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Description
+                                {t("leaveTypes.fields.description")}
                             </label>
                             <textarea
                                 name="description"
@@ -226,7 +231,7 @@ export default function LeaveTypeFormModal({
                                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                                     onClick={onClose}
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -235,10 +240,10 @@ export default function LeaveTypeFormModal({
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting
-                                    ? "Saving..."
+                                    ? t("common.saving")
                                     : isEdit
-                                      ? "Update Leave Type"
-                                      : "Create Leave Type"}
+                                      ? t("leaveTypes.actions.update")
+                                      : t("leaveTypes.actions.create")}
                             </button>
                         </div>
                     </form>

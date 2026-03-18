@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import DataTable from "../../components/DataTable";
 import { formatCurrency } from "../../utils/formatters";
@@ -15,6 +16,7 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 export default function ProductList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -50,12 +52,13 @@ export default function ProductList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["products"] });
-            toast.success("Product deleted successfully");
+            toast.success(t("products.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete product", {
+            toast.error(t("products.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message ||
+                    t("products.toast.genericError"),
             });
         },
     });
@@ -95,17 +98,17 @@ export default function ProductList() {
     const columns = [
         {
             key: "image",
-            label: "Image",
+            label: t("products.table.image"),
             render: (_, row) => {
                 const images = row.images || [];
                 const mainImage =
                     images.find((img) => img.display_type === 1) || images[0];
                 if (mainImage?.url) {
                     return (
-                        <div className="w-12 h-12 flex-shrink-0 rounded border border-gray-200 overflow-hidden bg-gray-50">
+                        <div className="w-12 h-12 shrink-0 rounded border border-gray-200 overflow-hidden bg-gray-50">
                             <img
                                 src={mainImage.url}
-                                alt=""
+                                alt={t("products.table.imageAlt")}
                                 className="w-full h-full object-cover"
                             />
                         </div>
@@ -113,27 +116,27 @@ export default function ProductList() {
                 }
                 return (
                     <div
-                        className="w-12 h-12 flex-shrink-0 rounded border border-gray-200 bg-gray-100 flex flex-col items-center justify-center text-gray-400"
-                        title="No image"
+                        className="w-12 h-12 shrink-0 rounded border border-gray-200 bg-gray-100 flex flex-col items-center justify-center text-gray-400"
+                        title={t("products.table.noImage")}
                     >
-                        <ImageOff className="w-5 h-5 flex-shrink-0" />
+                        <ImageOff className="w-5 h-5 shrink-0" />
                         <span className="text-[10px] leading-tight mt-0.5">
-                            No image
+                            {t("products.table.noImage")}
                         </span>
                     </div>
                 );
             },
         },
-        { key: "name", label: "Name" },
+        { key: "name", label: t("products.table.name") },
         { key: "sku", label: "SKU" },
         {
             key: "price",
-            label: "Price",
+            label: t("products.table.price"),
             render: (value) => formatCurrency(value),
         },
         {
             key: "total_stock",
-            label: "Total Stock",
+            label: t("products.table.totalStock"),
             render: (value, row) =>
                 row.total_inventory_quantity ??
                 (row.inventories || []).reduce(
@@ -143,14 +146,14 @@ export default function ProductList() {
         },
         {
             key: "actions",
-            label: "Actions",
+            label: t("products.table.actions"),
             align: "right",
             render: (value, row) => (
                 <div className="flex items-center justify-end gap-1">
                     <button
                         onClick={() => handleView(row)}
                         className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="View"
+                        title={t("products.actions.view")}
                     >
                         <Eye className="w-4 h-4" />
                     </button>
@@ -160,7 +163,7 @@ export default function ProductList() {
                             <button
                                 onClick={() => handleViewMap(row)}
                                 className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-                                title="View on Map"
+                                title={t("products.actions.viewOnMap")}
                             >
                                 <MapPin className="w-4 h-4" />
                             </button>
@@ -169,7 +172,7 @@ export default function ProductList() {
                         <button
                             onClick={() => handleEdit(row)}
                             className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
-                            title="Edit"
+                            title={t("products.actions.edit")}
                         >
                             <Pencil className="w-4 h-4" />
                         </button>
@@ -178,7 +181,7 @@ export default function ProductList() {
                         <button
                             onClick={() => handleDeleteClick(row)}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Delete"
+                            title={t("products.actions.delete")}
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -198,7 +201,9 @@ export default function ProductList() {
                 className={`p-4 rounded ${isPermissionError ? "bg-yellow-50 text-yellow-800" : "bg-red-50 text-red-800"}`}
             >
                 <p className="font-semibold">
-                    {isPermissionError ? "Permission Denied" : "Error"}
+                    {isPermissionError
+                        ? t("products.errors.permissionDenied")
+                        : t("products.errors.error")}
                 </p>
                 <p>{errorMessage}</p>
             </div>
@@ -208,7 +213,7 @@ export default function ProductList() {
     return (
         <div>
             <PageHeader
-                title="Products"
+                title={t("products.title")}
                 actions={
                     hasPermission("create products") && (
                         <button
@@ -228,7 +233,7 @@ export default function ProductList() {
                                     d="M12 4v16m8-8H4"
                                 />
                             </svg>
-                            Add Product
+                            {t("products.actions.addProduct")}
                         </button>
                     )
                 }
@@ -243,14 +248,14 @@ export default function ProductList() {
                     onPerPageChange={handlePerPageChange}
                     searchValue={searchTerm}
                     onSearchChange={setSearchTerm}
-                    searchPlaceholder="Search products by name or SKU..."
+                    searchPlaceholder={t("products.searchPlaceholder")}
                     pagination={{
                         currentPage: page,
                         lastPage,
                         total: allData.length,
                         onPageChange: setPage,
                     }}
-                    totalRecordName="products"
+                    totalRecordName={t("products.totalRecordName")}
                 />
             </div>
 
@@ -293,14 +298,16 @@ export default function ProductList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete product?"
+                title={t("products.confirmDelete.title")}
                 description={
                     productToDelete
-                        ? `Are you sure you want to delete "${productToDelete.name}"?`
+                        ? t("products.confirmDelete.description", {
+                              name: productToDelete.name,
+                          })
                         : ""
                 }
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                confirmLabel={t("products.confirmDelete.confirm")}
+                cancelLabel={t("products.confirmDelete.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

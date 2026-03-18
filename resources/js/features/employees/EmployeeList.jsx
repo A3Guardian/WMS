@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Eye, Pencil, Trash2, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
@@ -16,6 +17,7 @@ export default function EmployeeList() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -71,12 +73,12 @@ export default function EmployeeList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["employees"] });
-            toast.success("Employee deleted successfully");
+            toast.success(t("employees.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete employee", {
+            toast.error(t("employees.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -116,28 +118,30 @@ export default function EmployeeList() {
 
     const columns = [
         {
-            header: "Employee Code",
+            header: t("employees.list.table.employeeCode"),
             accessor: "employee_code",
         },
         {
-            header: "Name",
-            accessor: (row) => row.user?.name || "N/A",
+            header: t("employees.list.table.name"),
+            accessor: (row) => row.user?.name || t("common.na"),
         },
         {
-            header: "Position",
+            header: t("employees.list.table.position"),
             accessor: "position",
         },
         {
-            header: "Employment Type",
+            header: t("employees.list.table.employmentType"),
             accessor: "employment_type",
             cell: (value) => (
                 <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                    {value}
+                    {t(`employees.employmentType.${value}`, {
+                        defaultValue: value,
+                    })}
                 </span>
             ),
         },
         {
-            header: "Status",
+            header: t("employees.list.table.status"),
             accessor: "status",
             cell: (value) => {
                 const colors = {
@@ -150,13 +154,13 @@ export default function EmployeeList() {
                     <span
                         className={`px-2 py-1 text-xs rounded-full ${colors[value] || colors.inactive}`}
                     >
-                        {value}
+                        {t(`employees.status.${value}`, { defaultValue: value })}
                     </span>
                 );
             },
         },
         {
-            header: "Actions",
+            header: t("employees.list.table.actions"),
             accessor: "id",
             cell: (_id, row) => (
                 <div className="flex items-center gap-2">
@@ -164,7 +168,7 @@ export default function EmployeeList() {
                         type="button"
                         onClick={() => handleOpenView(row)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="View"
+                        title={t("employees.actions.view")}
                     >
                         <Eye className="w-4 h-4" />
                     </button>
@@ -172,7 +176,7 @@ export default function EmployeeList() {
                         type="button"
                         onClick={() => handleOpenEdit(row)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="Edit"
+                        title={t("employees.actions.edit")}
                         disabled={!hasPermission("edit employees")}
                     >
                         <Pencil className="w-4 h-4" />
@@ -181,7 +185,7 @@ export default function EmployeeList() {
                         type="button"
                         onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
-                        title="Delete"
+                        title={t("employees.actions.delete")}
                         disabled={!hasPermission("delete employees")}
                     >
                         <Trash2 className="w-4 h-4" />
@@ -194,7 +198,7 @@ export default function EmployeeList() {
     if (error) {
         return (
             <div className="text-red-500 p-4">
-                Error loading employees: {error.message}
+                {t("employees.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -202,7 +206,7 @@ export default function EmployeeList() {
     return (
         <div>
             <PageHeader
-                title="Employees"
+                title={t("employees.list.title")}
                 actions={
                     hasPermission("create employees") && (
                         <button
@@ -211,7 +215,7 @@ export default function EmployeeList() {
                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
                             <Plus className="w-4 h-4" />
-                            Add Employee
+                            {t("employees.actions.add")}
                         </button>
                     )
                 }
@@ -221,7 +225,7 @@ export default function EmployeeList() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Department
+                            {t("employees.list.filters.department")}
                         </label>
                         <SearchableSelect
                             value={departmentFilter}
@@ -231,13 +235,13 @@ export default function EmployeeList() {
                             }}
                             fetchOptions={(params) => api.get("/departments?" + params).then((r) => r.data)}
                             displayValue={(d) => d?.name}
-                            placeholder="All Departments"
+                            placeholder={t("employees.list.filters.allDepartments")}
                             cacheKey="employee-list-departments"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Status
+                            {t("employees.list.filters.status")}
                         </label>
                         <SearchableSelect
                             value={statusFilter}
@@ -246,13 +250,28 @@ export default function EmployeeList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Statuses" },
-                                { value: "active", label: "Active" },
-                                { value: "inactive", label: "Inactive" },
-                                { value: "terminated", label: "Terminated" },
-                                { value: "on_leave", label: "On Leave" },
+                                {
+                                    value: "",
+                                    label: t("employees.list.filters.allStatuses"),
+                                },
+                                {
+                                    value: "active",
+                                    label: t("employees.status.active"),
+                                },
+                                {
+                                    value: "inactive",
+                                    label: t("employees.status.inactive"),
+                                },
+                                {
+                                    value: "terminated",
+                                    label: t("employees.status.terminated"),
+                                },
+                                {
+                                    value: "on_leave",
+                                    label: t("employees.status.on_leave"),
+                                },
                             ]}
-                            placeholder="All Statuses"
+                            placeholder={t("employees.list.filters.allStatuses")}
                         />
                     </div>
                 </div>
@@ -279,8 +298,8 @@ export default function EmployeeList() {
                     onPerPageChange={handlePerPageChange}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search by name, email, code, position..."
-                    totalRecordName="employees"
+                    searchPlaceholder={t("employees.list.searchPlaceholder")}
+                    totalRecordName={t("employees.list.totalRecordName")}
                 />
             </div>
             <EmployeeFormModal
@@ -292,14 +311,16 @@ export default function EmployeeList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete employee?"
+                title={t("employees.confirmDelete.title")}
                 description={
                     employeeToDelete
-                        ? `Are you sure you want to delete employee ${employeeToDelete.employee_code}?`
+                        ? t("employees.confirmDelete.description", {
+                              code: employeeToDelete.employee_code,
+                          })
                         : ""
                 }
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                confirmLabel={t("employees.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

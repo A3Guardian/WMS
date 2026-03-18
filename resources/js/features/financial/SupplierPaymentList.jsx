@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
@@ -18,6 +19,7 @@ export default function SupplierPaymentList() {
     const { id: routePaymentId } = useParams();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [typeFilter, setTypeFilter] = useState("");
@@ -70,12 +72,12 @@ export default function SupplierPaymentList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["payments"] });
-            toast.success("Payment deleted successfully");
+            toast.success(t("payments.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete payment", {
+            toast.error(t("payments.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -160,74 +162,81 @@ export default function SupplierPaymentList() {
 
     const columns = [
         {
-            header: "Transaction #",
+            header: t("payments.list.table.transactionNumber"),
             accessor: "transaction_number",
         },
         {
-            header: "Partner",
+            header: t("payments.list.table.partner"),
             accessor: (row) => {
                 if (row?.category === "customer_payment") {
                     return (
                         row.customer?.company_name ||
                         row.customer?.name ||
-                        "N/A"
+                        t("common.na")
                     );
                 }
                 return (
                     row.supplier?.company_name ||
                     row.supplier?.name ||
-                    "N/A"
+                    t("common.na")
                 );
             },
         },
         {
-            header: "Invoice",
-            accessor: (row) => row.invoice?.invoice_number || "N/A",
+            header: t("payments.list.table.invoice"),
+            accessor: (row) => row.invoice?.invoice_number || t("common.na"),
         },
         {
-            header: "Type",
+            header: t("payments.list.table.type"),
             accessor: "type",
             cell: (value) => (
                 <span
                     className={`px-2 py-1 text-xs rounded-full ${getTypeColor(value)}`}
                 >
-                    {value.toUpperCase()}
+                    {t(`payments.type.${value}`, {
+                        defaultValue: value.toUpperCase(),
+                    })}
                 </span>
             ),
         },
         {
-            header: "Category",
+            header: t("payments.list.table.category"),
             accessor: "category",
             cell: (value) => (
                 <span
                     className={`px-2 py-1 text-xs rounded-full ${getCategoryColor(value)}`}
                 >
-                    {value.replace("_", " ").toUpperCase()}
+                    {t(`payments.category.${value}`, {
+                        defaultValue: value.replace("_", " ").toUpperCase(),
+                    })}
                 </span>
             ),
         },
         {
-            header: "Amount",
+            header: t("payments.list.table.amount"),
             accessor: "amount",
             cell: (value) => formatCurrency(value),
         },
         {
-            header: "Payment Method",
+            header: t("payments.list.table.paymentMethod"),
             accessor: "payment_method",
-            cell: (value) => value.replace("_", " ").toUpperCase(),
+            cell: (value) =>
+                t(`payments.method.${value}`, {
+                    defaultValue: value.replace("_", " ").toUpperCase(),
+                }),
         },
         {
-            header: "Transaction Date",
+            header: t("payments.list.table.transactionDate"),
             accessor: "transaction_date",
             cell: (value) => formatDate(value),
         },
         {
-            header: "Reference #",
+            header: t("payments.list.table.referenceNumber"),
             accessor: "reference_number",
-            cell: (value) => value || "N/A",
+            cell: (value) => value || t("common.na"),
         },
         {
-            header: "Actions",
+            header: t("payments.list.table.actions"),
             accessor: "id",
             cell: (id, row) => (
                 <div className="flex items-center justify-end gap-1">
@@ -236,7 +245,7 @@ export default function SupplierPaymentList() {
                             type="button"
                             onClick={() => handleOpenEdit(row)}
                             className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
-                            title="Edit"
+                            title={t("payments.actions.edit")}
                         >
                             <Pencil className="w-4 h-4" />
                         </button>
@@ -246,7 +255,7 @@ export default function SupplierPaymentList() {
                             type="button"
                             onClick={() => handleDeleteClick(row)}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Delete"
+                            title={t("payments.actions.delete")}
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -259,7 +268,7 @@ export default function SupplierPaymentList() {
     if (error) {
         return (
             <div className="text-red-500 p-4">
-                Error loading payments: {error.message}
+                {t("payments.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -267,7 +276,7 @@ export default function SupplierPaymentList() {
     return (
         <div>
             <PageHeader
-                title="Payments"
+                title={t("payments.list.title")}
                 actions={
                     hasPermission("create payments") && (
                         <button
@@ -276,7 +285,7 @@ export default function SupplierPaymentList() {
                             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
-                            Add Payment
+                            {t("payments.actions.add")}
                         </button>
                     )
                 }
@@ -286,7 +295,7 @@ export default function SupplierPaymentList() {
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Type
+                            {t("payments.filters.type")}
                         </label>
                         <SearchableSelect
                             value={typeFilter}
@@ -295,18 +304,18 @@ export default function SupplierPaymentList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Types" },
-                                { value: "payment", label: "Payment" },
-                                { value: "receipt", label: "Receipt" },
-                                { value: "refund", label: "Refund" },
-                                { value: "adjustment", label: "Adjustment" },
+                                { value: "", label: t("payments.filters.allTypes") },
+                                { value: "payment", label: t("payments.type.payment") },
+                                { value: "receipt", label: t("payments.type.receipt") },
+                                { value: "refund", label: t("payments.type.refund") },
+                                { value: "adjustment", label: t("payments.type.adjustment") },
                             ]}
-                            placeholder="All Types"
+                            placeholder={t("payments.filters.allTypes")}
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Category
+                            {t("payments.filters.category")}
                         </label>
                         <SearchableSelect
                             value={categoryFilter}
@@ -315,26 +324,26 @@ export default function SupplierPaymentList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Categories" },
+                                { value: "", label: t("payments.filters.allCategories") },
                                 {
                                     value: "supplier_payment",
-                                    label: "Supplier Payment",
+                                    label: t("payments.category.supplier_payment"),
                                 },
                                 {
                                     value: "customer_payment",
-                                    label: "Customer Payment",
+                                    label: t("payments.category.customer_payment"),
                                 },
-                                { value: "salary", label: "Salary" },
-                                { value: "expense", label: "Expense" },
-                                { value: "income", label: "Income" },
-                                { value: "other", label: "Other" },
+                                { value: "salary", label: t("payments.category.salary") },
+                                { value: "expense", label: t("payments.category.expense") },
+                                { value: "income", label: t("payments.category.income") },
+                                { value: "other", label: t("payments.category.other") },
                             ]}
-                            placeholder="All Categories"
+                            placeholder={t("payments.filters.allCategories")}
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Supplier
+                            {t("payments.filters.supplier")}
                         </label>
                         <SearchableSelect
                             value={supplierFilter}
@@ -348,13 +357,13 @@ export default function SupplierPaymentList() {
                                     .then((r) => r.data)
                             }
                             displayValue={(sup) => sup?.name}
-                            placeholder="All Suppliers"
+                            placeholder={t("payments.filters.allSuppliers")}
                             cacheKey="supplier-payment-list-suppliers"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date From
+                            {t("payments.filters.dateFrom")}
                         </label>
                         <input
                             type="date"
@@ -368,7 +377,7 @@ export default function SupplierPaymentList() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date To
+                            {t("payments.filters.dateTo")}
                         </label>
                         <input
                             type="date"
@@ -399,21 +408,23 @@ export default function SupplierPaymentList() {
                     }}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search payments..."
-                    totalRecordName="payments"
+                    searchPlaceholder={t("payments.list.searchPlaceholder")}
+                    totalRecordName={t("payments.list.totalRecordName")}
                 />
             </div>
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete payment?"
+                title={t("payments.confirmDelete.title")}
                 description={
                     paymentToDelete
-                        ? `Are you sure you want to delete payment ${paymentToDelete.transaction_number}?`
+                        ? t("payments.confirmDelete.description", {
+                              number: paymentToDelete.transaction_number,
+                          })
                         : ""
                 }
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                confirmLabel={t("payments.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
             <SupplierPaymentFormModal

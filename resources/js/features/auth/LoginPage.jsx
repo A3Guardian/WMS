@@ -41,6 +41,7 @@ export default function LoginPage() {
                     <input
                         type="email"
                         name="email"
+                        autoComplete="username"
                         value={values.email}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -57,6 +58,7 @@ export default function LoginPage() {
                     <input
                         type="password"
                         name="password"
+                        autoComplete="current-password"
                         value={values.password}
                         onChange={handleChange}
                         className="w-full px-3 py-2 border rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"

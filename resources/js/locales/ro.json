@@ -1,0 +1,2280 @@
+{
+  "app": {
+    "language": "Limba",
+    "english": "Engleză",
+    "romanian": "Română"
+  },
+  "settings": {
+    "title": "Setări aplicație",
+    "subtitle": "Configurați parametrii generali, datele companiei și notificările prin email.",
+    "toast": {
+      "saved": "Setările au fost salvate.",
+      "saveError": "Eroare la salvare.",
+      "logoUploaded": "Logo încărcat.",
+      "logoUploadError": "Eroare la încărcare logo."
+    },
+    "errors": {
+      "noPermission": "Nu aveți permisiunea de a accesa setările."
+    },
+    "sections": {
+      "general": "General"
+    },
+    "logo": {
+      "uploading": "Se încarcă…",
+      "upload": "Încarcă logo"
+    },
+    "general": {
+      "logoLabel": "Logo aplicație",
+      "noLogo": "Fără logo",
+      "defaultLanguage": "Limbă implicită",
+      "localePlaceholder": "Locale",
+      "save": "Salvează general"
+    },
+    "company": {
+      "title": "Companie",
+      "description": "Detalii companie pentru facturi: nume, CUI, adresă, oras, județ, email, bancă, IBAN.",
+      "name": "Nume companie",
+      "namePlaceholder": "Ex: S.C. Exemplu S.R.L.",
+      "cui": "CUI",
+      "cuiPlaceholder": "Cod unic de identificare",
+      "phone": "Telefon",
+      "address": "Adresă / Locație",
+      "addressPlaceholder": "Adresa sediului social",
+      "city": "Oraș",
+      "cityPlaceholder": "București",
+      "county": "Județ",
+      "countyPlaceholder": "București",
+      "bank": "Bancă",
+      "save": "Salvează companie"
+    },
+    "smtp": {
+      "title": "Notificări – Email (SMTP)",
+      "description": "Configurați serverul SMTP pentru trimiterea de emailuri (rapoarte, alerte, etc.).",
+      "encryption": "Criptare",
+      "encryptionPlaceholder": "Criptare",
+      "none": "Niciuna",
+      "username": "Utilizator SMTP",
+      "password": "Parolă SMTP",
+      "passwordPlaceholder": "Lăsați gol pentru a păstra parola existentă",
+      "fromEmail": "De la (email)",
+      "fromName": "De la (nume)",
+      "save": "Salvează SMTP"
+    }
+  }
+  ,
+  "invoicePdf": {
+    "title": "FACTURĂ",
+    "detailsTitle": "Detalii",
+    "partner": {
+      "customer": "Client",
+      "supplier": "Furnizor"
+    },
+    "labels": {
+      "invoiceNumber": "Nr. factură",
+      "date": "Data",
+      "status": "Status",
+      "dueDate": "Scadență",
+      "paidDate": "Plătită",
+      "category": "Categorie",
+      "taxId": "CUI",
+      "registrationNumber": "Reg. Com.",
+      "phone": "Tel",
+      "email": "Email",
+      "bank": "Bancă"
+    },
+    "table": {
+      "item": "Articol",
+      "qty": "Cant.",
+      "price": "Preț",
+      "total": "Total"
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "tax": "TVA",
+      "discount": "Discount",
+      "total": "Total"
+    },
+    "errors": {
+      "imageLoadFailed": "Nu s-a putut încărca imaginea"
+    }
+  }
+  ,
+  "orderInvoicePdf": {
+    "title": "FACTURĂ",
+    "fileNamePrefix": "factura",
+    "labels": {
+      "invoiceDate": "Data facturii",
+      "order": "Comandă",
+      "orderDate": "Data comenzii"
+    },
+    "customer": {
+      "billingTitle": "Client (Facturare)",
+      "shippingTitle": "Adresă livrare"
+    },
+    "summary": {
+      "shipping": "Transport"
+    }
+  }
+  ,
+  "navbar": {
+    "logout": "Deconectare",
+    "languageToggle": "Schimbă limba",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Ieșire fullscreen",
+    "profile": "Profil"
+  }
+  ,
+  "dashboard": {
+    "title": "Dashboard",
+    "cards": {
+      "products": "Produse",
+      "inventory": "Inventar",
+      "orders": "Comenzi",
+      "suppliers": "Furnizori",
+      "tasks": "Task-uri"
+    },
+    "quickAccess": {
+      "title": "Acces rapid",
+      "description": "Folosiți meniul din stânga pentru a naviga la Produse, Inventar, Comenzi, Furnizori, Task-uri, HR și Finanțe.",
+      "products": "Produse",
+      "inventory": "Inventar",
+      "orders": "Comenzi",
+      "financialDashboard": "Dashboard Finanțar"
+    }
+  },
+  "employeeDashboard": {
+    "employee": "Angajat",
+    "welcome": "Bun venit, {{name}}!",
+    "subtitle": "Iată activitatea ta și rezumatul recent.",
+    "myTasks": {
+      "title": "Sarcinile mele",
+      "pending": "În așteptare",
+      "inProgress": "În desfășurare",
+      "completed": "Finalizate",
+      "viewTasks": "Vezi task-urile →"
+    },
+    "recentCompleted": {
+      "title": "Task-uri finalizate recent",
+      "allTasks": "Toate task-urile →",
+      "empty": "Nu ai finalizat încă niciun task."
+    },
+    "leaves": {
+      "title": "Zile libere / Concedii",
+      "all": "Toate concediile →",
+      "pending": "În așteptare",
+      "pendingHint": "Cereri de concediu",
+      "upcoming": "Programate",
+      "upcomingHint": "Concedii aprobate",
+      "next": "Următoarele concedii",
+      "defaultType": "Concediu",
+      "to": "până",
+      "days_one": "{{count}} zi",
+      "days_other": "{{count}} zile",
+      "empty": "Nu ai concedii programate sau în așteptare."
+    },
+    "quickAccess": {
+      "title": "Acces rapid",
+      "myTasks": "Sarcinile mele",
+      "myLeaves": "Concediile mele",
+      "profile": "Profil"
+    }
+  }
+  ,
+  "menu": {
+    "dashboard": "Dashboard",
+    "empty": "Nu aveți elemente în meniu.",
+    "mobile": {
+      "title": "Menu",
+      "close": "Închide meniul"
+    },
+    "groups": {
+      "warehouse": "Depozit & Operațiuni",
+      "tasks": "Task-uri",
+      "hr": "Resurse umane",
+      "financial": "Finanțe",
+      "settings": "Setări"
+    },
+    "items": {
+      "products": "Produse",
+      "inventory": "Inventar",
+      "orders": "Comenzi",
+      "suppliers": "Furnizori",
+      "customers": "Clienți",
+      "deposits": "Depozite",
+      "taskList": "Lista task-uri",
+      "employees": "Angajați",
+      "departments": "Departamente",
+      "salaries": "Salarii",
+      "payroll": "Salarizare",
+      "leaveTypes": "Tipuri concedii",
+      "leaves": "Concedii",
+      "attendance": "Prezență",
+      "financialDashboard": "Dashboard financiar",
+      "invoices": "Facturi",
+      "costReports": "Rapoarte costuri",
+      "payments": "Plăți",
+      "appSettings": "Setări aplicație",
+      "users": "Utilizatori",
+      "rolesAndPermissions": "Roluri & permisiuni"
+    }
+  }
+  ,
+  "common": {
+    "back": "Înapoi",
+    "name": "Nume",
+    "delete": "Șterge",
+    "close": "Închide",
+    "cancel": "Anulează",
+    "yes": "Da",
+    "no": "Nu",
+    "save": "Salvează",
+    "saving": "Se salvează...",
+    "loading": "Se încarcă...",
+    "dash": "-",
+    "na": "N/A",
+    "genericError": "A apărut o eroare",
+    "unknown": "Necunoscut",
+    "permissionDenied": "Acces interzis",
+    "error": "Eroare",
+    "months": {
+      "january": "Ianuarie",
+      "february": "Februarie",
+      "march": "Martie",
+      "april": "Aprilie",
+      "may": "Mai",
+      "june": "Iunie",
+      "july": "Iulie",
+      "august": "August",
+      "september": "Septembrie",
+      "october": "Octombrie",
+      "november": "Noiembrie",
+      "december": "Decembrie"
+    }
+  },
+  "suppliers": {
+    "title": "Furnizori",
+    "totalRecordName": "furnizori",
+    "searchPlaceholder": "Caută furnizori...",
+    "table": {
+      "name": "Nume",
+      "email": "Email",
+      "phone": "Telefon",
+      "contactPerson": "Persoană de contact",
+      "actions": "Acțiuni"
+    },
+    "actions": {
+      "add": "Adaugă furnizor",
+      "view": "Vezi",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "toast": {
+      "created": "Furnizor creat",
+      "createFailed": "Nu s-a putut crea furnizorul",
+      "updated": "Furnizor actualizat",
+      "updateFailed": "Nu s-a putut actualiza furnizorul",
+      "deleted": "Furnizor șters",
+      "deleteFailed": "Nu s-a putut șterge furnizorul"
+    },
+    "errors": {
+      "permissionDenied": "Acces interzis",
+      "error": "Eroare",
+      "loadFailed": "Eroare la încărcarea furnizorului"
+    },
+    "confirmDelete": {
+      "title": "Ștergi furnizorul?",
+      "description": "Ștergi furnizorul „{{name}}”?",
+      "confirm": "Da, șterge"
+    },
+    "form": {
+      "createTitle": "Adaugă furnizor",
+      "editTitle": "Editează furnizor",
+      "sections": {
+        "general": "General",
+        "billingAddress": "Adresă facturare",
+        "shippingAddress": "Adresă livrare",
+        "taxRegistration": "Taxe & înregistrare",
+        "banking": "Bancar",
+        "paymentTermsCredit": "Termeni plată & limită credit"
+      },
+      "fields": {
+        "name": "Nume",
+        "companyName": "Nume companie",
+        "email": "Email",
+        "contactPerson": "Persoană de contact",
+        "mainPhone": "Telefon principal",
+        "billingPhone": "Telefon facturare",
+        "shippingPhone": "Telefon livrare",
+        "billingAddress": "Adresă facturare",
+        "shippingAddress": "Adresă livrare",
+        "city": "Oraș",
+        "postcode": "Cod poștal",
+        "country": "Țară",
+        "taxNumber": "CUI",
+        "registrationNumber": "Nr. Reg. Com.",
+        "bankName": "Bancă",
+        "paymentTermsDays": "Termen plată (zile)",
+        "creditLimit": "Limită credit"
+      }
+    },
+    "view": {
+      "title": "Detalii furnizor",
+      "companyDetailsTitle": "Detalii companie",
+      "companyDetailsDescription": "Informații de bază despre acest furnizor.",
+      "fields": {
+        "nameOrCompany": "Nume / Companie",
+        "contactPerson": "Persoană de contact",
+        "mainPhone": "Telefon principal",
+        "billingAddress": "Adresă facturare",
+        "shippingAddress": "Adresă livrare",
+        "taxRegistration": "Taxe / Înregistrare",
+        "tax": "CUI",
+        "registration": "Reg",
+        "banking": "Bancar",
+        "bank": "Bancă",
+        "paymentTerms": "Termeni plată",
+        "days": "Zile",
+        "creditLimit": "Limită credit"
+      },
+      "overview": {
+        "title": "Prezentare",
+        "supplierId": "ID furnizor",
+        "created": "Creat",
+        "invoices": "Facturi",
+        "total": "Total",
+        "outstanding": "Restant",
+        "overdueInvoices": "Facturi întârziate",
+        "credit": "Credit",
+        "limit": "Limită",
+        "terms": "Termeni",
+        "termsDays_one": "{{count}} zi",
+        "termsDays_other": "{{count}} zile"
+      },
+      "invoices": {
+        "title": "Facturi de la acest furnizor",
+        "totalRecordName": "facturi",
+        "table": {
+          "invoiceNumber": "Nr. factură",
+          "issueDate": "Data emiterii",
+          "dueDate": "Scadență",
+          "status": "Status",
+          "total": "Total"
+        }
+      }
+    }
+  },
+  "customers": {
+    "title": "Clienți",
+    "totalRecordName": "clienți",
+    "searchPlaceholder": "Caută clienți...",
+    "table": {
+      "name": "Nume",
+      "email": "Email",
+      "phone": "Telefon",
+      "contactPerson": "Persoană de contact",
+      "actions": "Acțiuni"
+    },
+    "actions": {
+      "add": "Adaugă client",
+      "view": "Vezi",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "toast": {
+      "created": "Client creat",
+      "createFailed": "Nu s-a putut crea clientul",
+      "updated": "Client actualizat",
+      "updateFailed": "Nu s-a putut actualiza clientul",
+      "deleted": "Client șters",
+      "deleteFailed": "Nu s-a putut șterge clientul"
+    },
+    "errors": {
+      "permissionDenied": "Acces interzis",
+      "error": "Eroare",
+      "loadFailed": "Eroare la încărcarea clientului"
+    },
+    "confirmDelete": {
+      "title": "Ștergi clientul?",
+      "description": "Ștergi clientul „{{name}}”?",
+      "confirm": "Da, șterge"
+    },
+    "form": {
+      "createTitle": "Adaugă client",
+      "editTitle": "Editează client",
+      "sections": {
+        "general": "General",
+        "billingAddress": "Adresă facturare",
+        "shippingAddress": "Adresă livrare",
+        "taxRegistration": "Taxe & înregistrare",
+        "banking": "Bancar",
+        "paymentTermsCredit": "Termeni plată & limită credit",
+        "notes": "Note"
+      },
+      "fields": {
+        "name": "Nume",
+        "companyName": "Nume companie",
+        "email": "Email",
+        "contactPerson": "Persoană de contact",
+        "mainPhone": "Telefon principal",
+        "billingPhone": "Telefon facturare",
+        "shippingPhone": "Telefon livrare",
+        "billingAddress": "Adresă facturare",
+        "shippingAddress": "Adresă livrare",
+        "city": "Oraș",
+        "postcode": "Cod poștal",
+        "country": "Țară",
+        "taxNumber": "CUI",
+        "registrationNumber": "Nr. Reg. Com.",
+        "bankName": "Bancă",
+        "paymentTermsDays": "Termen plată (zile)",
+        "creditLimit": "Limită credit"
+      }
+    },
+    "view": {
+      "title": "Detalii client",
+      "companyDetailsTitle": "Detalii companie",
+      "companyDetailsDescription": "Informații de bază despre acest client.",
+      "fields": {
+        "nameOrCompany": "Nume / Companie",
+        "contactPerson": "Persoană de contact",
+        "mainPhone": "Telefon principal",
+        "billingAddress": "Adresă facturare",
+        "shippingAddress": "Adresă livrare",
+        "taxRegistration": "Taxe / Înregistrare",
+        "tax": "CUI",
+        "registration": "Reg",
+        "banking": "Bancar",
+        "bank": "Bancă",
+        "paymentTerms": "Termeni plată",
+        "days": "Zile",
+        "creditLimit": "Limită credit"
+      },
+      "overview": {
+        "title": "Prezentare",
+        "customerId": "ID client",
+        "created": "Creat",
+        "invoices": "Facturi",
+        "total": "Total",
+        "outstanding": "Restant",
+        "overdueInvoices": "Facturi întârziate",
+        "ordersCredit": "Comenzi / Credit",
+        "orders": "Comenzi",
+        "limit": "Limită"
+      },
+      "invoices": {
+        "title": "Facturi pentru acest client",
+        "totalRecordName": "facturi",
+        "table": {
+          "invoiceNumber": "Nr. factură",
+          "issueDate": "Data emiterii",
+          "status": "Status",
+          "total": "Total"
+        }
+      },
+      "orders": {
+        "title": "Comenzi plasate de acest client",
+        "totalRecordName": "comenzi",
+        "table": {
+          "orderNumber": "Nr. comandă",
+          "createdAt": "Creat la",
+          "status": "Status",
+          "total": "Total"
+        }
+      }
+    }
+  },
+  "deposits": {
+    "title": "Depozite",
+    "totalRecordName": "depozite",
+    "searchPlaceholder": "Caută depozite...",
+    "toast": {
+      "created": "Depozit creat cu succes",
+      "createFailed": "Nu s-a putut crea depozitul",
+      "updated": "Depozit actualizat cu succes",
+      "updateFailed": "Nu s-a putut actualiza depozitul",
+      "deleted": "Depozit șters cu succes",
+      "deleteFailed": "Nu s-a putut șterge depozitul"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea depozitelor",
+      "noPermissionView": "Nu ai permisiunea să vezi depozitele.",
+      "noPermissionEdit": "Nu ai permisiunea să editezi depozitele.",
+      "noPermissionCreate": "Nu ai permisiunea să creezi depozite."
+    },
+    "status": {
+      "active": "Activ",
+      "inactive": "Inactiv",
+      "maintenance": "Mentenanță"
+    },
+    "filters": {
+      "status": "Status",
+      "allStatuses": "Toate",
+      "location": "Locație",
+      "locationPlaceholder": "Filtrează după locație"
+    },
+    "table": {
+      "name": "Nume",
+      "code": "Cod",
+      "location": "Locație",
+      "dimensions": "Dimensiuni",
+      "capacity": "Capacitate",
+      "status": "Status",
+      "actions": "Acțiuni"
+    },
+    "actions": {
+      "add": "Adaugă depozit",
+      "configure": "Configurează",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "confirmDelete": {
+      "title": "Ștergi depozitul?",
+      "description": "Sigur vrei să ștergi depozitul „{{name}}”?",
+      "confirm": "Da, șterge"
+    },
+    "dimensionsFormat": "{{width}}m × {{height}}m × {{depth}}m",
+    "capacityFormat": "{{value}} m³",
+    "form": {
+      "createTitle": "Creează depozit",
+      "editTitle": "Editează depozit",
+      "fields": {
+        "name": "Nume",
+        "code": "Cod",
+        "location": "Locație",
+        "width": "Lățime (metri)",
+        "height": "Înălțime (metri)",
+        "depth": "Adâncime (metri)",
+        "capacity": "Capacitate (metri cubi)",
+        "status": "Status",
+        "description": "Descriere",
+        "notes": "Note"
+      },
+      "placeholders": {
+        "name": "ex: Depozit A, Cameră 1",
+        "code": "Auto-generat dacă nu e completat",
+        "location": "ex: Clădirea A, Etaj 2, Camera 201",
+        "dimension": "0.00",
+        "capacity": "Auto-calculat din dimensiuni",
+        "status": "Selectează status",
+        "description": "Descriere depozit",
+        "notes": "Note adiționale"
+      },
+      "hints": {
+        "code": "Auto-generat dacă nu e completat",
+        "capacity": "Auto-calculat din dimensiuni",
+        "calculatedCapacity": "Calculat: {{value}} m³"
+      },
+      "actions": {
+        "create": "Creează depozit",
+        "update": "Actualizează depozit"
+      }
+    },
+    "shelfProducts": {
+      "errorLoading": "Eroare la încărcarea produselor",
+      "loading": "Se încarcă produsele...",
+      "empty": "Nu există produse pe acest raft",
+      "sku": "SKU",
+      "quantityOnShelf": "Cantitate pe raft",
+      "totalInventory": "Inventar total",
+      "available": "Disponibil"
+    },
+    "configurator": {
+      "title": "Configurator depozit",
+      "layoutTitle": "Plan",
+      "newShelfSize": "Dimensiune raft nou",
+      "meters": "metri",
+      "zoom": "Zoom",
+      "actions": {
+        "addShelf": "Adaugă raft",
+        "addWall": "Adaugă perete",
+        "cancelWall": "Anulează perete",
+        "addDoor": "Adaugă ușă",
+        "cancelDoor": "Anulează ușă",
+        "zoomOut": "Micșorează",
+        "zoomIn": "Mărește",
+        "resetZoom": "Resetează zoom",
+        "reset": "Reset",
+        "deleteShelf": "Șterge raft",
+        "deleteDoor": "Șterge ușă"
+      },
+      "details": {
+        "title": "Detalii",
+        "shelf": "Detalii raft",
+        "wall": "Detalii perete",
+        "door": "Detalii ușă",
+        "drawingMode": "Mod desenare"
+      },
+      "toast": {
+        "loadProductsFailed": "Nu s-au putut încărca produsele",
+        "shelfCreated": "Raft creat cu succes",
+        "shelfCreateFailed": "Nu s-a putut crea raftul",
+        "shelfUpdateFailed": "Nu s-a putut actualiza raftul",
+        "shelfDeleted": "Raft șters cu succes",
+        "shelfDeleteFailed": "Nu s-a putut șterge raftul",
+        "wallCreated": "Perete creat cu succes",
+        "wallCreateFailed": "Nu s-a putut crea peretele",
+        "wallDeleted": "Perete șters cu succes",
+        "wallDeleteFailed": "Nu s-a putut șterge peretele",
+        "wallUpdated": "Perete actualizat",
+        "wallUpdateFailed": "Nu s-a putut actualiza peretele",
+        "doorCreated": "Ușă creată cu succes",
+        "doorCreateFailed": "Nu s-a putut crea ușa",
+        "doorUpdated": "Ușă actualizată",
+        "doorUpdateFailed": "Nu s-a putut actualiza ușa",
+        "doorDeleted": "Ușă ștearsă cu succes",
+        "doorDeleteFailed": "Nu s-a putut șterge ușa"
+      },
+      "errors": {
+        "clickWallForDoor": "Te rog dă click pe un perete sau pe conturul depozitului pentru a plasa o ușă",
+        "invalidWall": "Perete invalid",
+        "notFound": "Depozit negăsit"
+      },
+      "placeholders": {
+        "wallName": "Nume perete (opțional)",
+        "doorName": "Nume ușă (opțional)"
+      },
+      "wall": {
+        "startPosition": "Poziție start (metri)",
+        "endPosition": "Poziție final (metri)",
+        "thickness": "Grosime (metri)",
+        "length": "Lungime (metri)"
+      },
+      "door": {
+        "wall": "Perete",
+        "wallNumber": "Perete #{{id}}",
+        "position": "Poziție (metri)",
+        "width": "Lățime (metri)",
+        "orientation": "Orientare",
+        "defaultName": "ușă"
+      },
+      "shelf": {
+        "position": "Poziție (metri)",
+        "size": "Dimensiune (metri)",
+        "depth": "Adâncime (metri)",
+        "capacity": "Capacitate (m³)",
+        "productsTitle": "Produse pe raft"
+      },
+      "hints": {
+        "wallClickAgain": "Dă click din nou pe grilă pentru capătul peretelui",
+        "wallStart": "Dă click pe grilă pentru start perete",
+        "wallEnd": "Dă click pe grilă pentru capăt perete",
+        "doorPlace": "Dă click pe un perete pentru a plasa ușa",
+        "default": "Trage rafturile pentru repoziționare • Click pentru selectare • Folosește butoanele pentru a adăuga elemente • Ctrl+Scroll pentru zoom",
+        "wallStartPoint": "Click pentru a seta punctul de start al peretelui",
+        "wallEndPoint": "Click pentru a seta punctul final al peretelui",
+        "doorBorder": "Click pe un perete sau contur pentru a plasa o ușă",
+        "clickToView": "Click pe un raft, perete sau ușă pentru a vedea și edita detaliile"
+      },
+      "confirmDelete": {
+        "shelf": "Ștergi raftul „{{name}}”?",
+        "wall": "Ștergi peretele?",
+        "door": "Ștergi ușa „{{name}}”?"
+      },
+      "shelfDefaultName": "Raft {{number}}"
+    }
+  },
+  "tasks": {
+    "status": {
+      "pending": "În așteptare",
+      "in_progress": "În desfășurare",
+      "completed": "Finalizate",
+      "cancelled": "Anulate"
+    },
+    "list": {
+      "title": "Task-uri",
+      "totalRecordName": "task-uri",
+      "searchPlaceholder": "Caută task-uri...",
+      "orderTag": "Comandă",
+      "table": {
+        "title": "Titlu",
+        "assignedTo": "Asignat către",
+        "assignedBy": "Asignat de",
+        "order": "Comandă",
+        "status": "Status",
+        "dueDate": "Termen",
+        "created": "Creat",
+        "actions": "Acțiuni"
+      },
+      "actions": {
+        "create": "Creează task",
+        "edit": "Editează",
+        "delete": "Șterge"
+      },
+      "toast": {
+        "deleted": "Task șters cu succes",
+        "deleteFailed": "Nu s-a putut șterge task-ul"
+      },
+      "errors": {
+        "permissionDenied": "Acces interzis",
+        "error": "Eroare"
+      },
+      "confirmDelete": {
+        "title": "Ștergi task-ul?",
+        "description": "Sigur vrei să ștergi acest task?",
+        "confirm": "Da, șterge"
+      }
+    }
+    ,
+    "form": {
+      "createTitle": "Creează task",
+      "editTitle": "Editează task",
+      "description": "Gestionează detaliile task-ului și asignarea.",
+      "fields": {
+        "assignedTo": "Asignează către",
+        "orderOptional": "Comandă (opțional)",
+        "title": "Titlu",
+        "description": "Descriere",
+        "status": "Status",
+        "dueDate": "Termen",
+        "images": "Imagini"
+      },
+      "placeholders": {
+        "selectEmployee": "Selectează angajat",
+        "noOrder": "Fără comandă",
+        "selectStatus": "Selectează status"
+      },
+      "empty": {
+        "employees": "Nu au fost găsiți angajați.",
+        "orders": "Nu au fost găsite comenzi."
+      },
+      "images": {
+        "existing": "Imagini existente:",
+        "new": "Imagini noi:",
+        "imageAlt": "Imagine task {{number}}",
+        "previewAlt": "Previzualizare {{number}}"
+      },
+      "actions": {
+        "create": "Creează task",
+        "update": "Actualizează task"
+      },
+      "toast": {
+        "created": "Task creat cu succes",
+        "createFailed": "Nu s-a putut crea task-ul",
+        "updated": "Task actualizat cu succes",
+        "updateFailed": "Nu s-a putut actualiza task-ul"
+      }
+    }
+  },
+  "employees": {
+    "list": {
+      "title": "Angajați",
+      "totalRecordName": "angajați",
+      "searchPlaceholder": "Caută după nume, email, cod, poziție...",
+      "filters": {
+        "department": "Departament",
+        "allDepartments": "Toate departamentele",
+        "status": "Status",
+        "allStatuses": "Toate"
+      },
+      "table": {
+        "employeeCode": "Cod angajat",
+        "name": "Nume",
+        "position": "Poziție",
+        "employmentType": "Tip contract",
+        "status": "Status",
+        "actions": "Acțiuni"
+      }
+    },
+    "actions": {
+      "add": "Adaugă angajat",
+      "create": "Creează angajat",
+      "update": "Actualizează angajat",
+      "view": "Vezi",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "fields": {
+      "employeeCode": "Cod angajat",
+      "linkUserOptional": "Asociază utilizator (opțional)",
+      "createAccount": "Creează cont pe platformă",
+      "createAccountHint": "Va crea un utilizator pe platformă și îl va asocia acestui angajat.",
+      "accountName": "Nume cont",
+      "accountEmail": "Email cont",
+      "accountPassword": "Parolă cont",
+      "department": "Departament",
+      "position": "Poziție",
+      "hireDate": "Data angajării",
+      "employmentType": "Tip contract",
+      "salary": "Salariu",
+      "phone": "Telefon",
+      "address": "Adresă",
+      "emergencyContactName": "Contact urgență - nume",
+      "emergencyContactPhone": "Contact urgență - telefon",
+      "status": "Status"
+    },
+    "placeholders": {
+      "selectUser": "Selectează utilizator",
+      "selectDepartment": "Selectează departament",
+      "selectEmploymentType": "Selectează tip",
+      "selectStatus": "Selectează status"
+    },
+    "empty": {
+      "users": "Nu au fost găsiți utilizatori.",
+      "departments": "Nu au fost găsite departamente."
+    },
+    "status": {
+      "active": "Activ",
+      "inactive": "Inactiv",
+      "terminated": "Încetat",
+      "on_leave": "În concediu"
+    },
+    "employmentType": {
+      "full-time": "Full-time",
+      "part-time": "Part-time",
+      "contractor": "Contractor",
+      "intern": "Intern"
+    },
+    "toast": {
+      "created": "Angajat creat cu succes",
+      "createdWithAccount": "Angajat creat + cont creat",
+      "openUser": "Deschide utilizator",
+      "createFailed": "Nu s-a putut crea angajatul",
+      "updated": "Angajat actualizat cu succes",
+      "updateFailed": "Nu s-a putut actualiza angajatul",
+      "deleted": "Angajat șters cu succes",
+      "deleteFailed": "Nu s-a putut șterge angajatul"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea angajaților",
+      "loadOneFailed": "Eroare la încărcarea angajatului",
+      "noPermissionCreate": "Nu ai permisiunea să creezi angajați.",
+      "noPermissionEdit": "Nu ai permisiunea să editezi angajați."
+    },
+    "confirmDelete": {
+      "title": "Ștergi angajatul?",
+      "description": "Sigur vrei să ștergi angajatul {{code}}?",
+      "confirm": "Da, șterge"
+    },
+    "modal": {
+      "createTitle": "Creează angajat",
+      "editTitle": "Editează angajat",
+      "viewTitle": "Vezi angajat",
+      "description": "Gestionează detaliile angajatului: personale, angajare și contact de urgență."
+    },
+    "view": {
+      "title": "Detalii angajat",
+      "profileTitle": "Profil angajat",
+      "code": "Cod",
+      "noDepartment": "Fără departament",
+      "fields": {
+        "email": "Email",
+        "phone": "Telefon",
+        "address": "Adresă",
+        "positionDepartment": "Poziție & Departament",
+        "hireDate": "Data angajării",
+        "employmentTypeStatus": "Tip contract / Status"
+      },
+      "emergency": {
+        "title": "Contact urgență",
+        "name": "Nume",
+        "phone": "Telefon"
+      },
+      "linkedUser": {
+        "title": "Utilizator asociat",
+        "account": "Cont utilizator",
+        "none": "Acest angajat nu este asociat cu un utilizator din aplicație."
+      },
+      "taskOverview": {
+        "title": "Rezumat task-uri",
+        "total": "Total task-uri",
+        "completed": "Finalizate",
+        "open": "Deschise",
+        "viewAll": "Vezi toate task-urile"
+      },
+      "attendance": {
+        "title": "Prezență (luna curentă)",
+        "presentDays": "Zile prezente",
+        "view": "Vezi prezența"
+      },
+      "salary": {
+        "title": "Salariu",
+        "currentAmount": "Valoare curentă",
+        "effectiveFrom": "Valabil de la",
+        "empty": "Nu există înregistrări de salariu pentru acest angajat.",
+        "viewHistory": "Vezi istoricul salariilor"
+      },
+      "recentTasks": {
+        "title": "Task-uri recente",
+        "empty": "Acest angajat nu are încă task-uri asignate.",
+        "due": "Termen"
+      }
+    }
+  },
+  "departments": {
+    "list": {
+      "title": "Departamente",
+      "totalRecordName": "departamente",
+      "searchPlaceholder": "Caută după nume sau descriere...",
+      "table": {
+        "name": "Nume",
+        "description": "Descriere",
+        "actions": "Acțiuni"
+      }
+    },
+    "actions": {
+      "add": "Adaugă departament",
+      "create": "Creează departament",
+      "update": "Actualizează departament",
+      "viewTeam": "Vezi echipa",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "fields": {
+      "name": "Nume",
+      "description": "Descriere"
+    },
+    "toast": {
+      "created": "Departament creat cu succes",
+      "createFailed": "Nu s-a putut crea departamentul",
+      "updated": "Departament actualizat cu succes",
+      "updateFailed": "Nu s-a putut actualiza departamentul",
+      "deleted": "Departament șters cu succes",
+      "deleteFailed": "Nu s-a putut șterge departamentul"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea departamentelor",
+      "loadOneFailed": "Eroare la încărcarea departamentului",
+      "noPermissionCreate": "Nu ai permisiunea să creezi departamente.",
+      "noPermissionEdit": "Nu ai permisiunea să editezi departamente."
+    },
+    "confirmDelete": {
+      "title": "Ștergi departamentul?",
+      "description": "Sigur vrei să ștergi departamentul „{{name}}”?",
+      "confirm": "Da, șterge"
+    },
+    "modal": {
+      "createTitle": "Creează departament",
+      "editTitle": "Editează departament",
+      "description": "Gestionează numele și descrierea departamentului."
+    },
+    "view": {
+      "title": "Echipa departamentului",
+      "teamMembers": "Membri echipă",
+      "employeesCount_one": "{{count}} angajat",
+      "employeesCount_other": "{{count}} angajați",
+      "loadEmployeesFailed": "Nu s-au putut încărca angajații pentru acest departament.",
+      "emptyEmployees": "Acest departament nu are încă angajați alocați.",
+      "noPosition": "Fără poziție"
+    }
+  },
+  "salaries": {
+    "list": {
+      "title": "Salarii",
+      "totalRecordName": "înregistrări salarii",
+      "searchPlaceholder": "Caută în salarii...",
+      "table": {
+        "employee": "Angajat",
+        "amount": "Sumă",
+        "type": "Tip",
+        "effectiveDate": "Valabil de la",
+        "endDate": "Valabil până la",
+        "actions": "Acțiuni"
+      }
+    },
+    "filters": {
+      "employee": "Angajat",
+      "allEmployees": "Toți angajații",
+      "type": "Tip",
+      "allTypes": "Toate"
+    },
+    "type": {
+      "base": "Bază",
+      "bonus": "Bonus",
+      "deduction": "Deducere"
+    },
+    "actions": {
+      "add": "Adaugă salariu",
+      "create": "Creează salariu",
+      "update": "Actualizează salariu",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "fields": {
+      "employee": "Angajat",
+      "amount": "Sumă",
+      "type": "Tip",
+      "effectiveDate": "Valabil de la",
+      "endDate": "Valabil până la",
+      "notes": "Note"
+    },
+    "placeholders": {
+      "selectEmployee": "Selectează angajat",
+      "selectType": "Selectează tip"
+    },
+    "empty": {
+      "employees": "Nu au fost găsiți angajați."
+    },
+    "toast": {
+      "created": "Salariu creat cu succes",
+      "createFailed": "Nu s-a putut crea salariul",
+      "updated": "Salariu actualizat cu succes",
+      "updateFailed": "Nu s-a putut actualiza salariul",
+      "deleted": "Salariu șters cu succes",
+      "deleteFailed": "Nu s-a putut șterge salariul"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea salariilor"
+    },
+    "confirmDelete": {
+      "title": "Ștergi înregistrarea de salariu?",
+      "description": "Sigur vrei să ștergi această înregistrare de salariu?",
+      "confirm": "Da, șterge"
+    },
+    "modal": {
+      "createTitle": "Creează salariu",
+      "editTitle": "Editează salariu",
+      "description": "Gestionează detaliile salariului pentru angajatul selectat."
+    }
+  },
+  "payroll": {
+    "status": {
+      "draft": "Ciornă",
+      "approved": "Aprobat",
+      "paid": "Plătit",
+      "cancelled": "Anulat"
+    },
+    "list": {
+      "title": "Înregistrări salarizare",
+      "totalRecordName": "înregistrări salarizare",
+      "searchPlaceholder": "Caută înregistrări salarizare...",
+      "table": {
+        "employee": "Angajat",
+        "period": "Perioadă",
+        "baseSalary": "Salariu de bază",
+        "bonuses": "Bonusuri",
+        "deductions": "Deduceri",
+        "netSalary": "Salariu net",
+        "status": "Status",
+        "actions": "Acțiuni"
+      }
+    },
+    "filters": {
+      "employee": "Angajat",
+      "allEmployees": "Toți angajații",
+      "month": "Lună",
+      "allMonths": "Toate lunile",
+      "year": "An",
+      "allYears": "Toți anii",
+      "status": "Status",
+      "allStatuses": "Toate statusurile"
+    },
+    "fields": {
+      "employee": "Angajat",
+      "month": "Lună",
+      "year": "An",
+      "baseSalary": "Salariu de bază",
+      "bonuses": "Bonusuri",
+      "overtimePay": "Plată ore suplimentare",
+      "deductions": "Deduceri",
+      "status": "Status",
+      "notes": "Note"
+    },
+    "placeholders": {
+      "selectEmployee": "Selectează angajat",
+      "selectMonth": "Selectează luna",
+      "selectStatus": "Selectează status",
+      "baseSalary": "Completat automat din salariul angajatului"
+    },
+    "hints": {
+      "autoFilled": "Completat automat din angajat. Poți modifica dacă este nevoie.",
+      "selectEmployeeToAutoFill": "Selectează un angajat pentru completare automată"
+    },
+    "empty": {
+      "employees": "Nu s-au găsit angajați."
+    },
+    "actions": {
+      "create": "Creează salarizare",
+      "update": "Actualizează înregistrarea",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "netSalary": "Salariu net",
+    "modal": {
+      "createTitle": "Creează înregistrare salarizare",
+      "editTitle": "Editează înregistrare salarizare",
+      "description": "Configurează detaliile de salarizare pentru perioada și angajatul selectat."
+    },
+    "toast": {
+      "created": "Înregistrare de salarizare creată",
+      "createFailed": "Nu s-a putut crea înregistrarea de salarizare",
+      "updated": "Înregistrare de salarizare actualizată",
+      "updateFailed": "Nu s-a putut actualiza înregistrarea de salarizare",
+      "deleted": "Înregistrare de salarizare ștearsă",
+      "deleteFailed": "Nu s-a putut șterge înregistrarea de salarizare"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea înregistrărilor de salarizare"
+    },
+    "confirmDelete": {
+      "title": "Ștergi înregistrarea de salarizare?",
+      "description": "Sigur vrei să ștergi această înregistrare de salarizare?",
+      "confirm": "Da, șterge"
+    }
+  },
+  "leaveTypes": {
+    "status": {
+      "active": "Activ",
+      "inactive": "Inactiv"
+    },
+    "list": {
+      "title": "Tipuri concedii",
+      "totalRecordName": "tipuri concedii",
+      "searchPlaceholder": "Caută tipuri de concedii...",
+      "table": {
+        "name": "Nume",
+        "maxDaysPerYear": "Max zile/an",
+        "carryForward": "Reportare",
+        "status": "Status",
+        "description": "Descriere",
+        "actions": "Acțiuni"
+      }
+    },
+    "fields": {
+      "name": "Nume",
+      "maxDaysPerYear": "Max zile pe an",
+      "allowCarryForward": "Permite reportarea",
+      "active": "Activ",
+      "description": "Descriere"
+    },
+    "actions": {
+      "create": "Adaugă tip concediu",
+      "update": "Actualizează tipul",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "modal": {
+      "createTitle": "Creează tip concediu",
+      "editTitle": "Editează tip concediu",
+      "description": "Configurează limitele și comportamentul tipului de concediu."
+    },
+    "toast": {
+      "created": "Tip de concediu creat",
+      "createFailed": "Nu s-a putut crea tipul de concediu",
+      "updated": "Tip de concediu actualizat",
+      "updateFailed": "Nu s-a putut actualiza tipul de concediu",
+      "deleted": "Tip de concediu șters",
+      "deleteFailed": "Nu s-a putut șterge tipul de concediu"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea tipurilor de concediu"
+    },
+    "confirmDelete": {
+      "title": "Ștergi tipul de concediu?",
+      "description": "Sigur vrei să ștergi tipul de concediu „{{name}}”?",
+      "confirm": "Da, șterge"
+    }
+  },
+  "leaves": {
+    "status": {
+      "pending": "În așteptare",
+      "approved": "Aprobat",
+      "rejected": "Respins",
+      "cancelled": "Anulat"
+    },
+    "list": {
+      "title": "Concedii",
+      "totalRecordName": "cereri de concediu",
+      "searchPlaceholder": "Caută cereri de concediu...",
+      "table": {
+        "employee": "Angajat",
+        "leaveType": "Tip concediu",
+        "startDate": "Data început",
+        "endDate": "Data sfârșit",
+        "days": "Zile",
+        "status": "Status",
+        "actions": "Acțiuni"
+      }
+    },
+    "filters": {
+      "employee": "Angajat",
+      "allEmployees": "Toți angajații",
+      "status": "Status",
+      "allStatuses": "Toate statusurile"
+    },
+    "fields": {
+      "employee": "Angajat",
+      "leaveType": "Tip concediu",
+      "startDate": "Data început",
+      "endDate": "Data sfârșit",
+      "status": "Status",
+      "rejectionReason": "Motiv respingere",
+      "reason": "Motiv"
+    },
+    "placeholders": {
+      "selectEmployee": "Selectează angajat",
+      "selectLeaveType": "Selectează tipul",
+      "selectStatus": "Selectează status"
+    },
+    "empty": {
+      "employees": "Nu s-au găsit angajați.",
+      "leaveTypes": "Nu s-au găsit tipuri de concediu."
+    },
+    "actions": {
+      "request": "Solicită concediu",
+      "update": "Actualizează concediul",
+      "viewEdit": "Vezi / Editează",
+      "delete": "Șterge",
+      "approve": "Aprobă",
+      "reject": "Respinge"
+    },
+    "modal": {
+      "createTitle": "Solicită concediu",
+      "editTitle": "Editează concediu",
+      "description": "Gestionează detaliile cererii de concediu și statusul."
+    },
+    "toast": {
+      "created": "Cerere de concediu creată",
+      "createFailed": "Nu s-a putut crea cererea de concediu",
+      "updated": "Concediu actualizat",
+      "updateFailed": "Nu s-a putut actualiza concediul",
+      "deleted": "Concediu șters",
+      "deleteFailed": "Nu s-a putut șterge cererea de concediu",
+      "approved": "Concediu aprobat",
+      "approveFailed": "Nu s-a putut aproba concediul",
+      "rejected": "Concediu respins",
+      "rejectFailed": "Nu s-a putut respinge concediul"
+    },
+    "prompt": {
+      "rejectionReason": "Introdu motivul respingerii:"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea concediilor"
+    },
+    "confirmDelete": {
+      "title": "Ștergi cererea de concediu?",
+      "description": "Sigur vrei să ștergi această cerere de concediu?",
+      "confirm": "Da, șterge"
+    },
+    "days_one": "{{count}} zi",
+    "days_other": "{{count}} zile"
+  },
+  "attendance": {
+    "status": {
+      "present": "Prezent",
+      "absent": "Absent",
+      "late": "Întârziat",
+      "half_day": "Jumătate de zi",
+      "on_leave": "În concediu"
+    },
+    "list": {
+      "title": "Prezență",
+      "totalRecordName": "înregistrări prezență",
+      "searchPlaceholder": "Caută prezența...",
+      "table": {
+        "employee": "Angajat",
+        "date": "Data",
+        "clockIn": "Intrare",
+        "clockOut": "Ieșire",
+        "totalHours": "Total ore",
+        "overtime": "Suplimentare",
+        "status": "Status",
+        "actions": "Acțiuni"
+      }
+    },
+    "filters": {
+      "employee": "Angajat",
+      "allEmployees": "Toți angajații",
+      "status": "Status",
+      "allStatuses": "Toate statusurile",
+      "dateFrom": "De la",
+      "dateTo": "Până la"
+    },
+    "fields": {
+      "employee": "Angajat",
+      "date": "Data",
+      "clockIn": "Ora intrare",
+      "clockOut": "Ora ieșire",
+      "status": "Status",
+      "notes": "Note"
+    },
+    "placeholders": {
+      "selectEmployee": "Selectează angajat",
+      "selectStatus": "Selectează status"
+    },
+    "empty": {
+      "employees": "Nu s-au găsit angajați."
+    },
+    "actions": {
+      "create": "Adaugă prezență",
+      "update": "Actualizează prezența",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "modal": {
+      "createTitle": "Creează prezență",
+      "editTitle": "Editează prezență",
+      "description": "Gestionează înregistrarea de prezență pentru angajatul și data selectate."
+    },
+    "toast": {
+      "created": "Prezență creată",
+      "createFailed": "Nu s-a putut crea prezența",
+      "updated": "Prezență actualizată",
+      "updateFailed": "Nu s-a putut actualiza prezența",
+      "deleted": "Înregistrare de prezență ștearsă",
+      "deleteFailed": "Nu s-a putut șterge înregistrarea de prezență"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea prezenței"
+    },
+    "confirmDelete": {
+      "title": "Ștergi înregistrarea de prezență?",
+      "description": "Sigur vrei să ștergi această înregistrare de prezență?",
+      "confirm": "Da, șterge"
+    }
+  },
+  "financialDashboard": {
+    "title": "Dashboard financiar",
+    "loading": "Se încarcă dashboard-ul...",
+    "actions": {
+      "exportPdf": "Export PDF",
+      "exportExcel": "Export Excel"
+    },
+    "filters": {
+      "dateFrom": "De la",
+      "dateTo": "Până la",
+      "supplier": "Furnizor",
+      "allSuppliers": "Toți furnizorii",
+      "category": "Categorie",
+      "categoryPlaceholder": "Filtrează după categorie"
+    },
+    "cards": {
+      "totalIncome": "Total venituri",
+      "totalExpenses": "Total cheltuieli",
+      "netProfit": "Profit net",
+      "stockValue": "Valoare stoc"
+    },
+    "charts": {
+      "incomeVsExpenses": "Venituri vs cheltuieli (ultimele 12 luni)",
+      "income": "Venituri",
+      "expenses": "Cheltuieli",
+      "expensesByCategory": "Cheltuieli pe categorii",
+      "paymentMethods": "Metode de plată"
+    },
+    "topSuppliers": {
+      "title": "Top furnizori după plăți",
+      "empty": "Nu există date"
+    },
+    "recentTransactions": {
+      "title": "Tranzacții recente",
+      "empty": "Nu există tranzacții recente",
+      "table": {
+        "date": "Data",
+        "transactionNumber": "Tranzacție #",
+        "supplier": "Furnizor",
+        "type": "Tip",
+        "amount": "Sumă"
+      }
+    },
+    "export": {
+      "filePrefix": "raport-financiar",
+      "pdf": {
+        "title": "Raport financiar"
+      },
+      "excel": {
+        "sheetName": "Raport financiar"
+      },
+      "period": "Perioadă: {{from}} - {{to}}",
+      "summary": "Sumar",
+      "totalIncome": "Total venituri: {{value}}",
+      "totalExpenses": "Total cheltuieli: {{value}}",
+      "netProfit": "Profit net: {{value}}",
+      "stockValue": "Valoare stoc: {{value}}",
+      "table": {
+        "invoiceNumber": "Factura #",
+        "type": "Tip",
+        "status": "Status",
+        "date": "Data",
+        "amount": "Sumă"
+      }
+    }
+  },
+  "costReports": {
+    "title": "Rapoarte costuri",
+    "loading": "Se încarcă rapoartele de cost...",
+    "actions": {
+      "exportPdf": "Export PDF",
+      "exportExcel": "Export Excel"
+    },
+    "filters": {
+      "dateFrom": "De la",
+      "dateTo": "Până la",
+      "supplier": "Furnizor",
+      "allSuppliers": "Toți furnizorii",
+      "category": "Categorie",
+      "categoryPlaceholder": "Filtrează după categorie"
+    },
+    "cards": {
+      "totalExpenses": "Total cheltuieli",
+      "totalIncome": "Total venituri",
+      "netProfitLoss": "Profit/pierdere netă"
+    },
+    "charts": {
+      "expensesByCategory": "Cheltuieli pe categorii",
+      "expensesByMonth": "Cheltuieli pe luni"
+    },
+    "expenseInvoices": {
+      "title": "Facturi de cheltuieli",
+      "empty": "Nu s-au găsit facturi de cheltuieli",
+      "table": {
+        "invoiceNumber": "Factura #",
+        "supplier": "Furnizor",
+        "category": "Categorie",
+        "date": "Data",
+        "status": "Status",
+        "amount": "Sumă"
+      }
+    },
+    "export": {
+      "filePrefix": "raport-costuri",
+      "pdf": {
+        "title": "Raport costuri"
+      },
+      "excel": {
+        "sheetName": "Raport costuri"
+      },
+      "period": "Perioadă: {{from}} - {{to}}",
+      "summary": "Sumar",
+      "totalExpenses": "Total cheltuieli: {{value}}",
+      "totalIncome": "Total venituri: {{value}}",
+      "net": "Net: {{value}}",
+      "table": {
+        "invoiceNumber": "Factura #",
+        "supplier": "Furnizor",
+        "category": "Categorie",
+        "date": "Data",
+        "amount": "Sumă"
+      }
+    }
+  },
+  "invoices": {
+    "type": {
+      "income": "Venit",
+      "expense": "Cheltuială"
+    },
+    "status": {
+      "draft": "Ciornă",
+      "sent": "Trimisă",
+      "paid": "Plătită",
+      "overdue": "Restantă",
+      "cancelled": "Anulată"
+    },
+    "list": {
+      "title": "Facturi",
+      "totalRecordName": "facturi",
+      "searchPlaceholder": "Caută facturi...",
+      "table": {
+        "invoiceNumber": "Factura #",
+        "partner": "Partener",
+        "type": "Tip",
+        "status": "Status",
+        "issueDate": "Data emiterii",
+        "dueDate": "Scadență",
+        "totalAmount": "Total",
+        "category": "Categorie",
+        "actions": "Acțiuni"
+      }
+    },
+    "filters": {
+      "type": "Tip",
+      "allTypes": "Toate tipurile",
+      "status": "Status",
+      "allStatuses": "Toate statusurile",
+      "supplier": "Furnizor",
+      "allSuppliers": "Toți furnizorii",
+      "category": "Categorie",
+      "categoryPlaceholder": "Categorie",
+      "dateFrom": "De la",
+      "dateTo": "Până la"
+    },
+    "actions": {
+      "add": "Adaugă factură",
+      "view": "Vezi factura",
+      "download": "Descarcă factura",
+      "edit": "Editează factura",
+      "delete": "Șterge factura"
+    },
+    "toast": {
+      "deleted": "Factura a fost ștearsă",
+      "deleteFailed": "Nu s-a putut șterge factura",
+      "downloaded": "Factura a fost descărcată",
+      "downloadFailed": "Nu s-a putut descărca factura"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea facturilor"
+    },
+    "confirmDelete": {
+      "title": "Ștergi factura?",
+      "description": "Sigur vrei să ștergi factura {{number}}?",
+      "confirm": "Da, șterge"
+    },
+    "view": {
+      "title": "Detalii factură",
+      "titleWithNumber": "Factura {{number}}",
+      "loading": "Se încarcă factura...",
+      "locked": "Blocată (doar citire)",
+      "actions": {
+        "download": "Descarcă factura"
+      },
+      "placeholders": {
+        "status": "Status"
+      },
+      "errors": {
+        "loadFailed": "Nu s-a putut încărca factura"
+      },
+      "toast": {
+        "statusUpdated": "Status actualizat",
+        "statusUpdateFailed": "Nu s-a putut actualiza statusul",
+        "customerUpdated": "Client actualizat",
+        "customerUpdateFailed": "Nu s-a putut actualiza clientul",
+        "supplierUpdated": "Furnizor actualizat",
+        "supplierUpdateFailed": "Nu s-a putut actualiza furnizorul",
+        "itemsUpdated": "Produsele/serviciile facturii au fost actualizate",
+        "itemsUpdateFailed": "Nu s-au putut salva produsele/serviciile",
+        "pdfFailed": "Nu s-a putut genera PDF-ul"
+      },
+      "companyNotConfigured": "Companie (neconfigurată)",
+      "company": {
+        "loadFailed": "Detaliile companiei nu au putut fi încărcate din setări (permisiuni sau eroare server).",
+        "notConfiguredHint": "Detaliile companiei nu sunt configurate încă. Completează-le în Setări ca să apară aici."
+      },
+      "details": {
+        "title": "Detalii factură",
+        "invoiceNumber": "Factura #",
+        "status": "Status",
+        "issueDate": "Data emiterii",
+        "total": "Total",
+        "description": "Descriere",
+        "notes": "Note"
+      },
+      "partner": {
+        "name": "Nume",
+        "company": "Companie",
+        "taxId": "CUI:",
+        "registration": "Nr. Reg. Com.:",
+        "contact": "Contact:",
+        "billingAddress": "Adresă facturare",
+        "bank": "Bancă"
+      },
+      "customer": {
+        "title": "Client",
+        "selectHint": "Selectează clientul pentru această factură.",
+        "change": "Schimbă clientul",
+        "placeholders": {
+          "select": "Selectează client"
+        }
+      },
+      "supplier": {
+        "title": "Furnizor",
+        "selectHint": "Selectează furnizorul pentru această factură.",
+        "change": "Schimbă furnizorul",
+        "placeholders": {
+          "select": "Selectează furnizor"
+        }
+      },
+      "items": {
+        "title": "Produse/servicii factură",
+        "editableHint": "Poți edita produsele/serviciile cât timp statusul este ciornă.",
+        "lockedHint": "Produsele/serviciile sunt blocate deoarece factura nu este în status ciornă.",
+        "addProduct": "Adaugă produs",
+        "addService": "Adaugă serviciu",
+        "save": "Salvează",
+        "empty": "Nu există produse/servicii.",
+        "taxPercent": "TVA %",
+        "type": {
+          "product": "Produs",
+          "service": "Serviciu"
+        },
+        "actions": {
+          "remove": "Șterge"
+        },
+        "placeholders": {
+          "type": "Tip",
+          "selectProduct": "Selectează produs",
+          "serviceName": "Nume serviciu",
+          "descriptionOptional": "Descriere (opțional)"
+        },
+        "table": {
+          "item": "Articol",
+          "qty": "Cant.",
+          "price": "Preț",
+          "total": "Total",
+          "actions": "Acțiuni"
+        },
+        "summary": {
+          "subtotal": "Subtotal",
+          "tax": "TVA",
+          "total": "Total"
+        }
+      }
+    },
+    "form": {
+      "autoGenerated": "Generat automat",
+      "hints": {
+        "autoGenerated": "Generat automat dacă nu este completat.",
+        "calculated": "Calculat: {{value}}"
+      },
+      "fields": {
+        "invoiceNumber": "Număr factură",
+        "supplier": "Furnizor",
+        "customer": "Client",
+        "type": "Tip",
+        "status": "Status",
+        "issueDate": "Data emiterii",
+        "dueDate": "Scadență",
+        "paidDate": "Data plății",
+        "category": "Categorie",
+        "subtotal": "Subtotal",
+        "taxAmount": "TVA",
+        "discountAmount": "Discount",
+        "totalAmount": "Total",
+        "description": "Descriere",
+        "notes": "Note"
+      },
+      "placeholders": {
+        "selectSupplierOptional": "Selectează furnizor (opțional)",
+        "selectCustomerOptional": "Selectează client (opțional)",
+        "selectType": "Selectează tipul",
+        "selectStatus": "Selectează statusul",
+        "categoryExample": "ex: Consumabile birou, Servicii",
+        "description": "Descriere factură",
+        "notes": "Note suplimentare"
+      },
+      "items": {
+        "title": "Produse/servicii",
+        "hint": "Adaugă produse sau servicii care vor fi salvate pe factură.",
+        "empty": "Nu există încă articole.",
+        "addProduct": "Produs",
+        "addService": "Serviciu",
+        "serviceLine": "Linie serviciu",
+        "type": {
+          "product": "Produs",
+          "service": "Serviciu"
+        },
+        "actions": {
+          "remove": "Șterge"
+        },
+        "placeholders": {
+          "type": "Tip",
+          "selectProduct": "Selectează produs",
+          "serviceName": "Nume serviciu",
+          "itemName": "Nume articol",
+          "descriptionOptional": "Descriere (opțional)"
+        },
+        "table": {
+          "typeProduct": "Tip / Produs",
+          "name": "Nume",
+          "qty": "Cant.",
+          "unitPrice": "Preț unitar",
+          "taxPercent": "TVA %",
+          "discountPercent": "Disc %",
+          "lineTotal": "Total linie"
+        },
+        "summary": {
+          "subtotal": "Subtotal articole",
+          "tax": "TVA articole",
+          "total": "Total articole"
+        }
+      },
+      "actions": {
+        "create": "Creează factură",
+        "update": "Actualizează factura"
+      },
+      "modal": {
+        "createTitle": "Creează factură",
+        "editTitle": "Editează factură",
+        "description": "Gestionează detaliile facturii."
+      },
+      "toast": {
+        "created": "Factura a fost creată",
+        "createFailed": "Nu s-a putut crea factura",
+        "updated": "Factura a fost actualizată",
+        "updateFailed": "Nu s-a putut actualiza factura"
+      }
+    }
+  },
+  "payments": {
+    "autoGenerated": "Generat automat",
+    "type": {
+      "payment": "Plată",
+      "receipt": "Chitanță",
+      "refund": "Rambursare",
+      "adjustment": "Ajustare"
+    },
+    "category": {
+      "supplier_payment": "Plată furnizor",
+      "customer_payment": "Plată client",
+      "salary": "Salariu",
+      "expense": "Cheltuială",
+      "income": "Venit",
+      "other": "Altele"
+    },
+    "method": {
+      "cash": "Cash",
+      "bank_transfer": "Transfer bancar",
+      "check": "Cec",
+      "credit_card": "Card credit",
+      "debit_card": "Card debit",
+      "other": "Altele"
+    },
+    "list": {
+      "title": "Plăți",
+      "totalRecordName": "plăți",
+      "searchPlaceholder": "Caută plăți...",
+      "table": {
+        "transactionNumber": "Tranzacție #",
+        "partner": "Partener",
+        "invoice": "Factură",
+        "type": "Tip",
+        "category": "Categorie",
+        "amount": "Sumă",
+        "paymentMethod": "Metodă plată",
+        "transactionDate": "Data tranzacției",
+        "referenceNumber": "Referință #",
+        "actions": "Acțiuni"
+      }
+    },
+    "filters": {
+      "type": "Tip",
+      "allTypes": "Toate tipurile",
+      "category": "Categorie",
+      "allCategories": "Toate categoriile",
+      "supplier": "Furnizor",
+      "allSuppliers": "Toți furnizorii",
+      "dateFrom": "De la",
+      "dateTo": "Până la"
+    },
+    "fields": {
+      "transactionNumber": "Număr tranzacție",
+      "supplier": "Furnizor",
+      "customer": "Client",
+      "invoice": "Factură",
+      "type": "Tip",
+      "category": "Categorie",
+      "amount": "Sumă",
+      "paymentMethod": "Metodă plată",
+      "transactionDate": "Data tranzacției",
+      "referenceNumber": "Număr referință",
+      "description": "Descriere",
+      "notes": "Note"
+    },
+    "placeholders": {
+      "selectSupplierOptional": "Selectează furnizor (opțional)",
+      "selectCustomerOptional": "Selectează client (opțional)",
+      "selectInvoiceOptional": "Selectează factura (opțional)",
+      "selectType": "Selectează tipul",
+      "selectCategory": "Selectează categoria",
+      "selectMethod": "Selectează metoda",
+      "description": "Descriere plată",
+      "notes": "Note suplimentare"
+    },
+    "actions": {
+      "add": "Adaugă plată",
+      "create": "Creează plată",
+      "update": "Actualizează plata",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "modal": {
+      "createTitle": "Creează plată",
+      "editTitle": "Editează plată",
+      "description": "Gestionează detaliile plății."
+    },
+    "toast": {
+      "created": "Plată creată",
+      "createFailed": "Nu s-a putut crea plata",
+      "updated": "Plată actualizată",
+      "updateFailed": "Nu s-a putut actualiza plata",
+      "deleted": "Plată ștearsă",
+      "deleteFailed": "Nu s-a putut șterge plata"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea plăților"
+    },
+    "confirmDelete": {
+      "title": "Ștergi plata?",
+      "description": "Sigur vrei să ștergi plata {{number}}?",
+      "confirm": "Da, șterge"
+    }
+  },
+  "users": {
+    "list": {
+      "title": "Utilizatori",
+      "totalRecordName": "utilizatori",
+      "searchPlaceholder": "Caută utilizatori după nume sau email...",
+      "noRoles": "Fără roluri",
+      "table": {
+        "id": "ID",
+        "name": "Nume",
+        "email": "Email",
+        "roles": "Roluri",
+        "actions": "Acțiuni"
+      }
+    },
+    "actions": {
+      "create": "Creează utilizator",
+      "update": "Actualizează utilizator",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "fields": {
+      "name": "Nume",
+      "email": "Email",
+      "password": "Parolă",
+      "roles": "Roluri"
+    },
+    "hints": {
+      "keepPassword": "Lasă gol pentru a păstra parola curentă."
+    },
+    "empty": {
+      "roles": "Nu există roluri disponibile"
+    },
+    "errors": {
+      "noPermissionView": "Nu aveți permisiunea să vedeți utilizatorii.",
+      "loadFailed": "Eroare la încărcarea utilizatorilor"
+    },
+    "toast": {
+      "created": "Utilizator creat",
+      "createFailed": "Nu s-a putut crea utilizatorul",
+      "updated": "Utilizator actualizat",
+      "updateFailed": "Nu s-a putut actualiza utilizatorul",
+      "deleted": "Utilizator șters",
+      "deleteFailed": "Nu s-a putut șterge utilizatorul"
+    },
+    "confirmDelete": {
+      "title": "Ștergi utilizatorul?",
+      "description": "Sigur vrei să ștergi utilizatorul {{email}}?",
+      "confirm": "Da, șterge"
+    },
+    "modal": {
+      "createTitle": "Creează utilizator",
+      "editTitle": "Editează utilizator",
+      "description": "Gestionează contul utilizatorului și rolurile."
+    }
+  },
+  "roles": {
+    "list": {
+      "title": "Roluri & permisiuni",
+      "totalRecordName": "roluri",
+      "searchPlaceholder": "Caută roluri...",
+      "noPermissions": "Fără permisiuni",
+      "table": {
+        "id": "ID",
+        "name": "Nume rol",
+        "permissions": "Permisiuni",
+        "actions": "Acțiuni"
+      }
+    },
+    "actions": {
+      "create": "Creează rol",
+      "edit": "Editează",
+      "delete": "Șterge",
+      "saveChanges": "Salvează modificările"
+    },
+    "fields": {
+      "name": "Nume rol",
+      "permissions": "Permisiuni"
+    },
+    "empty": {
+      "permissions": "Nu există permisiuni disponibile"
+    },
+    "errors": {
+      "noPermissionView": "Nu aveți permisiunea să vedeți rolurile."
+    },
+    "toast": {
+      "created": "Rol creat",
+      "createFailed": "Nu s-a putut crea rolul",
+      "updated": "Rol actualizat",
+      "updateFailed": "Nu s-a putut actualiza rolul",
+      "deleted": "Rol șters",
+      "deleteFailed": "Nu s-a putut șterge rolul"
+    },
+    "confirmDelete": {
+      "title": "Ștergi rolul",
+      "description": "Sigur vrei să ștergi acest rol?",
+      "descriptionWithName": "Sigur vrei să ștergi „{{name}}”?",
+      "confirm": "Șterge"
+    },
+    "modal": {
+      "createTitle": "Creează rol",
+      "editTitle": "Editează rol",
+      "description": "Gestionează numele rolului și permisiunile lui."
+    }
+  },
+  "profile": {
+    "title": "Profilul meu",
+    "sections": {
+      "personalInfo": "Informații personale",
+      "contact": "Contact",
+      "security": "Securitate"
+    },
+    "fields": {
+      "name": "Nume",
+      "email": "Email",
+      "phone": "Telefon",
+      "address": "Adresă",
+      "newPassword": "Parolă nouă",
+      "confirmPassword": "Confirmă parola"
+    },
+    "placeholders": {
+      "phone": "Ex: 0722 123 456",
+      "address": "Strada, nr., localitate, județ"
+    },
+    "hints": {
+      "keepPassword": "Lasă gol pentru a păstra parola actuală"
+    },
+    "avatar": {
+      "uploadAriaLabel": "Încarcă poză de profil",
+      "clickToChange": "Apasă pe poză pentru a o schimba"
+    },
+    "toast": {
+      "updated": "Profil actualizat.",
+      "avatarUpdated": "Poza de profil a fost actualizată.",
+      "avatarUploadError": "Eroare la încărcare."
+    }
+  },
+  "products": {
+    "title": "Produse",
+    "totalRecordName": "produse",
+    "searchPlaceholder": "Caută produse după nume sau SKU...",
+    "table": {
+      "image": "Imagine",
+      "imageAlt": "Imagine produs",
+      "noImage": "Fără imagine",
+      "name": "Nume",
+      "price": "Preț",
+      "totalStock": "Stoc total",
+      "actions": "Acțiuni"
+    },
+    "actions": {
+      "addProduct": "Adaugă produs",
+      "view": "Vezi",
+      "viewOnMap": "Vezi pe hartă",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "toast": {
+      "genericError": "A apărut o eroare",
+      "created": "Produs creat cu succes",
+      "createFailed": "Nu s-a putut crea produsul",
+      "updated": "Produs actualizat cu succes",
+      "updateFailed": "Nu s-a putut actualiza produsul",
+      "deleted": "Produs șters cu succes",
+      "deleteFailed": "Nu s-a putut șterge produsul",
+      "imageUploaded": "Imagine încărcată",
+      "uploadFailed": "Încărcarea a eșuat",
+      "imageRemoved": "Imagine eliminată",
+      "mainImageUpdated": "Imaginea principală a fost actualizată"
+    },
+    "errors": {
+      "permissionDenied": "Acces interzis",
+      "error": "Eroare"
+    },
+    "confirmDelete": {
+      "title": "Șterge produsul?",
+      "description": "Sigur vrei să ștergi „{{name}}”?",
+      "confirm": "Da, șterge",
+      "cancel": "Anulează"
+    },
+    "form": {
+      "createTitle": "Creează produs",
+      "editTitle": "Editează produs",
+      "name": "Nume",
+      "description": "Descriere",
+      "price": "Preț",
+      "productType": "Tip produs",
+      "origin": {
+        "purchased": "Cumpărat de la furnizor",
+        "manufactured": "Fabricat intern",
+        "both": "Atât cumpărat, cât și fabricat"
+      },
+      "originHint": "Alege dacă produsul este cumpărat de la furnizor, fabricat în companie sau poate fi și cumpărat, și fabricat.",
+      "supplier": "Furnizor",
+      "selectSupplier": "Selectează furnizor"
+    },
+    "inventory": {
+      "createTitle": "Stoc inițial (opțional)",
+      "editTitle": "Locații de stoc",
+      "createDescription": "Adaugă una sau mai multe locații cu cantități.",
+      "editDescription": "Editează cantitățile și pragurile de reaprovizionare, adaugă sau elimină locații.",
+      "deposit": "Depozit",
+      "selectDeposit": "Selectează depozit",
+      "shelf": "Raft",
+      "shelfPlaceholder": "Raft",
+      "qty": "Cant.",
+      "reorder": "Reaprov.",
+      "zero": "0",
+      "removeLocation": "Elimină locația",
+      "addLocation": "Adaugă locație"
+    },
+    "images": {
+      "title": "Imagini produs",
+      "description": "Imagine principală (display_type 1) și imagini suplimentare. Încarcă sau setează ca principală.",
+      "main": "Principală",
+      "setAsMain": "Setează ca principală",
+      "remove": "Elimină",
+      "addAdditional": "Adaugă (suplimentară)",
+      "addAsMain": "Adaugă ca principală"
+    },
+    "view": {
+      "title": "Detalii produs",
+      "images": "Imagini",
+      "stockLocations": "Locații stoc",
+      "noInventoryRecords": "Nu există înregistrări de stoc",
+      "noShelf": "Fără raft",
+      "units": "buc",
+      "reorder": "Reaprovizionare",
+      "totalStock": "Stoc total",
+      "totalStockValue_one": "{{count}} buc",
+      "totalStockValue_other": "{{count}} buc"
+    },
+    "map": {
+      "title": "Locație produs - {{name}}",
+      "description": "Vezi locația produsului pe harta depozitului.",
+      "deposit": "Depozit",
+      "depositNumber": "Depozit #{{id}}",
+      "loading": "Se încarcă harta...",
+      "shelf": "Raft",
+      "at": "la",
+      "hint": "Folosește Ctrl+Scroll pentru zoom • Click și drag pentru pan (dacă e implementat)",
+      "zoom": "Zoom",
+      "zoomOut": "Micșorează",
+      "zoomIn": "Mărește",
+      "resetZoom": "Resetează zoom",
+      "reset": "Reset",
+      "noLocation": "Nu a fost găsită o locație de stoc pentru acest produs."
+    }
+  }
+  ,
+  "inventory": {
+    "title": "Inventar",
+    "totalRecordName": "înregistrări inventar",
+    "searchPlaceholder": "Caută în inventar...",
+    "table": {
+      "product": "Produs",
+      "stock": "Stoc",
+      "location": "Locație",
+      "reorderLevel": "Prag reaprov.",
+      "actions": "Acțiuni"
+    },
+    "actions": {
+      "add": "Adaugă inventar",
+      "viewHistory": "Vezi istoric",
+      "viewLocation": "Vezi locația în depozit",
+      "edit": "Editează inventar",
+      "delete": "Șterge"
+    },
+    "toast": {
+      "created": "Inventar creat",
+      "createFailed": "Nu s-a putut crea inventarul",
+      "updated": "Inventar actualizat",
+      "updateFailed": "Nu s-a putut actualiza inventarul",
+      "deleted": "Înregistrare de inventar ștearsă",
+      "deleteFailed": "Nu s-a putut șterge inventarul"
+    },
+    "errors": {
+      "permissionDenied": "Acces interzis",
+      "error": "Eroare"
+    },
+    "confirmDelete": {
+      "title": "Șterge înregistrarea de inventar?",
+      "description": "Ștergi inventarul pentru „{{name}}” la {{location}}?",
+      "thisLocation": "această locație",
+      "confirm": "Da, șterge"
+    },
+    "form": {
+      "createTitle": "Adaugă inventar",
+      "editTitle": "Editează inventar",
+      "product": "Produs",
+      "selectProduct": "Selectează produs",
+      "deposit": "Depozit",
+      "selectDeposit": "Selectează depozit",
+      "shelf": "Raft",
+      "selectShelf": "Selectează raft",
+      "quantity": "Cantitate",
+      "reorderLevel": "Prag reaprovizionare"
+    },
+    "activity": {
+      "title": "Istoric inventar",
+      "loadFailed": "Nu s-a putut încărca istoricul",
+      "empty": "Nu există activitate înregistrată încă.",
+      "inventoryNumber": "Inventar #{{id}}",
+      "actions": {
+        "created": "Creat",
+        "updated": "Actualizat",
+        "adjusted": "Stoc ajustat",
+        "deleted": "Șters"
+      }
+    }
+  }
+  ,
+  "orders": {
+    "title": "Comenzi",
+    "totalRecordName": "comenzi",
+    "searchPlaceholder": "Caută nr. comandă sau client...",
+    "status": {
+      "pending": "În așteptare",
+      "processing": "În procesare",
+      "completed": "Finalizată",
+      "cancelled": "Anulată"
+    },
+    "table": {
+      "orderNumber": "Nr. comandă",
+      "customer": "Client",
+      "status": "Status",
+      "total": "Total",
+      "date": "Data",
+      "actions": "Acțiuni"
+    },
+    "actions": {
+      "new": "Comandă nouă",
+      "view": "Vizualizare",
+      "edit": "Editează",
+      "delete": "Șterge"
+    },
+    "filters": {
+      "dateFrom": "Data de la",
+      "dateTo": "Data până la",
+      "customer": "Client",
+      "customerAll": "Toți clienții",
+      "status": {
+        "label": "Status",
+        "all": "Toate"
+      }
+    },
+    "errors": {
+      "generic": "Eroare",
+      "permissionDenied": "Acces interzis",
+      "error": "Eroare",
+      "loadOrderFailed": "Eroare la încărcarea comenzii"
+    },
+    "toast": {
+      "created": "Comandă creată cu succes",
+      "createFailed": "Eroare la crearea comenzii",
+      "updated": "Comandă actualizată cu succes",
+      "updateFailed": "Eroare la actualizarea comenzii",
+      "deleted": "Comandă ștearsă",
+      "deleteFailed": "Eroare la ștergerea comenzii",
+      "deleteFailedGeneric": "Eroare la ștergere",
+      "statusUpdated": "Status actualizat",
+      "statusUpdateFailed": "Eroare la actualizare status",
+      "customerUpdated": "Client actualizat",
+      "customerUpdateFailed": "Eroare la actualizare client",
+      "itemsUpdated": "Produsele au fost actualizate",
+      "itemsUpdateFailed": "Eroare la salvare produse",
+      "taskAdded": "Sarcină adăugată",
+      "taskAddFailed": "Eroare la adăugare sarcină",
+      "taskDeleted": "Sarcină ștearsă",
+      "taskDeleteFailed": "Eroare la ștergere sarcină",
+      "documentUploaded": "Document încărcat",
+      "uploadFailed": "Eroare la încărcare",
+      "documentDeleted": "Document șters"
+    },
+    "confirmDelete": {
+      "title": "Ștergi comanda?",
+      "description": "Sigur vrei să ștergi comanda {{order}}?",
+      "confirm": "Da, șterge"
+    },
+    "form": {
+      "createTitle": "Comandă nouă",
+      "editTitle": "Editare comandă",
+      "description": "Completează detaliile comenzii și produsele asociate acesteia.",
+      "orderNumber": "Nr. comandă",
+      "customer": "Client",
+      "selectCustomer": "Selectează client",
+      "status": "Status",
+      "notes": "Note",
+      "notesPlaceholder": "Note opționale",
+      "itemsTitle": "Produse",
+      "itemsRequired": "Adaugă cel puțin un produs cu cantitate și preț.",
+      "item": {
+        "product": "Produs",
+        "selectProduct": "Selectează produs",
+        "quantity": "Cantitate",
+        "price": "Preț",
+        "removeLine": "Elimină linia",
+        "addProduct": "Adaugă produs"
+      }
+    },
+    "view": {
+      "title": "Comandă {{order}}",
+      "orderDetails": "Detalii comandă",
+      "customer": {
+        "title": "Client",
+        "none": "Nu este asociat niciun client.",
+        "contact": "Date contact",
+        "contactPerson": "Contact",
+        "phone": "Tel",
+        "billing": "Facturare",
+        "shipping": "Livrare",
+        "associateOrCreate": "Asociază un client existent sau creează unul nou.",
+        "chooseOtherOrCreate": "Alege alt client sau creează unul nou.",
+        "selectExisting": "Selectează din clienții existenți",
+        "searchPlaceholder": "Caută client...",
+        "or": "sau",
+        "createNew": "Creează client nou",
+        "change": "Schimbă client",
+        "remove": "Elimină client din comandă"
+      },
+      "items": {
+        "title": "Produse",
+        "product": "Produs",
+        "quantity": "Cantitate",
+        "price": "Preț",
+        "lineTotal": "Total linie",
+        "vat": "TVA",
+        "totalWithVat": "Total cu TVA",
+        "selectProduct": "Alege produs",
+        "removeLine": "Elimină linia",
+        "addProduct": "Adaugă produs"
+      },
+      "summary": {
+        "subtotal": "Subtotal",
+        "vatRate": "Taxă TVA (%)",
+        "shipping": "Transport",
+        "total": "Total",
+        "saveItems": "Salvează produse și total"
+      },
+      "tasks": {
+        "title": "Sarcini / Etape comandă",
+        "description": "Sarcinile sunt vizibile angajatului asignat. Poți adăuga etape și schimba statusul.",
+        "orderTag": "Comandă",
+        "due": "Termen",
+        "assigned": "Asignat",
+        "editTask": "Editează sarcina",
+        "confirmDeleteTask": "Ștergi această sarcină?",
+        "deleteTask": "Șterge sarcina",
+        "empty": "Nu există sarcini. Adaugă etape pentru comandă.",
+        "add": "Adaugă sarcină / etapă",
+        "newTaskTitle": "Sarcină nouă",
+        "titlePlaceholder": "Titlu (ex: Pregătire comandă)",
+        "descriptionPlaceholder": "Descriere (opțional)",
+        "assignedToLabel": "Asignat către",
+        "selectEmployee": "Alege angajat",
+        "dueDateLabel": "Termen limită",
+        "selectEmployeeError": "Selectează un angajat pentru sarcină.",
+        "adding": "Se adaugă...",
+        "addConfirm": "Adaugă"
+      },
+      "documents": {
+        "title": "Documente atașate",
+        "upload": "Încarcă",
+        "empty": "Nu există documente atașate."
+      }
+    },
+    "documents": {
+      "type": {
+        "awb": "AWB",
+        "invoice": "Factură",
+        "other": "Altele"
+      }
+    },
+    "invoice": {
+      "generate": "Generează factură",
+      "generating": "Se generează...",
+      "selectCustomerFirst": "Selectează un client înainte de a genera factura.",
+      "addItemsFirst": "Adaugă cel puțin un produs în comandă înainte de a genera factura.",
+      "generatedAndAttached": "Factură generată, descărcată și atașată la comandă.",
+      "generateFailed": "Eroare la generarea facturii."
+    }
+  }
+}

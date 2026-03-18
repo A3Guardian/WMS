@@ -1,0 +1,2280 @@
+{
+  "app": {
+    "language": "Language",
+    "english": "English",
+    "romanian": "Romanian"
+  },
+  "settings": {
+    "title": "Application settings",
+    "subtitle": "Configure general parameters, company details, and email notifications.",
+    "toast": {
+      "saved": "Settings saved.",
+      "saveError": "Save failed.",
+      "logoUploaded": "Logo uploaded.",
+      "logoUploadError": "Logo upload failed."
+    },
+    "errors": {
+      "noPermission": "You don't have permission to access settings."
+    },
+    "sections": {
+      "general": "General"
+    },
+    "logo": {
+      "uploading": "Uploading…",
+      "upload": "Upload logo"
+    },
+    "general": {
+      "logoLabel": "Application logo",
+      "noLogo": "No logo",
+      "defaultLanguage": "Default language",
+      "localePlaceholder": "Locale",
+      "save": "Save general"
+    },
+    "company": {
+      "title": "Company",
+      "description": "Company details for invoices: name, tax ID, address, city, county, email, bank, IBAN.",
+      "name": "Company name",
+      "namePlaceholder": "Example: Example Company LLC",
+      "cui": "Tax ID",
+      "cuiPlaceholder": "Unique identification code",
+      "phone": "Phone",
+      "address": "Address / Location",
+      "addressPlaceholder": "Company headquarters address",
+      "city": "City",
+      "cityPlaceholder": "City",
+      "county": "County",
+      "countyPlaceholder": "County",
+      "bank": "Bank",
+      "save": "Save company"
+    },
+    "smtp": {
+      "title": "Notifications – Email (SMTP)",
+      "description": "Configure the SMTP server for sending emails (reports, alerts, etc.).",
+      "encryption": "Encryption",
+      "encryptionPlaceholder": "Encryption",
+      "none": "None",
+      "username": "SMTP username",
+      "password": "SMTP password",
+      "passwordPlaceholder": "Leave empty to keep existing password",
+      "fromEmail": "From (email)",
+      "fromName": "From (name)",
+      "save": "Save SMTP"
+    }
+  }
+  ,
+  "invoicePdf": {
+    "title": "INVOICE",
+    "detailsTitle": "Details",
+    "partner": {
+      "customer": "Customer",
+      "supplier": "Supplier"
+    },
+    "labels": {
+      "invoiceNumber": "Invoice no.",
+      "date": "Date",
+      "status": "Status",
+      "dueDate": "Due date",
+      "paidDate": "Paid",
+      "category": "Category",
+      "taxId": "Tax ID",
+      "registrationNumber": "Trade register",
+      "phone": "Phone",
+      "email": "Email",
+      "bank": "Bank"
+    },
+    "table": {
+      "item": "Item",
+      "qty": "Qty",
+      "price": "Price",
+      "total": "Total"
+    },
+    "summary": {
+      "subtotal": "Subtotal",
+      "tax": "VAT",
+      "discount": "Discount",
+      "total": "Total"
+    },
+    "errors": {
+      "imageLoadFailed": "Failed to load image"
+    }
+  }
+  ,
+  "orderInvoicePdf": {
+    "title": "INVOICE",
+    "fileNamePrefix": "invoice",
+    "labels": {
+      "invoiceDate": "Invoice date",
+      "order": "Order",
+      "orderDate": "Order date"
+    },
+    "customer": {
+      "billingTitle": "Customer (Billing)",
+      "shippingTitle": "Shipping address"
+    },
+    "summary": {
+      "shipping": "Shipping"
+    }
+  }
+  ,
+  "navbar": {
+    "logout": "Log out",
+    "languageToggle": "Change language",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen",
+    "profile": "Profile"
+  }
+  ,
+  "dashboard": {
+    "title": "Dashboard",
+    "cards": {
+      "products": "Products",
+      "inventory": "Inventory",
+      "orders": "Orders",
+      "suppliers": "Suppliers",
+      "tasks": "Tasks"
+    },
+    "quickAccess": {
+      "title": "Quick access",
+      "description": "Use the left menu to navigate to Products, Inventory, Orders, Suppliers, Tasks, HR, and Finance.",
+      "products": "Products",
+      "inventory": "Inventory",
+      "orders": "Orders",
+      "financialDashboard": "Financial dashboard"
+    }
+  },
+  "employeeDashboard": {
+    "employee": "Employee",
+    "welcome": "Welcome, {{name}}!",
+    "subtitle": "Here is your activity and recent summary.",
+    "myTasks": {
+      "title": "My tasks",
+      "pending": "Pending",
+      "inProgress": "In progress",
+      "completed": "Completed",
+      "viewTasks": "View tasks →"
+    },
+    "recentCompleted": {
+      "title": "Recently completed tasks",
+      "allTasks": "All tasks →",
+      "empty": "You haven't completed any tasks yet."
+    },
+    "leaves": {
+      "title": "Time off / Leaves",
+      "all": "All leaves →",
+      "pending": "Pending",
+      "pendingHint": "Leave requests",
+      "upcoming": "Upcoming",
+      "upcomingHint": "Approved leaves",
+      "next": "Next leaves",
+      "defaultType": "Leave",
+      "to": "to",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "empty": "You have no upcoming or pending leaves."
+    },
+    "quickAccess": {
+      "title": "Quick access",
+      "myTasks": "My tasks",
+      "myLeaves": "My leaves",
+      "profile": "Profile"
+    }
+  }
+  ,
+  "menu": {
+    "dashboard": "Dashboard",
+    "empty": "No menu items available.",
+    "mobile": {
+      "title": "Menu",
+      "close": "Close menu"
+    },
+    "groups": {
+      "warehouse": "Warehouse & Operations",
+      "tasks": "Tasks",
+      "hr": "Human resources",
+      "financial": "Finance",
+      "settings": "Settings"
+    },
+    "items": {
+      "products": "Products",
+      "inventory": "Inventory",
+      "orders": "Orders",
+      "suppliers": "Suppliers",
+      "customers": "Customers",
+      "deposits": "Deposits",
+      "taskList": "Task list",
+      "employees": "Employees",
+      "departments": "Departments",
+      "salaries": "Salaries",
+      "payroll": "Payroll",
+      "leaveTypes": "Leave types",
+      "leaves": "Leaves",
+      "attendance": "Attendance",
+      "financialDashboard": "Financial dashboard",
+      "invoices": "Invoices",
+      "costReports": "Cost reports",
+      "payments": "Payments",
+      "appSettings": "Application settings",
+      "users": "Users",
+      "rolesAndPermissions": "Roles & permissions"
+    }
+  }
+  ,
+  "common": {
+    "back": "Back",
+    "name": "Name",
+    "delete": "Delete",
+    "close": "Close",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "dash": "-",
+    "na": "N/A",
+    "genericError": "An error occurred",
+    "unknown": "Unknown",
+    "permissionDenied": "Permission denied",
+    "error": "Error",
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    }
+  },
+  "suppliers": {
+    "title": "Suppliers",
+    "totalRecordName": "suppliers",
+    "searchPlaceholder": "Search suppliers...",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "contactPerson": "Contact person",
+      "actions": "Actions"
+    },
+    "actions": {
+      "add": "Add supplier",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "toast": {
+      "created": "Supplier created",
+      "createFailed": "Failed to create supplier",
+      "updated": "Supplier updated",
+      "updateFailed": "Failed to update supplier",
+      "deleted": "Supplier deleted",
+      "deleteFailed": "Failed to delete supplier"
+    },
+    "errors": {
+      "permissionDenied": "Permission denied",
+      "error": "Error",
+      "loadFailed": "Failed to load supplier"
+    },
+    "confirmDelete": {
+      "title": "Delete supplier?",
+      "description": "Delete supplier \"{{name}}\"?",
+      "confirm": "Yes, delete"
+    },
+    "form": {
+      "createTitle": "Add supplier",
+      "editTitle": "Edit supplier",
+      "sections": {
+        "general": "General",
+        "billingAddress": "Billing address",
+        "shippingAddress": "Shipping address",
+        "taxRegistration": "Tax & registration",
+        "banking": "Banking",
+        "paymentTermsCredit": "Payment terms & credit limit"
+      },
+      "fields": {
+        "name": "Name",
+        "companyName": "Company name",
+        "email": "Email",
+        "contactPerson": "Contact person",
+        "mainPhone": "Main phone",
+        "billingPhone": "Billing phone",
+        "shippingPhone": "Shipping phone",
+        "billingAddress": "Billing address",
+        "shippingAddress": "Shipping address",
+        "city": "City",
+        "postcode": "Postcode",
+        "country": "Country",
+        "taxNumber": "Tax number",
+        "registrationNumber": "Registration number",
+        "bankName": "Bank name",
+        "paymentTermsDays": "Payment terms (days)",
+        "creditLimit": "Credit limit"
+      }
+    },
+    "view": {
+      "title": "Supplier details",
+      "companyDetailsTitle": "Company details",
+      "companyDetailsDescription": "Core information about this supplier.",
+      "fields": {
+        "nameOrCompany": "Name / Company",
+        "contactPerson": "Contact person",
+        "mainPhone": "Main phone",
+        "billingAddress": "Billing address",
+        "shippingAddress": "Shipping address",
+        "taxRegistration": "Tax / Registration",
+        "tax": "Tax",
+        "registration": "Reg",
+        "banking": "Banking",
+        "bank": "Bank",
+        "paymentTerms": "Payment terms",
+        "days": "Days",
+        "creditLimit": "Credit limit"
+      },
+      "overview": {
+        "title": "Overview",
+        "supplierId": "Supplier ID",
+        "created": "Created",
+        "invoices": "Invoices",
+        "total": "Total",
+        "outstanding": "Outstanding",
+        "overdueInvoices": "Overdue invoices",
+        "credit": "Credit",
+        "limit": "Limit",
+        "terms": "Terms",
+        "termsDays_one": "{{count}} day",
+        "termsDays_other": "{{count}} days"
+      },
+      "invoices": {
+        "title": "Invoices from this supplier",
+        "totalRecordName": "invoices",
+        "table": {
+          "invoiceNumber": "Invoice #",
+          "issueDate": "Issue date",
+          "dueDate": "Due date",
+          "status": "Status",
+          "total": "Total"
+        }
+      }
+    }
+  },
+  "customers": {
+    "title": "Customers",
+    "totalRecordName": "customers",
+    "searchPlaceholder": "Search customers...",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "contactPerson": "Contact person",
+      "actions": "Actions"
+    },
+    "actions": {
+      "add": "Add customer",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "toast": {
+      "created": "Customer created",
+      "createFailed": "Failed to create customer",
+      "updated": "Customer updated",
+      "updateFailed": "Failed to update customer",
+      "deleted": "Customer deleted",
+      "deleteFailed": "Failed to delete customer"
+    },
+    "errors": {
+      "permissionDenied": "Permission denied",
+      "error": "Error",
+      "loadFailed": "Failed to load customer"
+    },
+    "confirmDelete": {
+      "title": "Delete customer?",
+      "description": "Delete customer \"{{name}}\"?",
+      "confirm": "Yes, delete"
+    },
+    "form": {
+      "createTitle": "Add customer",
+      "editTitle": "Edit customer",
+      "sections": {
+        "general": "General",
+        "billingAddress": "Billing address",
+        "shippingAddress": "Shipping address",
+        "taxRegistration": "Tax & registration",
+        "banking": "Banking",
+        "paymentTermsCredit": "Payment terms & credit limit",
+        "notes": "Notes"
+      },
+      "fields": {
+        "name": "Name",
+        "companyName": "Company name",
+        "email": "Email",
+        "contactPerson": "Contact person",
+        "mainPhone": "Main phone",
+        "billingPhone": "Billing phone",
+        "shippingPhone": "Shipping phone",
+        "billingAddress": "Billing address",
+        "shippingAddress": "Shipping address",
+        "city": "City",
+        "postcode": "Postcode",
+        "country": "Country",
+        "taxNumber": "Tax number",
+        "registrationNumber": "Registration number",
+        "bankName": "Bank name",
+        "paymentTermsDays": "Payment terms (days)",
+        "creditLimit": "Credit limit"
+      }
+    },
+    "view": {
+      "title": "Customer details",
+      "companyDetailsTitle": "Company details",
+      "companyDetailsDescription": "Core information about this customer.",
+      "fields": {
+        "nameOrCompany": "Name / Company",
+        "contactPerson": "Contact person",
+        "mainPhone": "Main phone",
+        "billingAddress": "Billing address",
+        "shippingAddress": "Shipping address",
+        "taxRegistration": "Tax / Registration",
+        "tax": "Tax",
+        "registration": "Reg",
+        "banking": "Banking",
+        "bank": "Bank",
+        "paymentTerms": "Payment terms",
+        "days": "Days",
+        "creditLimit": "Credit limit"
+      },
+      "overview": {
+        "title": "Overview",
+        "customerId": "Customer ID",
+        "created": "Created",
+        "invoices": "Invoices",
+        "total": "Total",
+        "outstanding": "Outstanding",
+        "overdueInvoices": "Overdue invoices",
+        "ordersCredit": "Orders / Credit",
+        "orders": "Orders",
+        "limit": "Limit"
+      },
+      "invoices": {
+        "title": "Invoices for this customer",
+        "totalRecordName": "invoices",
+        "table": {
+          "invoiceNumber": "Invoice #",
+          "issueDate": "Issue date",
+          "status": "Status",
+          "total": "Total"
+        }
+      },
+      "orders": {
+        "title": "Orders placed by this customer",
+        "totalRecordName": "orders",
+        "table": {
+          "orderNumber": "Order #",
+          "createdAt": "Created at",
+          "status": "Status",
+          "total": "Total"
+        }
+      }
+    }
+  },
+  "deposits": {
+    "title": "Storage deposits",
+    "totalRecordName": "deposits",
+    "searchPlaceholder": "Search deposits...",
+    "toast": {
+      "created": "Deposit created successfully",
+      "createFailed": "Failed to create deposit",
+      "updated": "Deposit updated successfully",
+      "updateFailed": "Failed to update deposit",
+      "deleted": "Deposit deleted successfully",
+      "deleteFailed": "Failed to delete deposit"
+    },
+    "errors": {
+      "loadFailed": "Error loading deposits",
+      "noPermissionView": "You don't have permission to view deposits.",
+      "noPermissionEdit": "You don't have permission to edit deposits.",
+      "noPermissionCreate": "You don't have permission to create deposits."
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "maintenance": "Maintenance"
+    },
+    "filters": {
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "location": "Location",
+      "locationPlaceholder": "Filter by location"
+    },
+    "table": {
+      "name": "Name",
+      "code": "Code",
+      "location": "Location",
+      "dimensions": "Dimensions",
+      "capacity": "Capacity",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "actions": {
+      "add": "Add deposit",
+      "configure": "Configure",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "confirmDelete": {
+      "title": "Delete deposit?",
+      "description": "Are you sure you want to delete deposit \"{{name}}\"?",
+      "confirm": "Yes, delete"
+    },
+    "dimensionsFormat": "{{width}}m × {{height}}m × {{depth}}m",
+    "capacityFormat": "{{value}} m³",
+    "form": {
+      "createTitle": "Create deposit",
+      "editTitle": "Edit deposit",
+      "fields": {
+        "name": "Name",
+        "code": "Code",
+        "location": "Location",
+        "width": "Width (meters)",
+        "height": "Height (meters)",
+        "depth": "Depth (meters)",
+        "capacity": "Capacity (cubic meters)",
+        "status": "Status",
+        "description": "Description",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "name": "e.g., Warehouse A, Storage Room 1",
+        "code": "Auto-generated if not provided",
+        "location": "e.g., Building A, Floor 2, Room 201",
+        "dimension": "0.00",
+        "capacity": "Auto-calculated from dimensions",
+        "status": "Select status",
+        "description": "Deposit description",
+        "notes": "Additional notes"
+      },
+      "hints": {
+        "code": "Auto-generated if not provided",
+        "capacity": "Auto-calculated from dimensions",
+        "calculatedCapacity": "Calculated: {{value}} m³"
+      },
+      "actions": {
+        "create": "Create deposit",
+        "update": "Update deposit"
+      }
+    },
+    "shelfProducts": {
+      "errorLoading": "Error loading products",
+      "loading": "Loading products...",
+      "empty": "No products assigned to this shelf",
+      "sku": "SKU",
+      "quantityOnShelf": "Quantity on shelf",
+      "totalInventory": "Total inventory",
+      "available": "Available"
+    },
+    "configurator": {
+      "title": "Deposit configurator",
+      "layoutTitle": "Layout",
+      "newShelfSize": "New shelf size",
+      "meters": "meters",
+      "zoom": "Zoom",
+      "actions": {
+        "addShelf": "Add shelf",
+        "addWall": "Add wall",
+        "cancelWall": "Cancel wall",
+        "addDoor": "Add door",
+        "cancelDoor": "Cancel door",
+        "zoomOut": "Zoom out",
+        "zoomIn": "Zoom in",
+        "resetZoom": "Reset zoom",
+        "reset": "Reset",
+        "deleteShelf": "Delete shelf",
+        "deleteDoor": "Delete door"
+      },
+      "details": {
+        "title": "Details",
+        "shelf": "Shelf details",
+        "wall": "Wall details",
+        "door": "Door details",
+        "drawingMode": "Drawing mode"
+      },
+      "toast": {
+        "loadProductsFailed": "Failed to load products",
+        "shelfCreated": "Shelf created successfully",
+        "shelfCreateFailed": "Failed to create shelf",
+        "shelfUpdateFailed": "Failed to update shelf",
+        "shelfDeleted": "Shelf deleted successfully",
+        "shelfDeleteFailed": "Failed to delete shelf",
+        "wallCreated": "Wall created successfully",
+        "wallCreateFailed": "Failed to create wall",
+        "wallDeleted": "Wall deleted successfully",
+        "wallDeleteFailed": "Failed to delete wall",
+        "wallUpdated": "Wall updated",
+        "wallUpdateFailed": "Failed to update wall",
+        "doorCreated": "Door created successfully",
+        "doorCreateFailed": "Failed to create door",
+        "doorUpdated": "Door updated",
+        "doorUpdateFailed": "Failed to update door",
+        "doorDeleted": "Door deleted successfully",
+        "doorDeleteFailed": "Failed to delete door"
+      },
+      "errors": {
+        "clickWallForDoor": "Please click on a wall or deposit border to place a door",
+        "invalidWall": "Invalid wall",
+        "notFound": "Deposit not found"
+      },
+      "placeholders": {
+        "wallName": "Wall name (optional)",
+        "doorName": "Door name (optional)"
+      },
+      "wall": {
+        "startPosition": "Start position (meters)",
+        "endPosition": "End position (meters)",
+        "thickness": "Thickness (meters)",
+        "length": "Length (meters)"
+      },
+      "door": {
+        "wall": "Wall",
+        "wallNumber": "Wall #{{id}}",
+        "position": "Position (meters)",
+        "width": "Width (meters)",
+        "orientation": "Orientation",
+        "defaultName": "door"
+      },
+      "shelf": {
+        "position": "Position (meters)",
+        "size": "Size (meters)",
+        "depth": "Depth (meters)",
+        "capacity": "Capacity (m³)",
+        "productsTitle": "Products in shelf"
+      },
+      "hints": {
+        "wallClickAgain": "Click again on grid to set wall end point",
+        "wallStart": "Click on grid to set wall start",
+        "wallEnd": "Click on grid to set wall end",
+        "doorPlace": "Click on a wall to place door",
+        "default": "Drag shelves to reposition • Click to select • Use buttons to add items • Ctrl+Scroll to zoom",
+        "wallStartPoint": "Click to set wall start point",
+        "wallEndPoint": "Click to set wall end point",
+        "doorBorder": "Click on a wall or border to place door",
+        "clickToView": "Click on a shelf, wall, or door to view and edit its details"
+      },
+      "confirmDelete": {
+        "shelf": "Delete shelf \"{{name}}\"?",
+        "wall": "Delete wall?",
+        "door": "Delete door \"{{name}}\"?"
+      },
+      "shelfDefaultName": "Shelf {{number}}"
+    }
+  },
+  "tasks": {
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "list": {
+      "title": "Tasks",
+      "totalRecordName": "tasks",
+      "searchPlaceholder": "Search tasks...",
+      "orderTag": "Order",
+      "table": {
+        "title": "Title",
+        "assignedTo": "Assigned to",
+        "assignedBy": "Assigned by",
+        "order": "Order",
+        "status": "Status",
+        "dueDate": "Due date",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "actions": {
+        "create": "Create task",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "toast": {
+        "deleted": "Task deleted successfully",
+        "deleteFailed": "Failed to delete task"
+      },
+      "errors": {
+        "permissionDenied": "Permission denied",
+        "error": "Error"
+      },
+      "confirmDelete": {
+        "title": "Delete task?",
+        "description": "Are you sure you want to delete this task?",
+        "confirm": "Yes, delete"
+      }
+    }
+    ,
+    "form": {
+      "createTitle": "Create task",
+      "editTitle": "Edit task",
+      "description": "Manage task details and assignment.",
+      "fields": {
+        "assignedTo": "Assign to",
+        "orderOptional": "Order (optional)",
+        "title": "Title",
+        "description": "Description",
+        "status": "Status",
+        "dueDate": "Due date",
+        "images": "Images"
+      },
+      "placeholders": {
+        "selectEmployee": "Select employee",
+        "noOrder": "No order",
+        "selectStatus": "Select status"
+      },
+      "empty": {
+        "employees": "No employees found.",
+        "orders": "No orders found."
+      },
+      "images": {
+        "existing": "Existing images:",
+        "new": "New images:",
+        "imageAlt": "Task image {{number}}",
+        "previewAlt": "Preview {{number}}"
+      },
+      "actions": {
+        "create": "Create task",
+        "update": "Update task"
+      },
+      "toast": {
+        "created": "Task created successfully",
+        "createFailed": "Failed to create task",
+        "updated": "Task updated successfully",
+        "updateFailed": "Failed to update task"
+      }
+    }
+  },
+  "employees": {
+    "list": {
+      "title": "Employees",
+      "totalRecordName": "employees",
+      "searchPlaceholder": "Search by name, email, code, position...",
+      "filters": {
+        "department": "Department",
+        "allDepartments": "All departments",
+        "status": "Status",
+        "allStatuses": "All statuses"
+      },
+      "table": {
+        "employeeCode": "Employee code",
+        "name": "Name",
+        "position": "Position",
+        "employmentType": "Employment type",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "actions": {
+      "add": "Add employee",
+      "create": "Create employee",
+      "update": "Update employee",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "fields": {
+      "employeeCode": "Employee code",
+      "linkUserOptional": "Link to user (optional)",
+      "createAccount": "Create platform account",
+      "createAccountHint": "This will create a platform user and link it to this employee.",
+      "accountName": "Account name",
+      "accountEmail": "Account email",
+      "accountPassword": "Account password",
+      "department": "Department",
+      "position": "Position",
+      "hireDate": "Hire date",
+      "employmentType": "Employment type",
+      "salary": "Salary",
+      "phone": "Phone",
+      "address": "Address",
+      "emergencyContactName": "Emergency contact name",
+      "emergencyContactPhone": "Emergency contact phone",
+      "status": "Status"
+    },
+    "placeholders": {
+      "selectUser": "Select user",
+      "selectDepartment": "Select department",
+      "selectEmploymentType": "Select type",
+      "selectStatus": "Select status"
+    },
+    "empty": {
+      "users": "No users found.",
+      "departments": "No departments found."
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "terminated": "Terminated",
+      "on_leave": "On leave"
+    },
+    "employmentType": {
+      "full-time": "Full-time",
+      "part-time": "Part-time",
+      "contractor": "Contractor",
+      "intern": "Intern"
+    },
+    "toast": {
+      "created": "Employee created successfully",
+      "createdWithAccount": "Employee created + account created",
+      "openUser": "Open user",
+      "createFailed": "Failed to create employee",
+      "updated": "Employee updated successfully",
+      "updateFailed": "Failed to update employee",
+      "deleted": "Employee deleted successfully",
+      "deleteFailed": "Failed to delete employee"
+    },
+    "errors": {
+      "loadFailed": "Error loading employees",
+      "loadOneFailed": "Failed to load employee",
+      "noPermissionCreate": "You don't have permission to create employees.",
+      "noPermissionEdit": "You don't have permission to edit employees."
+    },
+    "confirmDelete": {
+      "title": "Delete employee?",
+      "description": "Are you sure you want to delete employee {{code}}?",
+      "confirm": "Yes, delete"
+    },
+    "modal": {
+      "createTitle": "Create employee",
+      "editTitle": "Edit employee",
+      "viewTitle": "View employee",
+      "description": "Manage employee details including personal, employment and emergency contact information."
+    },
+    "view": {
+      "title": "Employee details",
+      "profileTitle": "Employee profile",
+      "code": "Code",
+      "noDepartment": "No department",
+      "fields": {
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "positionDepartment": "Position & Department",
+        "hireDate": "Hire date",
+        "employmentTypeStatus": "Employment type / Status"
+      },
+      "emergency": {
+        "title": "Emergency contact",
+        "name": "Name",
+        "phone": "Phone"
+      },
+      "linkedUser": {
+        "title": "Linked user",
+        "account": "User account",
+        "none": "This employee is not linked to an application user."
+      },
+      "taskOverview": {
+        "title": "Task overview",
+        "total": "Total tasks",
+        "completed": "Completed",
+        "open": "Open",
+        "viewAll": "View all tasks"
+      },
+      "attendance": {
+        "title": "Attendance (this month)",
+        "presentDays": "Present days",
+        "view": "View attendance"
+      },
+      "salary": {
+        "title": "Salary",
+        "currentAmount": "Current amount",
+        "effectiveFrom": "Effective from",
+        "empty": "No salary records found for this employee.",
+        "viewHistory": "View salary history"
+      },
+      "recentTasks": {
+        "title": "Recent tasks",
+        "empty": "This employee has no tasks assigned yet.",
+        "due": "Due"
+      }
+    }
+  },
+  "departments": {
+    "list": {
+      "title": "Departments",
+      "totalRecordName": "departments",
+      "searchPlaceholder": "Search by name or description...",
+      "table": {
+        "name": "Name",
+        "description": "Description",
+        "actions": "Actions"
+      }
+    },
+    "actions": {
+      "add": "Add department",
+      "create": "Create department",
+      "update": "Update department",
+      "viewTeam": "View team",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "fields": {
+      "name": "Name",
+      "description": "Description"
+    },
+    "toast": {
+      "created": "Department created successfully",
+      "createFailed": "Failed to create department",
+      "updated": "Department updated successfully",
+      "updateFailed": "Failed to update department",
+      "deleted": "Department deleted successfully",
+      "deleteFailed": "Failed to delete department"
+    },
+    "errors": {
+      "loadFailed": "Error loading departments",
+      "loadOneFailed": "Failed to load department",
+      "noPermissionCreate": "You don't have permission to create departments.",
+      "noPermissionEdit": "You don't have permission to edit departments."
+    },
+    "confirmDelete": {
+      "title": "Delete department?",
+      "description": "Are you sure you want to delete department \"{{name}}\"?",
+      "confirm": "Yes, delete"
+    },
+    "modal": {
+      "createTitle": "Create department",
+      "editTitle": "Edit department",
+      "description": "Manage department name and description."
+    },
+    "view": {
+      "title": "Department team",
+      "teamMembers": "Team members",
+      "employeesCount_one": "{{count}} employee",
+      "employeesCount_other": "{{count}} employees",
+      "loadEmployeesFailed": "Failed to load employees for this department.",
+      "emptyEmployees": "This department has no employees assigned yet.",
+      "noPosition": "No position"
+    }
+  },
+  "salaries": {
+    "list": {
+      "title": "Salaries",
+      "totalRecordName": "salary records",
+      "searchPlaceholder": "Search salary records...",
+      "table": {
+        "employee": "Employee",
+        "amount": "Amount",
+        "type": "Type",
+        "effectiveDate": "Effective date",
+        "endDate": "End date",
+        "actions": "Actions"
+      }
+    },
+    "filters": {
+      "employee": "Employee",
+      "allEmployees": "All employees",
+      "type": "Type",
+      "allTypes": "All types"
+    },
+    "type": {
+      "base": "Base",
+      "bonus": "Bonus",
+      "deduction": "Deduction"
+    },
+    "actions": {
+      "add": "Add salary",
+      "create": "Create salary",
+      "update": "Update salary",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "fields": {
+      "employee": "Employee",
+      "amount": "Amount",
+      "type": "Type",
+      "effectiveDate": "Effective date",
+      "endDate": "End date",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "selectEmployee": "Select employee",
+      "selectType": "Select type"
+    },
+    "empty": {
+      "employees": "No employees found."
+    },
+    "toast": {
+      "created": "Salary created successfully",
+      "createFailed": "Failed to create salary",
+      "updated": "Salary updated successfully",
+      "updateFailed": "Failed to update salary",
+      "deleted": "Salary deleted successfully",
+      "deleteFailed": "Failed to delete salary"
+    },
+    "errors": {
+      "loadFailed": "Error loading salaries"
+    },
+    "confirmDelete": {
+      "title": "Delete salary record?",
+      "description": "Are you sure you want to delete this salary record?",
+      "confirm": "Yes, delete"
+    },
+    "modal": {
+      "createTitle": "Create salary",
+      "editTitle": "Edit salary",
+      "description": "Manage salary details for the selected employee."
+    }
+  },
+  "payroll": {
+    "status": {
+      "draft": "Draft",
+      "approved": "Approved",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "list": {
+      "title": "Payroll records",
+      "totalRecordName": "payroll records",
+      "searchPlaceholder": "Search payroll records...",
+      "table": {
+        "employee": "Employee",
+        "period": "Period",
+        "baseSalary": "Base salary",
+        "bonuses": "Bonuses",
+        "deductions": "Deductions",
+        "netSalary": "Net salary",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "filters": {
+      "employee": "Employee",
+      "allEmployees": "All employees",
+      "month": "Month",
+      "allMonths": "All months",
+      "year": "Year",
+      "allYears": "All years",
+      "status": "Status",
+      "allStatuses": "All statuses"
+    },
+    "fields": {
+      "employee": "Employee",
+      "month": "Month",
+      "year": "Year",
+      "baseSalary": "Base salary",
+      "bonuses": "Bonuses",
+      "overtimePay": "Overtime pay",
+      "deductions": "Deductions",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "selectEmployee": "Select employee",
+      "selectMonth": "Select month",
+      "selectStatus": "Select status",
+      "baseSalary": "Auto-filled from employee salary"
+    },
+    "hints": {
+      "autoFilled": "Auto-filled from employee. You can override if needed.",
+      "selectEmployeeToAutoFill": "Select an employee to auto-fill"
+    },
+    "empty": {
+      "employees": "No employees found."
+    },
+    "actions": {
+      "create": "Create payroll",
+      "update": "Update payroll record",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "netSalary": "Net salary",
+    "modal": {
+      "createTitle": "Create payroll record",
+      "editTitle": "Edit payroll record",
+      "description": "Configure payroll details for the selected period and employee."
+    },
+    "toast": {
+      "created": "Payroll record created successfully",
+      "createFailed": "Failed to create payroll record",
+      "updated": "Payroll record updated successfully",
+      "updateFailed": "Failed to update payroll record",
+      "deleted": "Payroll record deleted successfully",
+      "deleteFailed": "Failed to delete payroll record"
+    },
+    "errors": {
+      "loadFailed": "Error loading payroll records"
+    },
+    "confirmDelete": {
+      "title": "Delete payroll record?",
+      "description": "Are you sure you want to delete this payroll record?",
+      "confirm": "Yes, delete"
+    }
+  },
+  "leaveTypes": {
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "list": {
+      "title": "Leave types",
+      "totalRecordName": "leave types",
+      "searchPlaceholder": "Search leave types...",
+      "table": {
+        "name": "Name",
+        "maxDaysPerYear": "Max days/year",
+        "carryForward": "Carry forward",
+        "status": "Status",
+        "description": "Description",
+        "actions": "Actions"
+      }
+    },
+    "fields": {
+      "name": "Name",
+      "maxDaysPerYear": "Max days per year",
+      "allowCarryForward": "Allow carry forward",
+      "active": "Active",
+      "description": "Description"
+    },
+    "actions": {
+      "create": "Add leave type",
+      "update": "Update leave type",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "modal": {
+      "createTitle": "Create leave type",
+      "editTitle": "Edit leave type",
+      "description": "Configure leave type limits and behavior."
+    },
+    "toast": {
+      "created": "Leave type created successfully",
+      "createFailed": "Failed to create leave type",
+      "updated": "Leave type updated successfully",
+      "updateFailed": "Failed to update leave type",
+      "deleted": "Leave type deleted successfully",
+      "deleteFailed": "Failed to delete leave type"
+    },
+    "errors": {
+      "loadFailed": "Error loading leave types"
+    },
+    "confirmDelete": {
+      "title": "Delete leave type?",
+      "description": "Are you sure you want to delete leave type \"{{name}}\"?",
+      "confirm": "Yes, delete"
+    }
+  },
+  "leaves": {
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    },
+    "list": {
+      "title": "Leaves",
+      "totalRecordName": "leave requests",
+      "searchPlaceholder": "Search leave requests...",
+      "table": {
+        "employee": "Employee",
+        "leaveType": "Leave type",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "days": "Days",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "filters": {
+      "employee": "Employee",
+      "allEmployees": "All employees",
+      "status": "Status",
+      "allStatuses": "All statuses"
+    },
+    "fields": {
+      "employee": "Employee",
+      "leaveType": "Leave type",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "status": "Status",
+      "rejectionReason": "Rejection reason",
+      "reason": "Reason"
+    },
+    "placeholders": {
+      "selectEmployee": "Select employee",
+      "selectLeaveType": "Select leave type",
+      "selectStatus": "Select status"
+    },
+    "empty": {
+      "employees": "No employees found.",
+      "leaveTypes": "No leave types found."
+    },
+    "actions": {
+      "request": "Request leave",
+      "update": "Update leave",
+      "viewEdit": "View / Edit",
+      "delete": "Delete",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "modal": {
+      "createTitle": "Request leave",
+      "editTitle": "Edit leave",
+      "description": "Manage employee leave request details and status."
+    },
+    "toast": {
+      "created": "Leave request created successfully",
+      "createFailed": "Failed to create leave request",
+      "updated": "Leave updated successfully",
+      "updateFailed": "Failed to update leave",
+      "deleted": "Leave deleted successfully",
+      "deleteFailed": "Failed to delete leave request",
+      "approved": "Leave approved successfully",
+      "approveFailed": "Failed to approve leave",
+      "rejected": "Leave rejected successfully",
+      "rejectFailed": "Failed to reject leave"
+    },
+    "prompt": {
+      "rejectionReason": "Enter rejection reason:"
+    },
+    "errors": {
+      "loadFailed": "Error loading leaves"
+    },
+    "confirmDelete": {
+      "title": "Delete leave request?",
+      "description": "Are you sure you want to delete this leave request?",
+      "confirm": "Yes, delete"
+    },
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days"
+  },
+  "attendance": {
+    "status": {
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late",
+      "half_day": "Half day",
+      "on_leave": "On leave"
+    },
+    "list": {
+      "title": "Attendance",
+      "totalRecordName": "attendance records",
+      "searchPlaceholder": "Search attendance...",
+      "table": {
+        "employee": "Employee",
+        "date": "Date",
+        "clockIn": "Clock in",
+        "clockOut": "Clock out",
+        "totalHours": "Total hours",
+        "overtime": "Overtime",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "filters": {
+      "employee": "Employee",
+      "allEmployees": "All employees",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "dateFrom": "Date from",
+      "dateTo": "Date to"
+    },
+    "fields": {
+      "employee": "Employee",
+      "date": "Date",
+      "clockIn": "Clock in time",
+      "clockOut": "Clock out time",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "selectEmployee": "Select employee",
+      "selectStatus": "Select status"
+    },
+    "empty": {
+      "employees": "No employees found."
+    },
+    "actions": {
+      "create": "Add attendance",
+      "update": "Update attendance",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "modal": {
+      "createTitle": "Create attendance",
+      "editTitle": "Edit attendance",
+      "description": "Manage attendance record for the selected employee and date."
+    },
+    "toast": {
+      "created": "Attendance created successfully",
+      "createFailed": "Failed to create attendance",
+      "updated": "Attendance updated successfully",
+      "updateFailed": "Failed to update attendance",
+      "deleted": "Attendance record deleted successfully",
+      "deleteFailed": "Failed to delete attendance record"
+    },
+    "errors": {
+      "loadFailed": "Error loading attendance"
+    },
+    "confirmDelete": {
+      "title": "Delete attendance record?",
+      "description": "Are you sure you want to delete this attendance record?",
+      "confirm": "Yes, delete"
+    }
+  },
+  "financialDashboard": {
+    "title": "Financial dashboard",
+    "loading": "Loading dashboard...",
+    "actions": {
+      "exportPdf": "Export PDF",
+      "exportExcel": "Export Excel"
+    },
+    "filters": {
+      "dateFrom": "Date from",
+      "dateTo": "Date to",
+      "supplier": "Supplier",
+      "allSuppliers": "All suppliers",
+      "category": "Category",
+      "categoryPlaceholder": "Filter by category"
+    },
+    "cards": {
+      "totalIncome": "Total income",
+      "totalExpenses": "Total expenses",
+      "netProfit": "Net profit",
+      "stockValue": "Stock value"
+    },
+    "charts": {
+      "incomeVsExpenses": "Income vs expenses (last 12 months)",
+      "income": "Income",
+      "expenses": "Expenses",
+      "expensesByCategory": "Expenses by category",
+      "paymentMethods": "Payment methods"
+    },
+    "topSuppliers": {
+      "title": "Top suppliers by payment",
+      "empty": "No data available"
+    },
+    "recentTransactions": {
+      "title": "Recent transactions",
+      "empty": "No recent transactions",
+      "table": {
+        "date": "Date",
+        "transactionNumber": "Transaction #",
+        "supplier": "Supplier",
+        "type": "Type",
+        "amount": "Amount"
+      }
+    },
+    "export": {
+      "filePrefix": "financial-report",
+      "pdf": {
+        "title": "Financial report"
+      },
+      "excel": {
+        "sheetName": "Financial report"
+      },
+      "period": "Period: {{from}} - {{to}}",
+      "summary": "Summary",
+      "totalIncome": "Total Income: {{value}}",
+      "totalExpenses": "Total Expenses: {{value}}",
+      "netProfit": "Net Profit: {{value}}",
+      "stockValue": "Stock Value: {{value}}",
+      "table": {
+        "invoiceNumber": "Invoice #",
+        "type": "Type",
+        "status": "Status",
+        "date": "Date",
+        "amount": "Amount"
+      }
+    }
+  },
+  "costReports": {
+    "title": "Cost reports",
+    "loading": "Loading cost reports...",
+    "actions": {
+      "exportPdf": "Export PDF",
+      "exportExcel": "Export Excel"
+    },
+    "filters": {
+      "dateFrom": "Date from",
+      "dateTo": "Date to",
+      "supplier": "Supplier",
+      "allSuppliers": "All suppliers",
+      "category": "Category",
+      "categoryPlaceholder": "Filter by category"
+    },
+    "cards": {
+      "totalExpenses": "Total expenses",
+      "totalIncome": "Total income",
+      "netProfitLoss": "Net profit/loss"
+    },
+    "charts": {
+      "expensesByCategory": "Expenses by category",
+      "expensesByMonth": "Expenses by month"
+    },
+    "expenseInvoices": {
+      "title": "Expense invoices",
+      "empty": "No expense invoices found",
+      "table": {
+        "invoiceNumber": "Invoice #",
+        "supplier": "Supplier",
+        "category": "Category",
+        "date": "Date",
+        "status": "Status",
+        "amount": "Amount"
+      }
+    },
+    "export": {
+      "filePrefix": "cost-report",
+      "pdf": {
+        "title": "Cost report"
+      },
+      "excel": {
+        "sheetName": "Cost report"
+      },
+      "period": "Period: {{from}} - {{to}}",
+      "summary": "Summary",
+      "totalExpenses": "Total Expenses: {{value}}",
+      "totalIncome": "Total Income: {{value}}",
+      "net": "Net: {{value}}",
+      "table": {
+        "invoiceNumber": "Invoice #",
+        "supplier": "Supplier",
+        "category": "Category",
+        "date": "Date",
+        "amount": "Amount"
+      }
+    }
+  },
+  "invoices": {
+    "type": {
+      "income": "Income",
+      "expense": "Expense"
+    },
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "list": {
+      "title": "Invoices",
+      "totalRecordName": "invoices",
+      "searchPlaceholder": "Search invoices...",
+      "table": {
+        "invoiceNumber": "Invoice #",
+        "partner": "Partner",
+        "type": "Type",
+        "status": "Status",
+        "issueDate": "Issue date",
+        "dueDate": "Due date",
+        "totalAmount": "Total amount",
+        "category": "Category",
+        "actions": "Actions"
+      }
+    },
+    "filters": {
+      "type": "Type",
+      "allTypes": "All types",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "supplier": "Supplier",
+      "allSuppliers": "All suppliers",
+      "category": "Category",
+      "categoryPlaceholder": "Category",
+      "dateFrom": "Date from",
+      "dateTo": "Date to"
+    },
+    "actions": {
+      "add": "Add invoice",
+      "view": "View invoice",
+      "download": "Download invoice",
+      "edit": "Edit invoice",
+      "delete": "Delete invoice"
+    },
+    "toast": {
+      "deleted": "Invoice deleted successfully",
+      "deleteFailed": "Failed to delete invoice",
+      "downloaded": "Invoice downloaded",
+      "downloadFailed": "Failed to download invoice"
+    },
+    "errors": {
+      "loadFailed": "Error loading invoices"
+    },
+    "confirmDelete": {
+      "title": "Delete invoice?",
+      "description": "Are you sure you want to delete invoice {{number}}?",
+      "confirm": "Yes, delete"
+    },
+    "view": {
+      "title": "Invoice details",
+      "titleWithNumber": "Invoice {{number}}",
+      "loading": "Loading invoice...",
+      "locked": "Locked (read-only)",
+      "actions": {
+        "download": "Download invoice"
+      },
+      "placeholders": {
+        "status": "Status"
+      },
+      "errors": {
+        "loadFailed": "Failed to load invoice"
+      },
+      "toast": {
+        "statusUpdated": "Status updated",
+        "statusUpdateFailed": "Failed to update status",
+        "customerUpdated": "Customer updated",
+        "customerUpdateFailed": "Failed to update customer",
+        "supplierUpdated": "Supplier updated",
+        "supplierUpdateFailed": "Failed to update supplier",
+        "itemsUpdated": "Invoice items updated",
+        "itemsUpdateFailed": "Failed to save items",
+        "pdfFailed": "Failed to generate PDF"
+      },
+      "companyNotConfigured": "Company (not configured)",
+      "company": {
+        "loadFailed": "Company details could not be loaded from settings (permission or server issue).",
+        "notConfiguredHint": "Company details are not configured yet. Fill them in Settings to show here."
+      },
+      "details": {
+        "title": "Invoice details",
+        "invoiceNumber": "Invoice #",
+        "status": "Status",
+        "issueDate": "Issue date",
+        "total": "Total",
+        "description": "Description",
+        "notes": "Notes"
+      },
+      "partner": {
+        "name": "Name",
+        "company": "Company",
+        "taxId": "Tax ID:",
+        "registration": "Reg:",
+        "contact": "Contact:",
+        "billingAddress": "Billing address",
+        "bank": "Bank"
+      },
+      "customer": {
+        "title": "Customer",
+        "selectHint": "Select customer for this invoice.",
+        "change": "Change customer",
+        "placeholders": {
+          "select": "Select customer"
+        }
+      },
+      "supplier": {
+        "title": "Supplier",
+        "selectHint": "Select supplier for this invoice.",
+        "change": "Change supplier",
+        "placeholders": {
+          "select": "Select supplier"
+        }
+      },
+      "items": {
+        "title": "Invoice items",
+        "editableHint": "You can edit items while status is draft.",
+        "lockedHint": "Items are locked because the invoice is not draft.",
+        "addProduct": "Add product",
+        "addService": "Add service",
+        "save": "Save items",
+        "empty": "No items.",
+        "taxPercent": "Tax %",
+        "type": {
+          "product": "Product",
+          "service": "Service"
+        },
+        "actions": {
+          "remove": "Remove"
+        },
+        "placeholders": {
+          "type": "Type",
+          "selectProduct": "Select product",
+          "serviceName": "Service name",
+          "descriptionOptional": "Description (optional)"
+        },
+        "table": {
+          "item": "Item",
+          "qty": "Qty",
+          "price": "Price",
+          "total": "Total",
+          "actions": "Actions"
+        },
+        "summary": {
+          "subtotal": "Subtotal",
+          "tax": "Tax",
+          "total": "Total"
+        }
+      }
+    },
+    "form": {
+      "autoGenerated": "Auto-generated",
+      "hints": {
+        "autoGenerated": "Auto-generated if not provided.",
+        "calculated": "Calculated: {{value}}"
+      },
+      "fields": {
+        "invoiceNumber": "Invoice number",
+        "supplier": "Supplier",
+        "customer": "Customer",
+        "type": "Type",
+        "status": "Status",
+        "issueDate": "Issue date",
+        "dueDate": "Due date",
+        "paidDate": "Paid date",
+        "category": "Category",
+        "subtotal": "Subtotal",
+        "taxAmount": "Tax amount",
+        "discountAmount": "Discount amount",
+        "totalAmount": "Total amount",
+        "description": "Description",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "selectSupplierOptional": "Select supplier (optional)",
+        "selectCustomerOptional": "Select customer (optional)",
+        "selectType": "Select type",
+        "selectStatus": "Select status",
+        "categoryExample": "e.g., Office Supplies, Services",
+        "description": "Invoice description",
+        "notes": "Additional notes"
+      },
+      "items": {
+        "title": "Items",
+        "hint": "Add products or services to be stored on the invoice.",
+        "empty": "No items yet.",
+        "addProduct": "Product",
+        "addService": "Service",
+        "serviceLine": "Service line",
+        "type": {
+          "product": "Product",
+          "service": "Service"
+        },
+        "actions": {
+          "remove": "Remove"
+        },
+        "placeholders": {
+          "type": "Type",
+          "selectProduct": "Select product",
+          "serviceName": "Service name",
+          "itemName": "Item name",
+          "descriptionOptional": "Description (optional)"
+        },
+        "table": {
+          "typeProduct": "Type / Product",
+          "name": "Name",
+          "qty": "Qty",
+          "unitPrice": "Unit price",
+          "taxPercent": "Tax %",
+          "discountPercent": "Disc %",
+          "lineTotal": "Line total"
+        },
+        "summary": {
+          "subtotal": "Items subtotal",
+          "tax": "Items tax",
+          "total": "Items total"
+        }
+      },
+      "actions": {
+        "create": "Create invoice",
+        "update": "Update invoice"
+      },
+      "modal": {
+        "createTitle": "Create invoice",
+        "editTitle": "Edit invoice",
+        "description": "Manage invoice details."
+      },
+      "toast": {
+        "created": "Invoice created successfully",
+        "createFailed": "Failed to create invoice",
+        "updated": "Invoice updated successfully",
+        "updateFailed": "Failed to update invoice"
+      }
+    }
+  },
+  "payments": {
+    "autoGenerated": "Auto-generated",
+    "type": {
+      "payment": "Payment",
+      "receipt": "Receipt",
+      "refund": "Refund",
+      "adjustment": "Adjustment"
+    },
+    "category": {
+      "supplier_payment": "Supplier payment",
+      "customer_payment": "Customer payment",
+      "salary": "Salary",
+      "expense": "Expense",
+      "income": "Income",
+      "other": "Other"
+    },
+    "method": {
+      "cash": "Cash",
+      "bank_transfer": "Bank transfer",
+      "check": "Check",
+      "credit_card": "Credit card",
+      "debit_card": "Debit card",
+      "other": "Other"
+    },
+    "list": {
+      "title": "Payments",
+      "totalRecordName": "payments",
+      "searchPlaceholder": "Search payments...",
+      "table": {
+        "transactionNumber": "Transaction #",
+        "partner": "Partner",
+        "invoice": "Invoice",
+        "type": "Type",
+        "category": "Category",
+        "amount": "Amount",
+        "paymentMethod": "Payment method",
+        "transactionDate": "Transaction date",
+        "referenceNumber": "Reference #",
+        "actions": "Actions"
+      }
+    },
+    "filters": {
+      "type": "Type",
+      "allTypes": "All types",
+      "category": "Category",
+      "allCategories": "All categories",
+      "supplier": "Supplier",
+      "allSuppliers": "All suppliers",
+      "dateFrom": "Date from",
+      "dateTo": "Date to"
+    },
+    "fields": {
+      "transactionNumber": "Transaction number",
+      "supplier": "Supplier",
+      "customer": "Customer",
+      "invoice": "Invoice",
+      "type": "Type",
+      "category": "Category",
+      "amount": "Amount",
+      "paymentMethod": "Payment method",
+      "transactionDate": "Transaction date",
+      "referenceNumber": "Reference number",
+      "description": "Description",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "selectSupplierOptional": "Select supplier (optional)",
+      "selectCustomerOptional": "Select customer (optional)",
+      "selectInvoiceOptional": "Select invoice (optional)",
+      "selectType": "Select type",
+      "selectCategory": "Select category",
+      "selectMethod": "Select method",
+      "description": "Payment description",
+      "notes": "Additional notes"
+    },
+    "actions": {
+      "add": "Add payment",
+      "create": "Create payment",
+      "update": "Update payment",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "modal": {
+      "createTitle": "Create payment",
+      "editTitle": "Edit payment",
+      "description": "Manage payment details."
+    },
+    "toast": {
+      "created": "Payment created successfully",
+      "createFailed": "Failed to create payment",
+      "updated": "Payment updated successfully",
+      "updateFailed": "Failed to update payment",
+      "deleted": "Payment deleted successfully",
+      "deleteFailed": "Failed to delete payment"
+    },
+    "errors": {
+      "loadFailed": "Error loading payments"
+    },
+    "confirmDelete": {
+      "title": "Delete payment?",
+      "description": "Are you sure you want to delete payment {{number}}?",
+      "confirm": "Yes, delete"
+    }
+  },
+  "users": {
+    "list": {
+      "title": "Users",
+      "totalRecordName": "users",
+      "searchPlaceholder": "Search users by name or email...",
+      "noRoles": "No roles",
+      "table": {
+        "id": "ID",
+        "name": "Name",
+        "email": "Email",
+        "roles": "Roles",
+        "actions": "Actions"
+      }
+    },
+    "actions": {
+      "create": "Create user",
+      "update": "Update user",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "roles": "Roles"
+    },
+    "hints": {
+      "keepPassword": "Leave blank to keep current password."
+    },
+    "empty": {
+      "roles": "No roles available"
+    },
+    "errors": {
+      "noPermissionView": "You don't have permission to view users.",
+      "loadFailed": "Error loading users"
+    },
+    "toast": {
+      "created": "User created successfully",
+      "createFailed": "Failed to create user",
+      "updated": "User updated successfully",
+      "updateFailed": "Failed to update user",
+      "deleted": "User deleted successfully",
+      "deleteFailed": "Failed to delete user"
+    },
+    "confirmDelete": {
+      "title": "Delete user?",
+      "description": "Are you sure you want to delete user {{email}}?",
+      "confirm": "Yes, delete"
+    },
+    "modal": {
+      "createTitle": "Create user",
+      "editTitle": "Edit user",
+      "description": "Manage user account and roles."
+    }
+  },
+  "roles": {
+    "list": {
+      "title": "Roles & permissions",
+      "totalRecordName": "roles",
+      "searchPlaceholder": "Search roles...",
+      "noPermissions": "No permissions",
+      "table": {
+        "id": "ID",
+        "name": "Role name",
+        "permissions": "Permissions",
+        "actions": "Actions"
+      }
+    },
+    "actions": {
+      "create": "Create role",
+      "edit": "Edit",
+      "delete": "Delete",
+      "saveChanges": "Save changes"
+    },
+    "fields": {
+      "name": "Role name",
+      "permissions": "Permissions"
+    },
+    "empty": {
+      "permissions": "No permissions available"
+    },
+    "errors": {
+      "noPermissionView": "You don't have permission to view roles."
+    },
+    "toast": {
+      "created": "Role created successfully",
+      "createFailed": "Failed to create role",
+      "updated": "Role updated successfully",
+      "updateFailed": "Failed to update role",
+      "deleted": "Role deleted successfully",
+      "deleteFailed": "Failed to delete role"
+    },
+    "confirmDelete": {
+      "title": "Delete role",
+      "description": "Are you sure you want to delete this role?",
+      "descriptionWithName": "Are you sure you want to delete \"{{name}}\"?",
+      "confirm": "Delete"
+    },
+    "modal": {
+      "createTitle": "Create role",
+      "editTitle": "Edit role",
+      "description": "Manage role name and its permissions."
+    }
+  },
+  "profile": {
+    "title": "My profile",
+    "sections": {
+      "personalInfo": "Personal information",
+      "contact": "Contact",
+      "security": "Security"
+    },
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password"
+    },
+    "placeholders": {
+      "phone": "Example: +40 722 123 456",
+      "address": "Street, no., city, county"
+    },
+    "hints": {
+      "keepPassword": "Leave empty to keep current password"
+    },
+    "avatar": {
+      "uploadAriaLabel": "Upload profile picture",
+      "clickToChange": "Click the picture to change it"
+    },
+    "toast": {
+      "updated": "Profile updated.",
+      "avatarUpdated": "Profile picture updated.",
+      "avatarUploadError": "Upload error."
+    }
+  },
+  "products": {
+    "title": "Products",
+    "totalRecordName": "products",
+    "searchPlaceholder": "Search products by name or SKU...",
+    "table": {
+      "image": "Image",
+      "imageAlt": "Product image",
+      "noImage": "No image",
+      "name": "Name",
+      "price": "Price",
+      "totalStock": "Total stock",
+      "actions": "Actions"
+    },
+    "actions": {
+      "addProduct": "Add product",
+      "view": "View",
+      "viewOnMap": "View on map",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "toast": {
+      "genericError": "An error occurred",
+      "created": "Product created successfully",
+      "createFailed": "Failed to create product",
+      "updated": "Product updated successfully",
+      "updateFailed": "Failed to update product",
+      "deleted": "Product deleted successfully",
+      "deleteFailed": "Failed to delete product",
+      "imageUploaded": "Image uploaded",
+      "uploadFailed": "Upload failed",
+      "imageRemoved": "Image removed",
+      "mainImageUpdated": "Main image updated"
+    },
+    "errors": {
+      "permissionDenied": "Permission denied",
+      "error": "Error"
+    },
+    "confirmDelete": {
+      "title": "Delete product?",
+      "description": "Are you sure you want to delete \"{{name}}\"?",
+      "confirm": "Yes, delete",
+      "cancel": "Cancel"
+    },
+    "form": {
+      "createTitle": "Create product",
+      "editTitle": "Edit product",
+      "name": "Name",
+      "description": "Description",
+      "price": "Price",
+      "productType": "Product type",
+      "origin": {
+        "purchased": "Purchased from supplier",
+        "manufactured": "Manufactured in-house",
+        "both": "Both purchased and manufactured"
+      },
+      "originHint": "Choose whether the product is purchased from a supplier, manufactured in-house, or can be both purchased and manufactured.",
+      "supplier": "Supplier",
+      "selectSupplier": "Select supplier"
+    },
+    "inventory": {
+      "createTitle": "Initial inventory (optional)",
+      "editTitle": "Inventory locations",
+      "createDescription": "Add one or more locations with quantities.",
+      "editDescription": "Edit quantities and reorder levels, add or remove locations.",
+      "deposit": "Deposit",
+      "selectDeposit": "Select deposit",
+      "shelf": "Shelf",
+      "shelfPlaceholder": "Shelf",
+      "qty": "Qty",
+      "reorder": "Reorder",
+      "zero": "0",
+      "removeLocation": "Remove location",
+      "addLocation": "Add location"
+    },
+    "images": {
+      "title": "Product images",
+      "description": "Main image (display_type 1) and additional images. Upload or set as main.",
+      "main": "Main",
+      "setAsMain": "Set as main",
+      "remove": "Remove",
+      "addAdditional": "Add (additional)",
+      "addAsMain": "Add as main"
+    },
+    "view": {
+      "title": "Product details",
+      "images": "Images",
+      "stockLocations": "Stock locations",
+      "noInventoryRecords": "No inventory records found",
+      "noShelf": "No shelf",
+      "units": "units",
+      "reorder": "Reorder",
+      "totalStock": "Total stock",
+      "totalStockValue_one": "{{count}} unit",
+      "totalStockValue_other": "{{count}} units"
+    },
+    "map": {
+      "title": "Product location - {{name}}",
+      "description": "View the product location on the deposit map.",
+      "deposit": "Deposit",
+      "depositNumber": "Deposit #{{id}}",
+      "loading": "Loading map...",
+      "shelf": "Shelf",
+      "at": "at",
+      "hint": "Use Ctrl+Scroll to zoom • Click and drag to pan (if implemented)",
+      "zoom": "Zoom",
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "resetZoom": "Reset zoom",
+      "reset": "Reset",
+      "noLocation": "No inventory location found for this product."
+    }
+  }
+  ,
+  "inventory": {
+    "title": "Inventory",
+    "totalRecordName": "inventory records",
+    "searchPlaceholder": "Search inventory...",
+    "table": {
+      "product": "Product",
+      "stock": "Stock",
+      "location": "Location",
+      "reorderLevel": "Reorder level",
+      "actions": "Actions"
+    },
+    "actions": {
+      "add": "Add inventory",
+      "viewHistory": "View history",
+      "viewLocation": "View location in deposit",
+      "edit": "Edit inventory",
+      "delete": "Delete"
+    },
+    "toast": {
+      "created": "Inventory created",
+      "createFailed": "Failed to create inventory",
+      "updated": "Inventory updated",
+      "updateFailed": "Failed to update inventory",
+      "deleted": "Inventory record deleted",
+      "deleteFailed": "Failed to delete inventory"
+    },
+    "errors": {
+      "permissionDenied": "Permission denied",
+      "error": "Error"
+    },
+    "confirmDelete": {
+      "title": "Delete inventory record?",
+      "description": "Delete inventory for \"{{name}}\" at {{location}}?",
+      "thisLocation": "this location",
+      "confirm": "Yes, delete"
+    },
+    "form": {
+      "createTitle": "Add inventory",
+      "editTitle": "Edit inventory",
+      "product": "Product",
+      "selectProduct": "Select product",
+      "deposit": "Deposit",
+      "selectDeposit": "Select deposit",
+      "shelf": "Shelf",
+      "selectShelf": "Select shelf",
+      "quantity": "Quantity",
+      "reorderLevel": "Reorder level"
+    },
+    "activity": {
+      "title": "Inventory history",
+      "loadFailed": "Failed to load history",
+      "empty": "No activity recorded yet.",
+      "inventoryNumber": "Inventory #{{id}}",
+      "actions": {
+        "created": "Created",
+        "updated": "Updated",
+        "adjusted": "Stock adjusted",
+        "deleted": "Deleted"
+      }
+    }
+  }
+  ,
+  "orders": {
+    "title": "Orders",
+    "totalRecordName": "orders",
+    "searchPlaceholder": "Search order number or customer...",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "orderNumber": "Order no.",
+      "customer": "Customer",
+      "status": "Status",
+      "total": "Total",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "actions": {
+      "new": "New order",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "filters": {
+      "dateFrom": "Date from",
+      "dateTo": "Date to",
+      "customer": "Customer",
+      "customerAll": "All customers",
+      "status": {
+        "label": "Status",
+        "all": "All"
+      }
+    },
+    "errors": {
+      "generic": "Error",
+      "permissionDenied": "Permission denied",
+      "error": "Error",
+      "loadOrderFailed": "Failed to load order"
+    },
+    "toast": {
+      "created": "Order created successfully",
+      "createFailed": "Failed to create order",
+      "updated": "Order updated successfully",
+      "updateFailed": "Failed to update order",
+      "deleted": "Order deleted",
+      "deleteFailed": "Failed to delete order",
+      "deleteFailedGeneric": "Delete failed",
+      "statusUpdated": "Status updated",
+      "statusUpdateFailed": "Failed to update status",
+      "customerUpdated": "Customer updated",
+      "customerUpdateFailed": "Failed to update customer",
+      "itemsUpdated": "Items updated",
+      "itemsUpdateFailed": "Failed to save items",
+      "taskAdded": "Task added",
+      "taskAddFailed": "Failed to add task",
+      "taskDeleted": "Task deleted",
+      "taskDeleteFailed": "Failed to delete task",
+      "documentUploaded": "Document uploaded",
+      "uploadFailed": "Upload failed",
+      "documentDeleted": "Document deleted"
+    },
+    "confirmDelete": {
+      "title": "Delete order?",
+      "description": "Are you sure you want to delete order {{order}}?",
+      "confirm": "Yes, delete"
+    },
+    "form": {
+      "createTitle": "New order",
+      "editTitle": "Edit order",
+      "description": "Fill in the order details and the associated items.",
+      "orderNumber": "Order no.",
+      "customer": "Customer",
+      "selectCustomer": "Select customer",
+      "status": "Status",
+      "notes": "Notes",
+      "notesPlaceholder": "Optional notes",
+      "itemsTitle": "Items",
+      "itemsRequired": "Add at least one item with quantity and price.",
+      "item": {
+        "product": "Product",
+        "selectProduct": "Select product",
+        "quantity": "Quantity",
+        "price": "Price",
+        "removeLine": "Remove line",
+        "addProduct": "Add product"
+      }
+    },
+    "view": {
+      "title": "Order {{order}}",
+      "orderDetails": "Order details",
+      "customer": {
+        "title": "Customer",
+        "none": "No customer is associated.",
+        "contact": "Contact details",
+        "contactPerson": "Contact",
+        "phone": "Phone",
+        "billing": "Billing",
+        "shipping": "Shipping",
+        "associateOrCreate": "Associate an existing customer or create a new one.",
+        "chooseOtherOrCreate": "Choose another customer or create a new one.",
+        "selectExisting": "Select from existing customers",
+        "searchPlaceholder": "Search customer...",
+        "or": "or",
+        "createNew": "Create new customer",
+        "change": "Change customer",
+        "remove": "Remove customer from order"
+      },
+      "items": {
+        "title": "Items",
+        "product": "Product",
+        "quantity": "Quantity",
+        "price": "Price",
+        "lineTotal": "Line total",
+        "vat": "VAT",
+        "totalWithVat": "Total incl. VAT",
+        "selectProduct": "Select product",
+        "removeLine": "Remove line",
+        "addProduct": "Add product"
+      },
+      "summary": {
+        "subtotal": "Subtotal",
+        "vatRate": "VAT rate (%)",
+        "shipping": "Shipping",
+        "total": "Total",
+        "saveItems": "Save items and total"
+      },
+      "tasks": {
+        "title": "Tasks / Order steps",
+        "description": "Tasks are visible to the assigned employee. You can add steps and change the status.",
+        "orderTag": "Order",
+        "due": "Due",
+        "assigned": "Assigned",
+        "editTask": "Edit task",
+        "confirmDeleteTask": "Delete this task?",
+        "deleteTask": "Delete task",
+        "empty": "No tasks yet. Add steps for this order.",
+        "add": "Add task / step",
+        "newTaskTitle": "New task",
+        "titlePlaceholder": "Title (e.g. Prepare order)",
+        "descriptionPlaceholder": "Description (optional)",
+        "assignedToLabel": "Assigned to",
+        "selectEmployee": "Select employee",
+        "dueDateLabel": "Due date",
+        "selectEmployeeError": "Select an employee for the task.",
+        "adding": "Adding...",
+        "addConfirm": "Add"
+      },
+      "documents": {
+        "title": "Attached documents",
+        "upload": "Upload",
+        "empty": "No attached documents."
+      }
+    },
+    "documents": {
+      "type": {
+        "awb": "AWB",
+        "invoice": "Invoice",
+        "other": "Other"
+      }
+    },
+    "invoice": {
+      "generate": "Generate invoice",
+      "generating": "Generating...",
+      "selectCustomerFirst": "Select a customer before generating the invoice.",
+      "addItemsFirst": "Add at least one item before generating the invoice.",
+      "generatedAndAttached": "Invoice generated, downloaded, and attached to the order.",
+      "generateFailed": "Failed to generate invoice."
+    }
+  }
+}

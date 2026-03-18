@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Users, Briefcase } from "lucide-react";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
@@ -8,6 +9,7 @@ import PageHeader from "../../components/PageHeader";
 export default function DepartmentView() {
     const { id } = useParams();
     const departmentId = id;
+    const { t } = useTranslation();
 
     const {
         data: department,
@@ -42,7 +44,7 @@ export default function DepartmentView() {
     if (departmentError) {
         return (
             <div className="p-4 bg-red-50 text-red-800 rounded">
-                Failed to load department: {departmentError.message}
+                {t("departments.errors.loadOneFailed")}: {departmentError.message}
             </div>
         );
     }
@@ -51,11 +53,11 @@ export default function DepartmentView() {
 
     return (
         <div>
-            <PageHeader title={department?.name || "Department team"} />
+            <PageHeader title={department?.name || t("departments.view.title")} />
 
             <div className="bg-white shadow-md rounded-lg p-6 mb-6">
                 {loadingDepartment ? (
-                    <div className="text-gray-500">Loading department...</div>
+                    <div className="text-gray-500">{t("common.loading")}</div>
                 ) : (
                     <div className="flex items-start gap-3">
                         <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
@@ -79,22 +81,26 @@ export default function DepartmentView() {
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                         <Users className="w-4 h-4 text-blue-500" />
-                        Team members
+                        {t("departments.view.teamMembers")}
                     </h3>
                     <span className="text-xs text-gray-500">
-                        {employees.length} employees
+                        {t("departments.view.employeesCount", {
+                            count: employees.length,
+                        })}
                     </span>
                 </div>
 
                 {employeesError ? (
                     <div className="p-3 bg-red-50 text-red-700 rounded text-sm">
-                        Failed to load employees for this department.
+                        {t("departments.view.loadEmployeesFailed")}
                     </div>
                 ) : loadingEmployees ? (
-                    <div className="text-gray-500 text-sm">Loading employees...</div>
+                    <div className="text-gray-500 text-sm">
+                        {t("common.loading")}
+                    </div>
                 ) : employees.length === 0 ? (
                     <p className="text-sm text-gray-500">
-                        This department has no employees assigned yet.
+                        {t("departments.view.emptyEmployees")}
                     </p>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -116,7 +122,8 @@ export default function DepartmentView() {
                                             {emp.user?.name || emp.employee_code}
                                         </p>
                                         <p className="text-xs text-gray-500">
-                                            {emp.position || "No position"}
+                                            {emp.position ||
+                                                t("departments.view.noPosition")}
                                         </p>
                                     </div>
                                 </div>

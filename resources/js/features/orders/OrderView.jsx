@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
-import { ORDER_STATUS_LABELS } from "../../utils/constants";
 import {
     TASK_STATUS_LABELS,
     TASK_STATUS_COLORS,
@@ -39,13 +39,13 @@ import {
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 
-const DOC_TYPE_LABELS = { awb: "AWB", invoice: "Factură", other: "Altele" };
+const DOC_TYPES = ["awb", "invoice", "other"];
 
 const ORDER_STATUS_OPTIONS = [
-    { value: "pending", label: ORDER_STATUS_LABELS.pending },
-    { value: "processing", label: ORDER_STATUS_LABELS.processing },
-    { value: "completed", label: ORDER_STATUS_LABELS.completed },
-    { value: "cancelled", label: ORDER_STATUS_LABELS.cancelled },
+    { value: "pending", labelKey: "orders.status.pending" },
+    { value: "processing", labelKey: "orders.status.processing" },
+    { value: "completed", labelKey: "orders.status.completed" },
+    { value: "cancelled", labelKey: "orders.status.cancelled" },
 ];
 
 export default function OrderView() {
@@ -53,6 +53,7 @@ export default function OrderView() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const fileInputRef = useRef(null);
+    const { t } = useTranslation();
     const [docType, setDocType] = useState("other");
     const [customerModalOpen, setCustomerModalOpen] = useState(false);
     const [showCustomerSelect, setShowCustomerSelect] = useState(false);
@@ -135,7 +136,7 @@ export default function OrderView() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["order", id] });
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
-            toast.success("Sarcină adăugată");
+            toast.success(t("orders.toast.taskAdded"));
             setShowAddTaskForm(false);
             setNewTaskTitle("");
             setNewTaskDescription("");
@@ -144,7 +145,7 @@ export default function OrderView() {
         },
         onError: (e) => {
             toast.error(
-                e.response?.data?.message || "Eroare la adăugare sarcină",
+                e.response?.data?.message || t("orders.toast.taskAddFailed"),
             );
         },
     });
@@ -157,11 +158,11 @@ export default function OrderView() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["order", id] });
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
-            toast.success("Status actualizat");
+            toast.success(t("orders.toast.statusUpdated"));
         },
         onError: (e) => {
             toast.error(
-                e.response?.data?.message || "Eroare la actualizare status",
+                e.response?.data?.message || t("orders.toast.statusUpdateFailed"),
             );
         },
     });
@@ -173,11 +174,11 @@ export default function OrderView() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["order", id] });
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
-            toast.success("Sarcină ștearsă");
+            toast.success(t("orders.toast.taskDeleted"));
         },
         onError: (e) => {
             toast.error(
-                e.response?.data?.message || "Eroare la ștergere sarcină",
+                e.response?.data?.message || t("orders.toast.taskDeleteFailed"),
             );
         },
     });
@@ -199,11 +200,11 @@ export default function OrderView() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["order", id] });
-            toast.success("Document încărcat");
+            toast.success(t("orders.toast.documentUploaded"));
             if (fileInputRef.current) fileInputRef.current.value = "";
         },
         onError: (e) => {
-            toast.error(e.response?.data?.message || "Eroare la încărcare");
+            toast.error(e.response?.data?.message || t("orders.toast.uploadFailed"));
         },
     });
 
@@ -213,10 +214,10 @@ export default function OrderView() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["order", id] });
-            toast.success("Document șters");
+            toast.success(t("orders.toast.documentDeleted"));
         },
         onError: (e) => {
-            toast.error(e.response?.data?.message || "Eroare la ștergere");
+            toast.error(e.response?.data?.message || t("orders.toast.deleteFailedGeneric"));
         },
     });
 
@@ -224,13 +225,13 @@ export default function OrderView() {
         if (!order?.id) return;
 
         if (!customer) {
-            toast.error("Selectează un client înainte de a genera factura.");
+            toast.error(t("orders.invoice.selectCustomerFirst"));
             return;
         }
 
         if (!editItems.length) {
             toast.error(
-                "Adaugă cel puțin un produs în comandă înainte de a genera factura.",
+                t("orders.invoice.addItemsFirst"),
             );
             return;
         }
@@ -256,12 +257,10 @@ export default function OrderView() {
                 type: "invoice",
             });
 
-            toast.success(
-                "Factură generată, descărcată și atașată la comandă.",
-            );
+            toast.success(t("orders.invoice.generatedAndAttached"));
         } catch (e) {
             console.error(e);
-            toast.error("Eroare la generarea facturii.");
+            toast.error(t("orders.invoice.generateFailed"));
         } finally {
             setIsGeneratingInvoice(false);
         }
@@ -277,12 +276,12 @@ export default function OrderView() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["order", id] });
             queryClient.invalidateQueries({ queryKey: ["customers"] });
-            toast.success("Client actualizat");
+            toast.success(t("orders.toast.customerUpdated"));
             setShowCustomerSelect(false);
         },
         onError: (e) => {
             toast.error(
-                e.response?.data?.message || "Eroare la actualizare client",
+                e.response?.data?.message || t("orders.toast.customerUpdateFailed"),
             );
         },
     });
@@ -294,11 +293,11 @@ export default function OrderView() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["order", id] });
-            toast.success("Status actualizat");
+            toast.success(t("orders.toast.statusUpdated"));
         },
         onError: (e) => {
             toast.error(
-                e.response?.data?.message || "Eroare la actualizare status",
+                e.response?.data?.message || t("orders.toast.statusUpdateFailed"),
             );
         },
     });
@@ -365,11 +364,11 @@ export default function OrderView() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["order", id] });
-            toast.success("Produsele au fost actualizate");
+            toast.success(t("orders.toast.itemsUpdated"));
         },
         onError: (e) => {
             toast.error(
-                e.response?.data?.message || "Eroare la salvare produse",
+                e.response?.data?.message || t("orders.toast.itemsUpdateFailed"),
             );
         },
     });
@@ -398,7 +397,7 @@ export default function OrderView() {
     if (orderError) {
         return (
             <div className="p-4 bg-red-50 text-red-800 rounded">
-                Eroare la încărcarea comenzii: {orderError.message}
+                {t("orders.errors.loadOrderFailed")}: {orderError.message}
             </div>
         );
     }
@@ -409,7 +408,9 @@ export default function OrderView() {
     return (
         <div>
             <PageHeader
-                title={`Comandă ${order?.order_number || id}`}
+                title={t("orders.view.title", {
+                    order: order?.order_number || id,
+                })}
                 actions={
                     !isEmployee && order ? (
                         <button
@@ -420,46 +421,45 @@ export default function OrderView() {
                         >
                             <FilePlus className="w-4 h-4" />
                             {isGeneratingInvoice
-                                ? "Se generează..."
-                                : "Generează factură"}
+                                ? t("orders.invoice.generating")
+                                : t("orders.invoice.generate")}
                         </button>
                     ) : null
                 }
             />
 
             {loadingOrder ? (
-                <div className="text-gray-500">Se încarcă...</div>
+                <div className="text-gray-500">{t("common.loading")}</div>
             ) : (
                 <div className="space-y-6">
                     {/* Order info */}
                     <div className="bg-white shadow-md rounded-lg p-6">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             <FileText className="w-5 h-5 text-slate-600" />
-                            Detalii comandă
+                            {t("orders.view.orderDetails")}
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
                                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                     <Hash className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                                    Nr. comandă
+                                    {t("orders.table.orderNumber")}
                                 </div>
                                 <div className="text-gray-900 font-medium">
-                                    {order?.order_number ?? "-"}
+                                    {order?.order_number ?? t("common.dash")}
                                 </div>
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                     <ClipboardList className="w-3.5 h-3.5 text-violet-500 shrink-0" />
-                                    Status
+                                    {t("orders.table.status")}
                                 </div>
                                 <div className="mt-1 max-w-[200px]">
                                     {isEmployee ? (
                                         <span className="text-gray-900">
-                                            {ORDER_STATUS_LABELS[
-                                                order?.status
-                                            ] ??
-                                                order?.status ??
-                                                "-"}
+                                            {t(`orders.status.${order?.status}`, {
+                                                defaultValue:
+                                                    order?.status ?? t("common.dash"),
+                                            })}
                                         </span>
                                     ) : (
                                         <SearchableSelect
@@ -474,8 +474,11 @@ export default function OrderView() {
                                                     );
                                                 }
                                             }}
-                                            options={ORDER_STATUS_OPTIONS}
-                                            placeholder="Status"
+                                            options={ORDER_STATUS_OPTIONS.map((o) => ({
+                                                value: o.value,
+                                                label: t(o.labelKey),
+                                            }))}
+                                            placeholder={t("orders.table.status")}
                                             cacheKey="order-view-status"
                                             disabled={
                                                 updateOrderStatusMutation.isPending
@@ -488,18 +491,18 @@ export default function OrderView() {
                             <div>
                                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                     <Calendar className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                                    Data
+                                    {t("orders.table.date")}
                                 </div>
                                 <div className="text-gray-900">
                                     {order?.created_at
                                         ? formatDate(order.created_at)
-                                        : "-"}
+                                        : t("common.dash")}
                                 </div>
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                     <Banknote className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                    Total
+                                    {t("orders.table.total")}
                                 </div>
                                 <div className="text-gray-900 font-semibold">
                                     {formatCurrency(order?.total_amount)}
@@ -510,7 +513,7 @@ export default function OrderView() {
                             <div className="mt-4 pt-4 border-t">
                                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                     <StickyNote className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                                    Note
+                                    {t("orders.form.notes")}
                                 </div>
                                 <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">
                                     {order.notes}
@@ -523,12 +526,12 @@ export default function OrderView() {
                     <div className="bg-white shadow-md rounded-lg p-6">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             <Building2 className="w-5 h-5 text-indigo-600" />
-                            Client
+                            {t("orders.view.customer.title")}
                         </h2>
                         {isEmployee ? (
                             !customer ? (
                                 <p className="text-sm text-gray-500">
-                                    Nu este asociat niciun client.
+                                    {t("orders.view.customer.none")}
                                 </p>
                             ) : (
                                 <>
@@ -536,7 +539,7 @@ export default function OrderView() {
                                         <div>
                                             <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                                 <User className="w-4 h-4 text-blue-500 shrink-0" />
-                                                Date contact
+                                                {t("orders.view.customer.contact")}
                                             </div>
                                             <div className="text-sm text-gray-900">
                                                 {customer.company_name ||
@@ -544,7 +547,7 @@ export default function OrderView() {
                                             </div>
                                             {customer.contact_person && (
                                                 <div className="text-xs text-gray-600 mt-1">
-                                                    Contact:{" "}
+                                                    {t("orders.view.customer.contactPerson")}:{" "}
                                                     {customer.contact_person}
                                                 </div>
                                             )}
@@ -555,7 +558,7 @@ export default function OrderView() {
                                             )}
                                             {customer.phone && (
                                                 <div className="text-xs text-gray-600">
-                                                    Tel: {customer.phone}
+                                                    {t("orders.view.customer.phone")}: {customer.phone}
                                                 </div>
                                             )}
                                         </div>
@@ -563,11 +566,11 @@ export default function OrderView() {
                                             <div>
                                                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                                     <MapPin className="w-3 h-3 text-amber-500 shrink-0" />
-                                                    Facturare
+                                                    {t("orders.view.customer.billing")}
                                                 </div>
                                                 <div className="text-sm text-gray-900 whitespace-pre-line">
                                                     {customer.billing_address ||
-                                                        "-"}
+                                                        t("common.dash")}
                                                 </div>
                                                 <div className="text-xs text-gray-600">
                                                     {[
@@ -580,7 +583,7 @@ export default function OrderView() {
                                                 </div>
                                                 {customer.billing_phone && (
                                                     <div className="text-xs text-gray-600">
-                                                        Tel:{" "}
+                                                        {t("orders.view.customer.phone")}:{" "}
                                                         {customer.billing_phone}
                                                     </div>
                                                 )}
@@ -588,11 +591,11 @@ export default function OrderView() {
                                             <div>
                                                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                                     <MapPin className="w-3 h-3 text-emerald-500 shrink-0" />
-                                                    Livrare
+                                                    {t("orders.view.customer.shipping")}
                                                 </div>
                                                 <div className="text-sm text-gray-900 whitespace-pre-line">
                                                     {customer.shipping_address ||
-                                                        "-"}
+                                                        t("common.dash")}
                                                 </div>
                                                 <div className="text-xs text-gray-600">
                                                     {[
@@ -605,7 +608,7 @@ export default function OrderView() {
                                                 </div>
                                                 {customer.shipping_phone && (
                                                     <div className="text-xs text-gray-600">
-                                                        Tel:{" "}
+                                                        {t("orders.view.customer.phone")}:{" "}
                                                         {
                                                             customer.shipping_phone
                                                         }
@@ -620,13 +623,13 @@ export default function OrderView() {
                             <div className="space-y-4">
                                 <p className="text-sm text-gray-600">
                                     {!customer
-                                        ? "Asociază un client existent sau creează unul nou."
-                                        : "Alege alt client sau creează unul nou."}
+                                        ? t("orders.view.customer.associateOrCreate")
+                                        : t("orders.view.customer.chooseOtherOrCreate")}
                                 </p>
                                 <div className="flex flex-wrap items-end gap-3">
                                     <div className="min-w-[220px] flex-1">
                                         <label className="block text-xs font-medium text-gray-500 mb-1">
-                                            Selectează din clienții existenți
+                                            {t("orders.view.customer.selectExisting")}
                                         </label>
                                         <SearchableSelect
                                             value={
@@ -649,12 +652,12 @@ export default function OrderView() {
                                                 opt?.name ||
                                                 opt?.email
                                             }
-                                            placeholder="Caută client..."
+                                            placeholder={t("orders.view.customer.searchPlaceholder")}
                                             cacheKey="order-view-customers"
                                         />
                                     </div>
                                     <span className="text-gray-400 text-sm">
-                                        sau
+                                        {t("orders.view.customer.or")}
                                     </span>
                                     <button
                                         type="button"
@@ -664,7 +667,7 @@ export default function OrderView() {
                                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                                     >
                                         <Plus className="w-4 h-4" />
-                                        Creează client nou
+                                        {t("orders.view.customer.createNew")}
                                     </button>
                                     {customer && (
                                         <button
@@ -674,7 +677,7 @@ export default function OrderView() {
                                             }
                                             className="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200"
                                         >
-                                            Anulare
+                                            {t("common.cancel")}
                                         </button>
                                     )}
                                 </div>
@@ -712,11 +715,11 @@ export default function OrderView() {
                                         <div>
                                             <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                                 <MapPin className="w-3 h-3 text-amber-500 shrink-0" />
-                                                Facturare
+                                                {t("orders.view.customer.billing")}
                                             </div>
                                             <div className="text-sm text-gray-900 whitespace-pre-line">
                                                 {customer.billing_address ||
-                                                    "-"}
+                                                    t("common.dash")}
                                             </div>
                                             <div className="text-xs text-gray-600">
                                                 {[
@@ -729,7 +732,7 @@ export default function OrderView() {
                                             </div>
                                             {customer.billing_phone && (
                                                 <div className="text-xs text-gray-600">
-                                                    Tel:{" "}
+                                                    {t("orders.view.customer.phone")}:{" "}
                                                     {customer.billing_phone}
                                                 </div>
                                             )}
@@ -737,11 +740,11 @@ export default function OrderView() {
                                         <div>
                                             <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                                 <MapPin className="w-3 h-3 text-emerald-500 shrink-0" />
-                                                Livrare
+                                                {t("orders.view.customer.shipping")}
                                             </div>
                                             <div className="text-sm text-gray-900 whitespace-pre-line">
                                                 {customer.shipping_address ||
-                                                    "-"}
+                                                    t("common.dash")}
                                             </div>
                                             <div className="text-xs text-gray-600">
                                                 {[
@@ -754,7 +757,7 @@ export default function OrderView() {
                                             </div>
                                             {customer.shipping_phone && (
                                                 <div className="text-xs text-gray-600">
-                                                    Tel:{" "}
+                                                    {t("orders.view.customer.phone")}:{" "}
                                                     {customer.shipping_phone}
                                                 </div>
                                             )}
@@ -770,7 +773,7 @@ export default function OrderView() {
                                         className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700"
                                     >
                                         <Pencil className="w-3.5 h-3.5 text-amber-600" />
-                                        Schimbă client
+                                        {t("orders.view.customer.change")}
                                     </button>
                                     <button
                                         type="button"
@@ -786,7 +789,7 @@ export default function OrderView() {
                                         className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 rounded-md text-red-700"
                                     >
                                         <UserMinus className="w-3.5 h-3.5 text-red-600" />
-                                        Elimină client din comandă
+                                        {t("orders.view.customer.remove")}
                                     </button>
                                 </div>
                             </>
@@ -797,27 +800,29 @@ export default function OrderView() {
                     <div className="bg-white shadow-md rounded-lg p-6">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             <Package className="w-5 h-5 text-indigo-500" />
-                            Produse
+                            {t("orders.view.items.title")}
                         </h2>
                         <div className="overflow-x-auto">
                             <table className="min-w-full text-sm">
                                 <thead>
                                     <tr className="border-b text-left text-gray-600">
-                                        <th className="py-2 pr-4">Produs</th>
+                                        <th className="py-2 pr-4">
+                                            {t("orders.view.items.product")}
+                                        </th>
                                         <th className="py-2 pr-4 text-right w-28">
-                                            Cantitate
+                                            {t("orders.view.items.quantity")}
                                         </th>
                                         <th className="py-2 pr-4 text-right w-32">
-                                            Preț
+                                            {t("orders.view.items.price")}
                                         </th>
                                         <th className="py-2 pr-4 text-right w-28">
-                                            Total linie
+                                            {t("orders.view.items.lineTotal")}
                                         </th>
                                         <th className="py-2 pr-4 text-right w-24">
-                                            TVA
+                                            {t("orders.view.items.vat")}
                                         </th>
                                         <th className="py-2 pr-4 text-right w-28">
-                                            Total cu TVA
+                                            {t("orders.view.items.totalWithVat")}
                                         </th>
                                         {!isEmployee && (
                                             <th className="py-2 w-10" />
@@ -921,7 +926,9 @@ export default function OrderView() {
                                                                   ""
                                                               }
                                                               searchParam="search"
-                                                              placeholder="Alege produs"
+                                                              placeholder={t(
+                                                                  "orders.view.items.selectProduct",
+                                                              )}
                                                               cacheKey="order-view-products"
                                                               className="min-w-[180px] text-sm"
                                                           />
@@ -986,7 +993,9 @@ export default function OrderView() {
                                                                   )
                                                               }
                                                               className="p-1 text-gray-400 hover:text-red-600 rounded"
-                                                              title="Elimină linia"
+                                                              title={t(
+                                                                  "orders.view.items.removeLine",
+                                                              )}
                                                           >
                                                               <Trash2 className="w-4 h-4" />
                                                           </button>
@@ -1005,7 +1014,7 @@ export default function OrderView() {
                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-md"
                                 >
                                     <Plus className="w-4 h-4" />
-                                    Adaugă produs
+                                    {t("orders.view.items.addProduct")}
                                 </button>
                             </div>
                         )}
@@ -1028,13 +1037,17 @@ export default function OrderView() {
                                   return (
                                       <div className="mt-6 pt-4 border-t border-gray-200 space-y-2 max-w-xs ml-auto text-sm">
                                           <div className="flex justify-between text-gray-700">
-                                              <span>Subtotal</span>
+                                              <span>
+                                                  {t("orders.view.summary.subtotal")}
+                                              </span>
                                               <span className="font-medium">
                                                   {formatCurrency(subtotal)}
                                               </span>
                                           </div>
                                           <div className="flex justify-between text-gray-700">
-                                              <span>Taxă TVA (%)</span>
+                                              <span>
+                                                  {t("orders.view.summary.vatRate")}
+                                              </span>
                                               <span className="font-medium">
                                                   {taxPct > 0
                                                       ? `${taxPct}% · ${formatCurrency(taxAmount)}`
@@ -1043,7 +1056,9 @@ export default function OrderView() {
                                           </div>
                                           {shippingAmount > 0 && (
                                               <div className="flex justify-between text-gray-700">
-                                                  <span>Transport</span>
+                                                  <span>
+                                                      {t("orders.view.summary.shipping")}
+                                                  </span>
                                                   <span className="font-medium">
                                                       {formatCurrency(
                                                           shippingAmount,
@@ -1052,7 +1067,9 @@ export default function OrderView() {
                                               </div>
                                           )}
                                           <div className="flex justify-between text-gray-900 font-semibold pt-2">
-                                              <span>Total</span>
+                                              <span>
+                                                  {t("orders.view.summary.total")}
+                                              </span>
                                               <span>
                                                   {formatCurrency(
                                                       order?.total_amount ??
@@ -1081,14 +1098,16 @@ export default function OrderView() {
                                   return (
                                       <div className="mt-6 pt-4 border-t border-gray-200 space-y-2 max-w-xs ml-auto text-sm">
                                           <div className="flex justify-between text-gray-700">
-                                              <span>Subtotal</span>
+                                              <span>
+                                                  {t("orders.view.summary.subtotal")}
+                                              </span>
                                               <span className="font-medium">
                                                   {formatCurrency(subtotal)}
                                               </span>
                                           </div>
                                           <div className="flex justify-between items-center gap-4">
                                               <span className="text-gray-700">
-                                                  Taxă TVA (%)
+                                                  {t("orders.view.summary.vatRate")}
                                               </span>
                                               <input
                                                   type="number"
@@ -1124,7 +1143,7 @@ export default function OrderView() {
                                                       className="rounded border-gray-300"
                                                   />
                                                   <Truck className="w-4 h-4 text-amber-600" />
-                                                  Transport
+                                                  {t("orders.view.summary.shipping")}
                                               </label>
                                               {includeShipping ? (
                                                   <>
@@ -1157,7 +1176,9 @@ export default function OrderView() {
                                               )}
                                           </div>
                                           <div className="flex justify-between text-gray-900 font-semibold pt-2">
-                                              <span>Total</span>
+                                              <span>
+                                                  {t("orders.view.summary.total")}
+                                              </span>
                                               <span>
                                                   {formatCurrency(total)}
                                               </span>
@@ -1174,8 +1195,8 @@ export default function OrderView() {
                                                   className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50"
                                               >
                                                   {saveItemsMutation.isPending
-                                                      ? "Se salvează..."
-                                                      : "Salvează produse și total"}
+                                                      ? t("common.saving")
+                                                      : t("orders.view.summary.saveItems")}
                                               </button>
                                           </div>
                                       </div>
@@ -1187,12 +1208,10 @@ export default function OrderView() {
                         <div className="bg-white shadow-md rounded-lg p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <ListTodo className="w-5 h-5 text-violet-500" />
-                                Sarcini / Etape comandă
+                                {t("orders.view.tasks.title")}
                             </h2>
                             <p className="text-sm text-gray-600 mb-4">
-                                Sarcinile sunt vizibile angajatului asignat.
-                                Poți adăuga etape (ex: Pregătire, Livrare,
-                                Finalizare) și schimba statusul.
+                                {t("orders.view.tasks.description")}
                             </p>
                             <ul className="space-y-3 mb-4">
                                 {(order?.tasks ?? []).map((task) => {
@@ -1225,7 +1244,7 @@ export default function OrderView() {
                                                     </span>
                                                     {task.order_id && (
                                                         <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">
-                                                            Comandă
+                                                            {t("orders.view.tasks.orderTag")}
                                                         </span>
                                                     )}
                                                 </div>
@@ -1237,7 +1256,7 @@ export default function OrderView() {
                                                 <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
                                                     {task.due_date && (
                                                         <span>
-                                                            Termen:{" "}
+                                                            {t("orders.view.tasks.due")}:{" "}
                                                             {formatDate(
                                                                 task.due_date,
                                                             )}
@@ -1245,7 +1264,7 @@ export default function OrderView() {
                                                     )}
                                                     <span className="flex items-center gap-1">
                                                         <User className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                                                        Asignat:{" "}
+                                                        {t("orders.view.tasks.assigned")}:{" "}
                                                         {(task.assignedTo
                                                             ?.name ??
                                                             (typeof task.assigned_to ===
@@ -1256,14 +1275,14 @@ export default function OrderView() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2 flex-shrink-0">
+                                            <div className="flex items-center gap-2 shrink-0">
                                                 <Link
                                                     to={`/tasks/${task.id}/edit`}
                                                     className="inline-flex items-center gap-1.5 px-2 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-md"
-                                                    title="Editează sarcina"
+                                                    title={t("orders.view.tasks.editTask")}
                                                 >
                                                     <Pencil className="w-4 h-4" />
-                                                    Editează
+                                                    {t("orders.actions.edit")}
                                                 </Link>
                                                 <select
                                                     value={task.status}
@@ -1307,7 +1326,7 @@ export default function OrderView() {
                                                     onClick={() => {
                                                         if (
                                                             window.confirm(
-                                                                "Ștergi această sarcină?",
+                                                                t("orders.view.tasks.confirmDeleteTask"),
                                                             )
                                                         ) {
                                                             deleteTaskMutation.mutate(
@@ -1319,7 +1338,7 @@ export default function OrderView() {
                                                         deleteTaskMutation.isPending
                                                     }
                                                     className="p-1.5 text-gray-500 hover:text-red-600 rounded"
-                                                    title="Șterge sarcina"
+                                                    title={t("orders.view.tasks.deleteTask")}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -1330,8 +1349,7 @@ export default function OrderView() {
                             </ul>
                             {(!order?.tasks || order.tasks.length === 0) && (
                                 <p className="text-sm text-gray-500 mb-4">
-                                    Nu există sarcini. Adaugă etape pentru
-                                    comandă.
+                                    {t("orders.view.tasks.empty")}
                                 </p>
                             )}
                             {!showAddTaskForm ? (
@@ -1341,12 +1359,12 @@ export default function OrderView() {
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-md hover:bg-violet-700"
                                 >
                                     <Plus className="w-4 h-4" />
-                                    Adaugă sarcină / etapă
+                                    {t("orders.view.tasks.add")}
                                 </button>
                             ) : (
                                 <div className="border-t border-gray-200 pt-4 space-y-3">
                                     <h3 className="text-sm font-medium text-gray-700">
-                                        Sarcină nouă
+                                        {t("orders.view.tasks.newTaskTitle")}
                                     </h3>
                                     <input
                                         type="text"
@@ -1354,7 +1372,7 @@ export default function OrderView() {
                                         onChange={(e) =>
                                             setNewTaskTitle(e.target.value)
                                         }
-                                        placeholder="Titlu (ex: Pregătire comandă)"
+                                        placeholder={t("orders.view.tasks.titlePlaceholder")}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                                     />
                                     <textarea
@@ -1364,13 +1382,13 @@ export default function OrderView() {
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="Descriere (opțional)"
+                                        placeholder={t("orders.view.tasks.descriptionPlaceholder")}
                                         rows={2}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                                     />
                                     <div>
                                         <label className="block text-xs font-medium text-gray-600 mb-1">
-                                            Assigned to
+                                            {t("orders.view.tasks.assignedToLabel")}
                                         </label>
                                         <SearchableSelect
                                             value={newTaskAssignedToUserId}
@@ -1395,13 +1413,13 @@ export default function OrderView() {
                                                         emp.employee_code ||
                                                         `Angajat #${emp.id}`,
                                                 }))}
-                                            placeholder="Alege angajat"
+                                            placeholder={t("orders.view.tasks.selectEmployee")}
                                             className="text-sm"
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-medium text-gray-600 mb-1">
-                                            Termen limita
+                                            {t("orders.view.tasks.dueDateLabel")}
                                         </label>
                                         <input
                                             type="date"
@@ -1421,7 +1439,7 @@ export default function OrderView() {
                                             onClick={() => {
                                                 if (!newTaskAssignedToUserId) {
                                                     toast.error(
-                                                        "Selectează un angajat pentru sarcină.",
+                                                        t("orders.view.tasks.selectEmployeeError"),
                                                     );
                                                     return;
                                                 }
@@ -1448,8 +1466,8 @@ export default function OrderView() {
                                             className="px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-md hover:bg-violet-700 disabled:opacity-50"
                                         >
                                             {createTaskMutation.isPending
-                                                ? "Se adaugă..."
-                                                : "Adaugă"}
+                                                ? t("orders.view.tasks.adding")
+                                                : t("orders.view.tasks.addConfirm")}
                                         </button>
                                         <button
                                             type="button"
@@ -1462,7 +1480,7 @@ export default function OrderView() {
                                             }}
                                             className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300"
                                         >
-                                            Anulare
+                                            {t("common.cancel")}
                                         </button>
                                     </div>
                                 </div>
@@ -1473,7 +1491,7 @@ export default function OrderView() {
                     <div className="bg-white shadow-md rounded-lg p-6">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             <FileText className="w-5 h-5" />
-                            Documente atașate
+                            {t("orders.view.documents.title")}
                         </h2>
                         {!isEmployee && (
                             <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -1482,9 +1500,11 @@ export default function OrderView() {
                                     onChange={(e) => setDocType(e.target.value)}
                                     className="px-3 py-2 border border-gray-300 rounded-md text-sm"
                                 >
-                                    <option value="awb">AWB</option>
-                                    <option value="invoice">Factură</option>
-                                    <option value="other">Altele</option>
+                                    {DOC_TYPES.map((type) => (
+                                        <option key={type} value={type}>
+                                            {t(`orders.documents.type.${type}`)}
+                                        </option>
+                                    ))}
                                 </select>
                                 <input
                                     ref={fileInputRef}
@@ -1502,7 +1522,7 @@ export default function OrderView() {
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm disabled:opacity-50"
                                 >
                                     <Upload className="w-4 h-4" />
-                                    Încarcă
+                                    {t("orders.view.documents.upload")}
                                 </button>
                             </div>
                         )}
@@ -1522,8 +1542,9 @@ export default function OrderView() {
                                         {doc.name}
                                         <span className="text-xs text-gray-500">
                                             (
-                                            {DOC_TYPE_LABELS[doc.type] ??
-                                                doc.type}
+                                            {t(`orders.documents.type.${doc.type}`, {
+                                                defaultValue: doc.type,
+                                            })}
                                             )
                                         </span>
                                     </a>
@@ -1537,7 +1558,7 @@ export default function OrderView() {
                                                 })
                                             }
                                             className="p-1.5 text-gray-500 hover:text-red-600"
-                                            title="Șterge"
+                                            title={t("orders.actions.delete")}
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -1548,7 +1569,7 @@ export default function OrderView() {
                         {(!order?.documents ||
                             order.documents.length === 0) && (
                             <p className="text-sm text-gray-500">
-                                Nu există documente atașate.
+                                {t("orders.view.documents.empty")}
                             </p>
                         )}
                     </div>

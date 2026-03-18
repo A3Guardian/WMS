@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -13,6 +14,7 @@ export default function DepositConfigurator() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const canvasRef = useRef(null);
     const [scale, setScale] = useState(1);
     const [baseScale, setBaseScale] = useState(1);
@@ -106,9 +108,9 @@ export default function DepositConfigurator() {
                 return response.data || [];
             } catch (error) {
                 console.error("Error fetching shelf products:", error);
-                toast.error("Failed to load products", {
+                toast.error(t("deposits.configurator.toast.loadProductsFailed"), {
                     description:
-                        error.response?.data?.message || "An error occurred",
+                        error.response?.data?.message || t("common.genericError"),
                 });
                 return [];
             }
@@ -138,13 +140,13 @@ export default function DepositConfigurator() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["shelves", id] });
-            toast.success("Shelf created successfully");
+            toast.success(t("deposits.configurator.toast.shelfCreated"));
             setDrawingMode(null);
         },
         onError: (error) => {
-            toast.error("Failed to create shelf", {
+            toast.error(t("deposits.configurator.toast.shelfCreateFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -166,9 +168,9 @@ export default function DepositConfigurator() {
             setSelectedShelf(updatedShelf);
         },
         onError: (error) => {
-            toast.error("Failed to update shelf", {
+            toast.error(t("deposits.configurator.toast.shelfUpdateFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
             queryClient.invalidateQueries({ queryKey: ["shelves", id] });
         },
@@ -181,12 +183,12 @@ export default function DepositConfigurator() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["shelves", id] });
             setSelectedShelf(null);
-            toast.success("Shelf deleted successfully");
+            toast.success(t("deposits.configurator.toast.shelfDeleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete shelf", {
+            toast.error(t("deposits.configurator.toast.shelfDeleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -198,7 +200,7 @@ export default function DepositConfigurator() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["walls", id] });
-            toast.success("Wall created successfully");
+            toast.success(t("deposits.configurator.toast.wallCreated"));
             setDrawingMode(null);
             setWallStart(null);
             setSelectedShelf(null);
@@ -206,9 +208,9 @@ export default function DepositConfigurator() {
             setSelectedDoor(null);
         },
         onError: (error) => {
-            toast.error("Failed to create wall", {
+            toast.error(t("deposits.configurator.toast.wallCreateFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -220,12 +222,12 @@ export default function DepositConfigurator() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["walls", id] });
             setSelectedWall(null);
-            toast.success("Wall deleted successfully");
+            toast.success(t("deposits.configurator.toast.wallDeleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete wall", {
+            toast.error(t("deposits.configurator.toast.wallDeleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -294,16 +296,16 @@ export default function DepositConfigurator() {
             });
             setSelectedWall(updatedWall);
             setDraggingWallEndpoint(null);
-            toast.success("Wall updated");
+            toast.success(t("deposits.configurator.toast.wallUpdated"));
             queryClient.invalidateQueries({ queryKey: ["walls", id] });
             console.log(
                 "[Wall update] invalidateQueries called for [walls, id]",
             );
         },
         onError: (error) => {
-            toast.error("Failed to update wall", {
+            toast.error(t("deposits.configurator.toast.wallUpdateFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
             setDraggingWallEndpoint(null);
         },
@@ -316,16 +318,16 @@ export default function DepositConfigurator() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["doors", id] });
-            toast.success("Door created successfully");
+            toast.success(t("deposits.configurator.toast.doorCreated"));
             setDrawingMode(null);
             setSelectedShelf(null);
             setSelectedWall(null);
             setSelectedDoor(null);
         },
         onError: (error) => {
-            toast.error("Failed to create door", {
+            toast.error(t("deposits.configurator.toast.doorCreateFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -348,13 +350,13 @@ export default function DepositConfigurator() {
                 return isArray ? next : { ...old, data: next };
             });
             setSelectedDoor(updatedDoor);
-            toast.success("Door updated");
+            toast.success(t("deposits.configurator.toast.doorUpdated"));
             queryClient.invalidateQueries({ queryKey: ["doors", id] });
         },
         onError: (error) => {
-            toast.error("Failed to update door", {
+            toast.error(t("deposits.configurator.toast.doorUpdateFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -366,12 +368,12 @@ export default function DepositConfigurator() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["doors", id] });
             setSelectedDoor(null);
-            toast.success("Door deleted successfully");
+            toast.success(t("deposits.configurator.toast.doorDeleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete door", {
+            toast.error(t("deposits.configurator.toast.doorDeleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -503,7 +505,7 @@ export default function DepositConfigurator() {
                 : yMeters;
             if (!wallStart) {
                 setWallStart({ x: snappedX, y: snappedY });
-                toast.info("Click again on grid to set wall end point");
+                toast.info(t("deposits.configurator.hints.wallClickAgain"));
             } else {
                 createWallMutation.mutate({
                     x_start: wallStart.x,
@@ -596,9 +598,7 @@ export default function DepositConfigurator() {
                     detectionThreshold,
                     scale,
                 });
-                toast.error(
-                    "Please click on a wall or deposit border to place a door",
-                );
+                toast.error(t("deposits.configurator.errors.clickWallForDoor"));
                 return;
             }
 
@@ -608,7 +608,7 @@ export default function DepositConfigurator() {
                 yMeters,
             });
             if (!snapped) {
-                toast.error("Invalid wall");
+                toast.error(t("deposits.configurator.errors.invalidWall"));
                 return;
             }
 
@@ -847,7 +847,9 @@ export default function DepositConfigurator() {
         }
 
         createShelfMutation.mutate({
-            name: `Shelf ${shelves.length + 1}`,
+            name: t("deposits.configurator.shelfDefaultName", {
+                number: shelves.length + 1,
+            }),
             x_position: xPos,
             y_position: yPos,
             width: newShelfSize.width,
@@ -1200,14 +1202,18 @@ export default function DepositConfigurator() {
     const handleDeleteShelf = () => {
         if (
             selectedShelf &&
-            window.confirm(`Delete shelf "${selectedShelf.name}"?`)
+            window.confirm(
+                t("deposits.configurator.confirmDelete.shelf", {
+                    name: selectedShelf.name,
+                }),
+            )
         ) {
             deleteShelfMutation.mutate(selectedShelf.id);
         }
     };
 
     const handleDeleteWall = () => {
-        if (selectedWall && window.confirm(`Delete wall?`)) {
+        if (selectedWall && window.confirm(t("deposits.configurator.confirmDelete.wall"))) {
             deleteWallMutation.mutate(selectedWall.id);
         }
     };
@@ -1215,7 +1221,11 @@ export default function DepositConfigurator() {
     const handleDeleteDoor = () => {
         if (
             selectedDoor &&
-            window.confirm(`Delete door "${selectedDoor.name || "door"}"?`)
+            window.confirm(
+                t("deposits.configurator.confirmDelete.door", {
+                    name: selectedDoor.name || t("deposits.configurator.door.defaultName"),
+                }),
+            )
         ) {
             deleteDoorMutation.mutate(selectedDoor.id);
         }
@@ -1247,17 +1257,25 @@ export default function DepositConfigurator() {
     };
 
     if (depositLoading || shelvesLoading || wallsLoading || doorsLoading) {
-        return <div className="text-center py-8 text-gray-600">Loading...</div>;
+        return (
+            <div className="text-center py-8 text-gray-600">
+                {t("common.loading")}
+            </div>
+        );
     }
 
     if (!deposit) {
-        return <div className="text-red-500 p-4">Deposit not found</div>;
+        return (
+            <div className="text-red-500 p-4">
+                {t("deposits.configurator.errors.notFound")}
+            </div>
+        );
     }
 
     if (!hasPermission("view deposits")) {
         return (
             <div className="text-red-500 p-4">
-                You don't have permission to view deposits.
+                {t("deposits.errors.noPermissionView")}
             </div>
         );
     }
@@ -1269,13 +1287,13 @@ export default function DepositConfigurator() {
                     type="button"
                     onClick={() => navigate(-1)}
                     className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Back"
+                    aria-label={t("common.back")}
                 >
                     <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="min-w-0">
                     <h1 className="text-3xl font-bold truncate">
-                        Deposit Configurator
+                        {t("deposits.configurator.title")}
                     </h1>
                     <p className="text-gray-600 mt-1 truncate">
                         {deposit.name} - {deposit.width}m × {deposit.height}m
@@ -1287,10 +1305,12 @@ export default function DepositConfigurator() {
                 <div className="lg:col-span-3">
                     <div className="bg-white shadow-md rounded-lg p-6">
                         <div className="mb-4 flex items-center justify-between flex-wrap gap-4">
-                            <h2 className="text-xl font-semibold">Layout</h2>
+                            <h2 className="text-xl font-semibold">
+                                {t("deposits.configurator.layoutTitle")}
+                            </h2>
                             <div className="flex items-center gap-4 flex-wrap">
                                 <label className="text-sm text-gray-700">
-                                    New Shelf Size:
+                                    {t("deposits.configurator.newShelfSize")}:
                                 </label>
                                 <input
                                     type="number"
@@ -1324,7 +1344,7 @@ export default function DepositConfigurator() {
                                     placeholder="H"
                                 />
                                 <span className="text-sm text-gray-500">
-                                    meters
+                                    {t("deposits.configurator.meters")}
                                 </span>
                                 <button
                                     onClick={handleAddShelf}
@@ -1348,7 +1368,7 @@ export default function DepositConfigurator() {
                                             d="M12 4v16m8-8H4"
                                         />
                                     </svg>
-                                    Add Shelf
+                                    {t("deposits.configurator.actions.addShelf")}
                                 </button>
                                 <button
                                     onClick={
@@ -1380,8 +1400,8 @@ export default function DepositConfigurator() {
                                         />
                                     </svg>
                                     {drawingMode === "wall"
-                                        ? "Cancel Wall"
-                                        : "Add Wall"}
+                                        ? t("deposits.configurator.actions.cancelWall")
+                                        : t("deposits.configurator.actions.addWall")}
                                 </button>
                                 <button
                                     onClick={
@@ -1413,17 +1433,17 @@ export default function DepositConfigurator() {
                                         />
                                     </svg>
                                     {drawingMode === "door"
-                                        ? "Cancel Door"
-                                        : "Add Door"}
+                                        ? t("deposits.configurator.actions.cancelDoor")
+                                        : t("deposits.configurator.actions.addDoor")}
                                 </button>
                                 <div className="flex items-center gap-2 border-l pl-4 ml-2">
                                     <span className="text-sm text-gray-700">
-                                        Zoom:
+                                        {t("deposits.configurator.zoom")}:
                                     </span>
                                     <button
                                         onClick={handleZoomOut}
                                         className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"
-                                        title="Zoom Out"
+                                        title={t("deposits.configurator.actions.zoomOut")}
                                     >
                                         <svg
                                             className="w-5 h-5"
@@ -1445,7 +1465,7 @@ export default function DepositConfigurator() {
                                     <button
                                         onClick={handleZoomIn}
                                         className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"
-                                        title="Zoom In"
+                                        title={t("deposits.configurator.actions.zoomIn")}
                                     >
                                         <svg
                                             className="w-5 h-5"
@@ -1464,9 +1484,9 @@ export default function DepositConfigurator() {
                                     <button
                                         onClick={handleZoomReset}
                                         className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-md"
-                                        title="Reset Zoom"
+                                        title={t("deposits.configurator.actions.resetZoom")}
                                     >
-                                        Reset
+                                        {t("deposits.configurator.actions.reset")}
                                     </button>
                                 </div>
                             </div>
@@ -1513,14 +1533,14 @@ export default function DepositConfigurator() {
                         <p className="text-sm text-gray-500 mt-2 text-center">
                             {drawingMode === "wall" &&
                                 !wallStart &&
-                                "Click on grid to set wall start"}
+                                t("deposits.configurator.hints.wallStart")}
                             {drawingMode === "wall" &&
                                 wallStart &&
-                                "Click on grid to set wall end"}
+                                t("deposits.configurator.hints.wallEnd")}
                             {drawingMode === "door" &&
-                                "Click on a wall to place door"}
+                                t("deposits.configurator.hints.doorPlace")}
                             {!drawingMode &&
-                                "Drag shelves to reposition • Click to select • Use buttons to add items • Ctrl+Scroll to zoom"}
+                                t("deposits.configurator.hints.default")}
                         </p>
                     </div>
                 </div>
@@ -1529,20 +1549,20 @@ export default function DepositConfigurator() {
                     <div className="bg-white shadow-md rounded-lg p-6">
                         <h2 className="text-xl font-semibold mb-4">
                             {selectedShelf
-                                ? "Shelf Details"
+                                ? t("deposits.configurator.details.shelf")
                                 : selectedWall
-                                  ? "Wall Details"
+                                  ? t("deposits.configurator.details.wall")
                                   : selectedDoor
-                                    ? "Door Details"
+                                    ? t("deposits.configurator.details.door")
                                     : drawingMode
-                                      ? "Drawing Mode"
-                                      : "Details"}
+                                      ? t("deposits.configurator.details.drawingMode")
+                                      : t("deposits.configurator.details.title")}
                         </h2>
                         {selectedWall ? (
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Name
+                                        {t("common.name")}
                                     </label>
                                     <input
                                         type="text"
@@ -1554,12 +1574,12 @@ export default function DepositConfigurator() {
                                             }))
                                         }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                        placeholder="Wall name (optional)"
+                                        placeholder={t("deposits.configurator.placeholders.wallName")}
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Start Position (meters)
+                                        {t("deposits.configurator.wall.startPosition")}
                                     </label>
                                     <div className="grid grid-cols-2 gap-2">
                                         <input
@@ -1580,7 +1600,7 @@ export default function DepositConfigurator() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        End Position (meters)
+                                        {t("deposits.configurator.wall.endPosition")}
                                     </label>
                                     <div className="grid grid-cols-2 gap-2">
                                         <input
@@ -1601,7 +1621,7 @@ export default function DepositConfigurator() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Thickness (meters)
+                                        {t("deposits.configurator.wall.thickness")}
                                     </label>
                                     <input
                                         type="number"
@@ -1619,7 +1639,7 @@ export default function DepositConfigurator() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Length (meters)
+                                        {t("deposits.configurator.wall.length")}
                                     </label>
                                     <input
                                         type="number"
@@ -1647,7 +1667,7 @@ export default function DepositConfigurator() {
                                             !hasPermission("edit deposits")
                                         }
                                     >
-                                        Delete
+                                        {t("common.delete")}
                                     </button>
                                     <button
                                         onClick={handleSaveWallDetails}
@@ -1656,7 +1676,7 @@ export default function DepositConfigurator() {
                                             !hasPermission("edit deposits")
                                         }
                                     >
-                                        Save
+                                        {t("common.save")}
                                     </button>
                                 </div>
                             </div>
@@ -1664,20 +1684,20 @@ export default function DepositConfigurator() {
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Name
+                                        {t("common.name")}
                                     </label>
                                     <input
                                         type="text"
                                         value={selectedDoor.name || ""}
                                         onChange={(e) => {}}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                        placeholder="Door name (optional)"
+                                        placeholder={t("deposits.configurator.placeholders.doorName")}
                                     />
                                 </div>
                                 {selectedDoor.wall_id && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Wall
+                                            {t("deposits.configurator.door.wall")}
                                         </label>
                                         <input
                                             type="text"
@@ -1687,7 +1707,9 @@ export default function DepositConfigurator() {
                                                         w.id ===
                                                         selectedDoor.wall_id,
                                                 )?.name ||
-                                                `Wall #${selectedDoor.wall_id}`
+                                                t("deposits.configurator.door.wallNumber", {
+                                                    id: selectedDoor.wall_id,
+                                                })
                                             }
                                             readOnly
                                             className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
@@ -1696,7 +1718,7 @@ export default function DepositConfigurator() {
                                 )}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Position (meters)
+                                        {t("deposits.configurator.door.position")}
                                     </label>
                                     <div className="grid grid-cols-2 gap-2">
                                         <input
@@ -1717,7 +1739,7 @@ export default function DepositConfigurator() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Width (meters)
+                                        {t("deposits.configurator.door.width")}
                                     </label>
                                     <input
                                         type="number"
@@ -1728,7 +1750,7 @@ export default function DepositConfigurator() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Orientation
+                                        {t("deposits.configurator.door.orientation")}
                                     </label>
                                     <input
                                         type="text"
@@ -1745,14 +1767,14 @@ export default function DepositConfigurator() {
                                     className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                                     disabled={!hasPermission("edit deposits")}
                                 >
-                                    Delete Door
+                                    {t("deposits.configurator.actions.deleteDoor")}
                                 </button>
                             </div>
                         ) : selectedShelf ? (
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Name
+                                        {t("common.name")}
                                     </label>
                                     <input
                                         type="text"
@@ -1770,7 +1792,7 @@ export default function DepositConfigurator() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Position (meters)
+                                        {t("deposits.configurator.shelf.position")}
                                     </label>
                                     <div className="grid grid-cols-2 gap-2">
                                         <input
@@ -1817,7 +1839,7 @@ export default function DepositConfigurator() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Size (meters)
+                                        {t("deposits.configurator.shelf.size")}
                                     </label>
                                     <div className="grid grid-cols-2 gap-2">
                                         <input
@@ -1864,7 +1886,7 @@ export default function DepositConfigurator() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Depth (meters)
+                                        {t("deposits.configurator.shelf.depth")}
                                     </label>
                                     <input
                                         type="number"
@@ -1888,7 +1910,7 @@ export default function DepositConfigurator() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Capacity (m³)
+                                        {t("deposits.configurator.shelf.capacity")}
                                     </label>
                                     <input
                                         type="number"
@@ -1900,7 +1922,7 @@ export default function DepositConfigurator() {
 
                                 <div className="border-t pt-4 mt-4">
                                     <h3 className="text-lg font-semibold mb-3">
-                                        Products in Shelf
+                                        {t("deposits.configurator.shelf.productsTitle")}
                                     </h3>
                                     <ShelfProductsList
                                         products={shelfProducts}
@@ -1917,7 +1939,7 @@ export default function DepositConfigurator() {
                                         !!drawingMode
                                     }
                                 >
-                                    Delete Shelf
+                                    {t("deposits.configurator.actions.deleteShelf")}
                                 </button>
                             </div>
                         ) : drawingMode ? (
@@ -1926,25 +1948,24 @@ export default function DepositConfigurator() {
                                     <p className="text-sm text-yellow-800 font-medium mb-2">
                                         {drawingMode === "wall" &&
                                             !wallStart &&
-                                            "Click to set wall start point"}
+                                            t("deposits.configurator.hints.wallStartPoint")}
                                         {drawingMode === "wall" &&
                                             wallStart &&
-                                            "Click to set wall end point"}
+                                            t("deposits.configurator.hints.wallEndPoint")}
                                         {drawingMode === "door" &&
-                                            "Click on a wall or border to place door"}
+                                            t("deposits.configurator.hints.doorBorder")}
                                     </p>
                                     <button
                                         onClick={handleCancelDrawing}
                                         className="w-full px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                                     >
-                                        Cancel
+                                        {t("common.cancel")}
                                     </button>
                                 </div>
                             </div>
                         ) : (
                             <p className="text-gray-500 text-sm">
-                                Click on a shelf, wall, or door to view and edit
-                                its details
+                                {t("deposits.configurator.hints.clickToView")}
                             </p>
                         )}
                     </div>

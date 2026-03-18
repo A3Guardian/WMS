@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 
 const initialFormData = () => ({
@@ -113,6 +114,7 @@ export default function CustomerFormModal({
     const queryClient = useQueryClient();
     const isEdit = !!customer;
     const [formData, setFormData] = useState(() => initialFormData());
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (!isOpen) return;
@@ -126,15 +128,16 @@ export default function CustomerFormModal({
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["customers"] });
-            toast.success("Customer created");
+            toast.success(t("customers.toast.created"));
             if (typeof onCreated === "function") {
                 onCreated(data);
             }
             onClose();
         },
         onError: (err) => {
-            toast.error("Failed to create customer", {
-                description: err.response?.data?.message || "An error occurred",
+            toast.error(t("customers.toast.createFailed"), {
+                description:
+                    err.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -146,12 +149,13 @@ export default function CustomerFormModal({
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["customers"] });
-            toast.success("Customer updated");
+            toast.success(t("customers.toast.updated"));
             onClose();
         },
         onError: (err) => {
-            toast.error("Failed to update customer", {
-                description: err.response?.data?.message || "An error occurred",
+            toast.error(t("customers.toast.updateFailed"), {
+                description:
+                    err.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -182,14 +186,20 @@ export default function CustomerFormModal({
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
                 <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-3xl z-50 max-h-[90vh] overflow-y-auto">
                     <Dialog.Title className="text-2xl font-bold mb-4">
-                        {isEdit ? "Edit customer" : "Add customer"}
+                        {isEdit
+                            ? t("customers.form.editTitle")
+                            : t("customers.form.createTitle")}
                     </Dialog.Title>
 
                     <form onSubmit={handleSubmit} className="space-y-3">
-                        <div className={sectionTitleClass}>General</div>
+                        <div className={sectionTitleClass}>
+                            {t("customers.form.sections.general")}
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className={labelClass}>Name *</label>
+                                <label className={labelClass}>
+                                    {t("customers.form.fields.name")} *
+                                </label>
                                 <input
                                     type="text"
                                     required
@@ -200,7 +210,7 @@ export default function CustomerFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Company name
+                                    {t("customers.form.fields.companyName")}
                                 </label>
                                 <input
                                     type="text"
@@ -210,7 +220,9 @@ export default function CustomerFormModal({
                                 />
                             </div>
                             <div>
-                                <label className={labelClass}>Email</label>
+                                <label className={labelClass}>
+                                    {t("customers.form.fields.email")}
+                                </label>
                                 <input
                                     type="email"
                                     value={formData.email}
@@ -220,7 +232,7 @@ export default function CustomerFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Contact person
+                                    {t("customers.form.fields.contactPerson")}
                                 </label>
                                 <input
                                     type="text"
@@ -232,7 +244,9 @@ export default function CustomerFormModal({
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label className={labelClass}>Main phone</label>
+                                <label className={labelClass}>
+                                    {t("customers.form.fields.mainPhone")}
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.phone}
@@ -242,7 +256,7 @@ export default function CustomerFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Billing phone
+                                    {t("customers.form.fields.billingPhone")}
                                 </label>
                                 <input
                                     type="text"
@@ -253,7 +267,7 @@ export default function CustomerFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Shipping phone
+                                    {t("customers.form.fields.shippingPhone")}
                                 </label>
                                 <input
                                     type="text"
@@ -264,11 +278,13 @@ export default function CustomerFormModal({
                             </div>
                         </div>
 
-                        <div className={sectionTitleClass}>Billing address</div>
+                        <div className={sectionTitleClass}>
+                            {t("customers.form.sections.billingAddress")}
+                        </div>
                         <div className="space-y-4">
                             <div>
                                 <label className={labelClass}>
-                                    Billing address
+                                    {t("customers.form.fields.billingAddress")}
                                 </label>
                                 <textarea
                                     rows={2}
@@ -279,7 +295,9 @@ export default function CustomerFormModal({
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
-                                    <label className={labelClass}>City</label>
+                                    <label className={labelClass}>
+                                        {t("customers.form.fields.city")}
+                                    </label>
                                     <input
                                         type="text"
                                         value={formData.billing_city}
@@ -289,7 +307,7 @@ export default function CustomerFormModal({
                                 </div>
                                 <div>
                                     <label className={labelClass}>
-                                        Postcode
+                                        {t("customers.form.fields.postcode")}
                                     </label>
                                     <input
                                         type="text"
@@ -300,7 +318,7 @@ export default function CustomerFormModal({
                                 </div>
                                 <div>
                                     <label className={labelClass}>
-                                        Country
+                                        {t("customers.form.fields.country")}
                                     </label>
                                     <input
                                         type="text"
@@ -313,12 +331,12 @@ export default function CustomerFormModal({
                         </div>
 
                         <div className={sectionTitleClass}>
-                            Shipping address
+                            {t("customers.form.sections.shippingAddress")}
                         </div>
                         <div className="space-y-4">
                             <div>
                                 <label className={labelClass}>
-                                    Shipping address
+                                    {t("customers.form.fields.shippingAddress")}
                                 </label>
                                 <textarea
                                     rows={2}
@@ -329,7 +347,9 @@ export default function CustomerFormModal({
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
-                                    <label className={labelClass}>City</label>
+                                    <label className={labelClass}>
+                                        {t("customers.form.fields.city")}
+                                    </label>
                                     <input
                                         type="text"
                                         value={formData.shipping_city}
@@ -339,7 +359,7 @@ export default function CustomerFormModal({
                                 </div>
                                 <div>
                                     <label className={labelClass}>
-                                        Postcode
+                                        {t("customers.form.fields.postcode")}
                                     </label>
                                     <input
                                         type="text"
@@ -350,7 +370,7 @@ export default function CustomerFormModal({
                                 </div>
                                 <div>
                                     <label className={labelClass}>
-                                        Country
+                                        {t("customers.form.fields.country")}
                                     </label>
                                     <input
                                         type="text"
@@ -363,11 +383,13 @@ export default function CustomerFormModal({
                         </div>
 
                         <div className={sectionTitleClass}>
-                            Tax & registration
+                            {t("customers.form.sections.taxRegistration")}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className={labelClass}>Tax number</label>
+                                <label className={labelClass}>
+                                    {t("customers.form.fields.taxNumber")}
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.tax_number}
@@ -377,7 +399,7 @@ export default function CustomerFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Registration number
+                                    {t("customers.form.fields.registrationNumber")}
                                 </label>
                                 <input
                                     type="text"
@@ -388,10 +410,14 @@ export default function CustomerFormModal({
                             </div>
                         </div>
 
-                        <div className={sectionTitleClass}>Banking</div>
+                        <div className={sectionTitleClass}>
+                            {t("customers.form.sections.banking")}
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label className={labelClass}>Bank name</label>
+                                <label className={labelClass}>
+                                    {t("customers.form.fields.bankName")}
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.bank_name}
@@ -420,12 +446,12 @@ export default function CustomerFormModal({
                         </div>
 
                         <div className={sectionTitleClass}>
-                            Payment terms & credit limit
+                            {t("customers.form.sections.paymentTermsCredit")}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className={labelClass}>
-                                    Payment terms (days)
+                                    {t("customers.form.fields.paymentTermsDays")}
                                 </label>
                                 <input
                                     type="number"
@@ -438,7 +464,7 @@ export default function CustomerFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Credit limit
+                                    {t("customers.form.fields.creditLimit")}
                                 </label>
                                 <input
                                     type="number"
@@ -451,7 +477,9 @@ export default function CustomerFormModal({
                             </div>
                         </div>
 
-                        <div className={sectionTitleClass}>Notes</div>
+                        <div className={sectionTitleClass}>
+                            {t("customers.form.sections.notes")}
+                        </div>
                         <div>
                             <textarea
                                 rows={3}
@@ -467,7 +495,7 @@ export default function CustomerFormModal({
                                     type="button"
                                     className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -475,7 +503,7 @@ export default function CustomerFormModal({
                                 disabled={isSaving}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                             >
-                                {isSaving ? "Saving..." : "Save"}
+                                {isSaving ? t("common.saving") : t("common.save")}
                             </button>
                         </div>
                     </form>

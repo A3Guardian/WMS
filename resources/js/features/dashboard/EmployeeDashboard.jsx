@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import { useAuth } from "../auth/AuthContext";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -10,6 +11,7 @@ import { TASK_STATUS } from "../../utils/constants";
 export default function EmployeeDashboard() {
     const { user } = useAuth();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
 
     const { data: tasksData } = useQuery({
         queryKey: ["tasks", "dashboard"],
@@ -65,16 +67,18 @@ export default function EmployeeDashboard() {
         <div className="space-y-8">
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                    Bun venit, {user?.name || "Angajat"}!
+                    {t("employeeDashboard.welcome", {
+                        name: user?.name || t("employeeDashboard.employee"),
+                    })}
                 </h1>
                 <p className="mt-1 text-gray-600">
-                    Iată activitatea ta și rezumatul recent.
+                    {t("employeeDashboard.subtitle")}
                 </p>
             </div>
 
             <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-3">
-                    Sarcinile mele
+                    {t("employeeDashboard.myTasks.title")}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <Link
@@ -82,13 +86,13 @@ export default function EmployeeDashboard() {
                         className="block bg-amber-50 border border-amber-200 rounded-xl p-5 hover:shadow-md transition-shadow"
                     >
                         <p className="text-sm font-medium text-amber-700">
-                            În așteptare
+                            {t("employeeDashboard.myTasks.pending")}
                         </p>
                         <p className="mt-1 text-2xl font-bold text-amber-900">
                             {pendingTasks.length}
                         </p>
                         <p className="text-xs text-amber-600 mt-1">
-                            Vezi task-urile →
+                            {t("employeeDashboard.myTasks.viewTasks")}
                         </p>
                     </Link>
                     <Link
@@ -96,13 +100,13 @@ export default function EmployeeDashboard() {
                         className="block bg-blue-50 border border-blue-200 rounded-xl p-5 hover:shadow-md transition-shadow"
                     >
                         <p className="text-sm font-medium text-blue-700">
-                            În desfășurare
+                            {t("employeeDashboard.myTasks.inProgress")}
                         </p>
                         <p className="mt-1 text-2xl font-bold text-blue-900">
                             {inProgressTasks.length}
                         </p>
                         <p className="text-xs text-blue-600 mt-1">
-                            Vezi task-urile →
+                            {t("employeeDashboard.myTasks.viewTasks")}
                         </p>
                     </Link>
                     <Link
@@ -110,13 +114,13 @@ export default function EmployeeDashboard() {
                         className="block bg-green-50 border border-green-200 rounded-xl p-5 hover:shadow-md transition-shadow"
                     >
                         <p className="text-sm font-medium text-green-700">
-                            Finalizate
+                            {t("employeeDashboard.myTasks.completed")}
                         </p>
                         <p className="mt-1 text-2xl font-bold text-green-900">
                             {completedTasks.length}
                         </p>
                         <p className="text-xs text-green-600 mt-1">
-                            Vezi task-urile →
+                            {t("employeeDashboard.myTasks.viewTasks")}
                         </p>
                     </Link>
                 </div>
@@ -125,18 +129,18 @@ export default function EmployeeDashboard() {
             <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold text-gray-900">
-                        Task-uri finalizate recent
+                        {t("employeeDashboard.recentCompleted.title")}
                     </h2>
                     <Link
                         to="/tasks"
                         className="text-sm font-medium text-blue-600 hover:text-blue-800"
                     >
-                        Toate task-urile →
+                        {t("employeeDashboard.recentCompleted.allTasks")}
                     </Link>
                 </div>
                 {recentCompleted.length === 0 ? (
                     <p className="text-gray-500 text-sm">
-                        Nu ai finalizat încă niciun task.
+                        {t("employeeDashboard.recentCompleted.empty")}
                     </p>
                 ) : (
                     <ul className="space-y-2">
@@ -163,43 +167,43 @@ export default function EmployeeDashboard() {
                 <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold text-gray-900">
-                            Zile libere / Concedii
+                            {t("employeeDashboard.leaves.title")}
                         </h2>
                         <Link
                             to="/leaves"
                             className="text-sm font-medium text-blue-600 hover:text-blue-800"
                         >
-                            Toate concediile →
+                            {t("employeeDashboard.leaves.all")}
                         </Link>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div className="bg-violet-50 border border-violet-200 rounded-lg p-4">
                             <p className="text-sm font-medium text-violet-700">
-                                În așteptare
+                                {t("employeeDashboard.leaves.pending")}
                             </p>
                             <p className="text-xl font-bold text-violet-900">
                                 {pendingLeaves.length}
                             </p>
                             <p className="text-xs text-violet-600">
-                                Cereri de concediu
+                                {t("employeeDashboard.leaves.pendingHint")}
                             </p>
                         </div>
                         <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
                             <p className="text-sm font-medium text-slate-700">
-                                Programate
+                                {t("employeeDashboard.leaves.upcoming")}
                             </p>
                             <p className="text-xl font-bold text-slate-900">
                                 {upcomingLeaves.length}
                             </p>
                             <p className="text-xs text-slate-600">
-                                Concedii aprobate
+                                {t("employeeDashboard.leaves.upcomingHint")}
                             </p>
                         </div>
                     </div>
                     {upcomingLeaves.length > 0 && (
                         <>
                             <p className="text-sm font-medium text-gray-700 mb-2">
-                                Următoarele concedii
+                                {t("employeeDashboard.leaves.next")}
                             </p>
                             <ul className="space-y-2">
                                 {upcomingLeaves.map((leave) => (
@@ -209,12 +213,15 @@ export default function EmployeeDashboard() {
                                     >
                                         <span className="text-gray-900">
                                             {leave.leave_type?.name ??
-                                                "Concediu"}{" "}
+                                                t("employeeDashboard.leaves.defaultType")}{" "}
                                             – {formatDate(leave.start_date)}{" "}
-                                            până {formatDate(leave.end_date)}
+                                            {t("employeeDashboard.leaves.to")}{" "}
+                                            {formatDate(leave.end_date)}
                                         </span>
                                         <span className="text-xs text-gray-500">
-                                            {leave.days} zile
+                                            {t("employeeDashboard.leaves.days", {
+                                                count: leave.days,
+                                            })}
                                         </span>
                                     </li>
                                 ))}
@@ -224,7 +231,7 @@ export default function EmployeeDashboard() {
                     {upcomingLeaves.length === 0 &&
                         pendingLeaves.length === 0 && (
                             <p className="text-gray-500 text-sm">
-                                Nu ai concedii programate sau în așteptare.
+                                {t("employeeDashboard.leaves.empty")}
                             </p>
                         )}
                 </div>
@@ -232,28 +239,28 @@ export default function EmployeeDashboard() {
 
             <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-3">
-                    Acces rapid
+                    {t("employeeDashboard.quickAccess.title")}
                 </h2>
                 <div className="flex flex-wrap gap-3">
                     <Link
                         to="/tasks"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
                     >
-                        Sarcinile mele
+                        {t("employeeDashboard.quickAccess.myTasks")}
                     </Link>
                     {canViewLeaves && (
                         <Link
                             to="/leaves"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium"
                         >
-                            Concediile mele
+                            {t("employeeDashboard.quickAccess.myLeaves")}
                         </Link>
                     )}
                     <Link
                         to="/profile"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium"
                     >
-                        Profil
+                        {t("employeeDashboard.quickAccess.profile")}
                     </Link>
                 </div>
             </div>

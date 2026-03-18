@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -17,6 +18,7 @@ export default function EmployeeFormModal({
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
 
     const isEdit = mode === "edit";
     const isView = mode === "view";
@@ -102,21 +104,21 @@ export default function EmployeeFormModal({
 
             if (isEdit) {
                 await api.put(`/employees/${employeeId}`, submitData);
-                toast.success("Employee updated successfully");
+                toast.success(t("employees.toast.updated"));
             } else {
                 const res = await api.post("/employees", submitData);
                 const created = res.data;
                 const createdUserId = created?.user?.id || created?.user_id;
                 if (submitData.create_account && createdUserId) {
-                    toast.success("Employee created + account created", {
+                    toast.success(t("employees.toast.createdWithAccount"), {
                         action: {
-                            label: "Open user",
+                            label: t("employees.toast.openUser"),
                             onClick: () =>
                                 navigate(`/admin/users/${createdUserId}/edit`),
                         },
                     });
                 } else {
-                    toast.success("Employee created successfully");
+                    toast.success(t("employees.toast.created"));
                 }
             }
 
@@ -124,11 +126,11 @@ export default function EmployeeFormModal({
             onClose();
         } catch (error) {
             const errorMessage =
-                error.response?.data?.message || "An error occurred";
+                error.response?.data?.message || t("common.genericError");
             toast.error(
                 isEdit
-                    ? "Failed to update employee"
-                    : "Failed to create employee",
+                    ? t("employees.toast.updateFailed")
+                    : t("employees.toast.createFailed"),
                 {
                     description: errorMessage,
                 },
@@ -183,10 +185,10 @@ export default function EmployeeFormModal({
 
     const title =
         mode === "view"
-            ? "View Employee"
+            ? t("employees.modal.viewTitle")
             : isEdit
-              ? "Edit Employee"
-              : "Create Employee";
+              ? t("employees.modal.editTitle")
+              : t("employees.modal.createTitle");
 
     return (
         <Dialog.Root
@@ -204,7 +206,7 @@ export default function EmployeeFormModal({
                         {title}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Manage employee details including personal, employment and emergency contact information.
+                        {t("employees.modal.description")}
                     </Dialog.Description>
 
                     <form
@@ -217,7 +219,7 @@ export default function EmployeeFormModal({
                                     htmlFor="employee_code"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Employee Code{" "}
+                                    {t("employees.fields.employeeCode")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -242,7 +244,7 @@ export default function EmployeeFormModal({
                                     htmlFor="user_id"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Link to User (Optional)
+                                    {t("employees.fields.linkUserOptional")}
                                 </label>
                                 <SearchableSelect
                                     cacheKey="employee-user"
@@ -260,11 +262,11 @@ export default function EmployeeFormModal({
                                         return response.data;
                                     }}
                                     searchParam="search"
-                                    placeholder="Select User"
+                                    placeholder={t("employees.placeholders.selectUser")}
                                     displayValue={(user) =>
                                         `${user.name} (${user.email})`
                                     }
-                                    emptyMessage="No users found."
+                                    emptyMessage={t("employees.empty.users")}
                                     disabled={disabled || values.create_account}
                                 />
                                 {errors.user_id && (
@@ -291,11 +293,10 @@ export default function EmployeeFormModal({
                                                 }
                                                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                             />
-                                            Create account to platform
+                                            {t("employees.fields.createAccount")}
                                         </label>
                                         <p className="mt-1 text-xs text-gray-500">
-                                            This will create a platform user and
-                                            link it to this employee.
+                                            {t("employees.fields.createAccountHint")}
                                         </p>
                                     </div>
                                 )}
@@ -304,7 +305,7 @@ export default function EmployeeFormModal({
                                 <>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Account name{" "}
+                                            {t("employees.fields.accountName")}{" "}
                                             <span className="text-red-500">*</span>
                                         </label>
                                         <input
@@ -324,7 +325,7 @@ export default function EmployeeFormModal({
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Account email{" "}
+                                            {t("employees.fields.accountEmail")}{" "}
                                             <span className="text-red-500">*</span>
                                         </label>
                                         <input
@@ -344,7 +345,7 @@ export default function EmployeeFormModal({
                                     </div>
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Account password{" "}
+                                            {t("employees.fields.accountPassword")}{" "}
                                             <span className="text-red-500">*</span>
                                         </label>
                                         <input
@@ -372,7 +373,7 @@ export default function EmployeeFormModal({
                                     htmlFor="department_id"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Department
+                                    {t("employees.fields.department")}
                                 </label>
                                 <SearchableSelect
                                     cacheKey="employee-department"
@@ -390,9 +391,9 @@ export default function EmployeeFormModal({
                                         return response.data;
                                     }}
                                     searchParam="search"
-                                    placeholder="Select Department"
+                                    placeholder={t("employees.placeholders.selectDepartment")}
                                     displayValue={(dept) => dept.name}
-                                    emptyMessage="No departments found."
+                                    emptyMessage={t("employees.empty.departments")}
                                     disabled={disabled}
                                 />
                                 {errors.department_id && (
@@ -407,7 +408,7 @@ export default function EmployeeFormModal({
                                     htmlFor="position"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Position
+                                    {t("employees.fields.position")}
                                 </label>
                                 <input
                                     type="text"
@@ -430,7 +431,7 @@ export default function EmployeeFormModal({
                                     htmlFor="hire_date"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Hire Date{" "}
+                                    {t("employees.fields.hireDate")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -455,7 +456,7 @@ export default function EmployeeFormModal({
                                     htmlFor="employment_type"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Employment Type{" "}
+                                    {t("employees.fields.employmentType")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <SearchableSelect
@@ -469,12 +470,24 @@ export default function EmployeeFormModal({
                                         })
                                     }
                                     options={[
-                                        { value: "full-time", label: "Full-time" },
-                                        { value: "part-time", label: "Part-time" },
-                                        { value: "contractor", label: "Contractor" },
-                                        { value: "intern", label: "Intern" },
+                                        {
+                                            value: "full-time",
+                                            label: t("employees.employmentType.full-time"),
+                                        },
+                                        {
+                                            value: "part-time",
+                                            label: t("employees.employmentType.part-time"),
+                                        },
+                                        {
+                                            value: "contractor",
+                                            label: t("employees.employmentType.contractor"),
+                                        },
+                                        {
+                                            value: "intern",
+                                            label: t("employees.employmentType.intern"),
+                                        },
                                     ]}
-                                    placeholder="Select type"
+                                    placeholder={t("employees.placeholders.selectEmploymentType")}
                                     disabled={disabled}
                                 />
                                 {errors.employment_type && (
@@ -489,7 +502,7 @@ export default function EmployeeFormModal({
                                     htmlFor="salary"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Salary
+                                    {t("employees.fields.salary")}
                                 </label>
                                 <input
                                     type="number"
@@ -514,7 +527,7 @@ export default function EmployeeFormModal({
                                     htmlFor="phone"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Phone
+                                    {t("employees.fields.phone")}
                                 </label>
                                 <input
                                     type="text"
@@ -537,7 +550,7 @@ export default function EmployeeFormModal({
                                     htmlFor="address"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Address
+                                    {t("employees.fields.address")}
                                 </label>
                                 <textarea
                                     id="address"
@@ -560,7 +573,7 @@ export default function EmployeeFormModal({
                                     htmlFor="emergency_contact_name"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Emergency Contact Name
+                                    {t("employees.fields.emergencyContactName")}
                                 </label>
                                 <input
                                     type="text"
@@ -583,7 +596,7 @@ export default function EmployeeFormModal({
                                     htmlFor="emergency_contact_phone"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Emergency Contact Phone
+                                    {t("employees.fields.emergencyContactPhone")}
                                 </label>
                                 <input
                                     type="text"
@@ -606,7 +619,7 @@ export default function EmployeeFormModal({
                                     htmlFor="status"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Status
+                                    {t("employees.fields.status")}
                                 </label>
                                 <SearchableSelect
                                     value={values.status}
@@ -616,12 +629,21 @@ export default function EmployeeFormModal({
                                         })
                                     }
                                     options={[
-                                        { value: "active", label: "Active" },
-                                        { value: "inactive", label: "Inactive" },
-                                        { value: "terminated", label: "Terminated" },
-                                        { value: "on_leave", label: "On Leave" },
+                                        { value: "active", label: t("employees.status.active") },
+                                        {
+                                            value: "inactive",
+                                            label: t("employees.status.inactive"),
+                                        },
+                                        {
+                                            value: "terminated",
+                                            label: t("employees.status.terminated"),
+                                        },
+                                        {
+                                            value: "on_leave",
+                                            label: t("employees.status.on_leave"),
+                                        },
                                     ]}
-                                    placeholder="Select status"
+                                    placeholder={t("employees.placeholders.selectStatus")}
                                     disabled={disabled}
                                 />
                                 {errors.status && (
@@ -645,7 +667,7 @@ export default function EmployeeFormModal({
                                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                                     onClick={onClose}
                                 >
-                                    {isView ? "Close" : "Cancel"}
+                                    {isView ? t("common.close") : t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             {!isView && (
@@ -655,10 +677,10 @@ export default function EmployeeFormModal({
                                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSubmitting
-                                        ? "Saving..."
+                                        ? t("common.saving")
                                         : isEdit
-                                          ? "Update Employee"
-                                          : "Create Employee"}
+                                          ? t("employees.actions.update")
+                                          : t("employees.actions.create")}
                                 </button>
                             )}
                         </div>

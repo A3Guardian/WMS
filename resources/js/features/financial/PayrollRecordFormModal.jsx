@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -16,6 +17,7 @@ export default function PayrollRecordFormModal({
 }) {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const isEdit = mode === "edit";
 
     const currentDate = new Date();
@@ -73,21 +75,21 @@ export default function PayrollRecordFormModal({
                     `/payroll-records/${payrollRecordId}`,
                     submitData,
                 );
-                toast.success("Payroll record updated successfully");
+                toast.success(t("payroll.toast.updated"));
             } else {
                 await api.post("/payroll-records", submitData);
-                toast.success("Payroll record created successfully");
+                toast.success(t("payroll.toast.created"));
             }
 
             queryClient.invalidateQueries({ queryKey: ["payroll-records"] });
             onClose();
         } catch (error) {
             const errorMessage =
-                error.response?.data?.message || "An error occurred";
+                error.response?.data?.message || t("common.genericError");
             toast.error(
                 isEdit
-                    ? "Failed to update payroll record"
-                    : "Failed to create payroll record",
+                    ? t("payroll.toast.updateFailed")
+                    : t("payroll.toast.createFailed"),
                 {
                     description: errorMessage,
                 },
@@ -194,7 +196,9 @@ export default function PayrollRecordFormModal({
         return null;
     }
 
-    const title = isEdit ? "Edit Payroll Record" : "Create Payroll Record";
+    const title = isEdit
+        ? t("payroll.modal.editTitle")
+        : t("payroll.modal.createTitle");
 
     return (
         <Dialog.Root
@@ -212,8 +216,7 @@ export default function PayrollRecordFormModal({
                         {title}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Configure payroll details for the selected period and
-                        employee.
+                        {t("payroll.modal.description")}
                     </Dialog.Description>
 
                     <form
@@ -226,7 +229,7 @@ export default function PayrollRecordFormModal({
                                     htmlFor="employee_id"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Employee{" "}
+                                    {t("payroll.fields.employee")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <SearchableSelect
@@ -253,11 +256,11 @@ export default function PayrollRecordFormModal({
                                         return response.data;
                                     }}
                                     searchParam="search"
-                                    placeholder="Select Employee"
+                                    placeholder={t("payroll.placeholders.selectEmployee")}
                                     displayValue={(emp) =>
-                                        `${emp.employee_code} - ${emp.user?.name || "N/A"}`
+                                        `${emp.employee_code} - ${emp.user?.name || t("common.na")}`
                                     }
-                                    emptyMessage="No employees found."
+                                    emptyMessage={t("payroll.empty.employees")}
                                 />
                                 {errors.employee_id && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -271,7 +274,7 @@ export default function PayrollRecordFormModal({
                                     htmlFor="month"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Month{" "}
+                                    {t("payroll.fields.month")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <SearchableSelect
@@ -302,7 +305,7 @@ export default function PayrollRecordFormModal({
                                             }),
                                         }),
                                     )}
-                                    placeholder="Select month"
+                                    placeholder={t("payroll.placeholders.selectMonth")}
                                 />
                                 {errors.month && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -316,7 +319,8 @@ export default function PayrollRecordFormModal({
                                     htmlFor="year"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Year <span className="text-red-500">*</span>
+                                    {t("payroll.fields.year")}{" "}
+                                    <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="number"
@@ -351,7 +355,7 @@ export default function PayrollRecordFormModal({
                                     htmlFor="base_salary"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Base Salary
+                                    {t("payroll.fields.baseSalary")}
                                 </label>
                                 <input
                                     type="number"
@@ -362,12 +366,12 @@ export default function PayrollRecordFormModal({
                                     step="0.01"
                                     min="0"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Auto-filled from employee salary"
+                                    placeholder={t("payroll.placeholders.baseSalary")}
                                 />
                                 <p className="mt-1 text-xs text-gray-500">
                                     {values.employee_id
-                                        ? "Auto-filled from employee. You can override if needed."
-                                        : "Select an employee to auto-fill"}
+                                        ? t("payroll.hints.autoFilled")
+                                        : t("payroll.hints.selectEmployeeToAutoFill")}
                                 </p>
                                 {errors.base_salary && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -381,7 +385,7 @@ export default function PayrollRecordFormModal({
                                     htmlFor="bonuses"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Bonuses
+                                    {t("payroll.fields.bonuses")}
                                 </label>
                                 <input
                                     type="number"
@@ -395,8 +399,8 @@ export default function PayrollRecordFormModal({
                                 />
                                 <p className="mt-1 text-xs text-gray-500">
                                     {values.employee_id
-                                        ? "Auto-filled from employee. You can override if needed."
-                                        : "Select an employee to auto-fill"}
+                                        ? t("payroll.hints.autoFilled")
+                                        : t("payroll.hints.selectEmployeeToAutoFill")}
                                 </p>
                                 {errors.bonuses && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -410,7 +414,7 @@ export default function PayrollRecordFormModal({
                                     htmlFor="overtime_pay"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Overtime Pay
+                                    {t("payroll.fields.overtimePay")}
                                 </label>
                                 <input
                                     type="number"
@@ -435,7 +439,7 @@ export default function PayrollRecordFormModal({
                                     htmlFor="deductions"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Deductions
+                                    {t("payroll.fields.deductions")}
                                 </label>
                                 <input
                                     type="number"
@@ -449,8 +453,8 @@ export default function PayrollRecordFormModal({
                                 />
                                 <p className="mt-1 text-xs text-gray-500">
                                     {values.employee_id
-                                        ? "Auto-filled from employee. You can override if needed."
-                                        : "Select an employee to auto-fill"}
+                                        ? t("payroll.hints.autoFilled")
+                                        : t("payroll.hints.selectEmployeeToAutoFill")}
                                 </p>
                                 {errors.deductions && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -463,7 +467,7 @@ export default function PayrollRecordFormModal({
                                 <div className="bg-gray-50 p-4 rounded-md">
                                     <div className="flex justify-between items-center">
                                         <span className="text-lg font-semibold text-gray-700">
-                                            Net Salary:
+                                            {t("payroll.netSalary")}:
                                         </span>
                                         <span className="text-2xl font-bold text-blue-600">
                                             $
@@ -481,7 +485,7 @@ export default function PayrollRecordFormModal({
                                     htmlFor="status"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Status
+                                    {t("payroll.fields.status")}
                                 </label>
                                 <SearchableSelect
                                     value={values.status}
@@ -497,9 +501,11 @@ export default function PayrollRecordFormModal({
                                         PAYROLL_STATUS_LABELS,
                                     ).map(([value, label]) => ({
                                         value,
-                                        label,
+                                        label: t(`payroll.status.${value}`, {
+                                            defaultValue: label,
+                                        }),
                                     }))}
-                                    placeholder="Select status"
+                                    placeholder={t("payroll.placeholders.selectStatus")}
                                 />
                                 {errors.status && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -513,7 +519,7 @@ export default function PayrollRecordFormModal({
                                     htmlFor="notes"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Notes
+                                    {t("payroll.fields.notes")}
                                 </label>
                                 <textarea
                                     id="notes"
@@ -544,7 +550,7 @@ export default function PayrollRecordFormModal({
                                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                                     onClick={onClose}
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -553,10 +559,10 @@ export default function PayrollRecordFormModal({
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting
-                                    ? "Saving..."
+                                    ? t("common.saving")
                                     : isEdit
-                                      ? "Update Payroll Record"
-                                      : "Create Payroll Record"}
+                                      ? t("payroll.actions.update")
+                                      : t("payroll.actions.create")}
                             </button>
                         </div>
                     </form>

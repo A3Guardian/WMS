@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useFetch } from "../../hooks/useFetch";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import DataTable from "../../components/DataTable";
 import PageHeader from "../../components/PageHeader";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -16,6 +17,7 @@ export default function CustomerList() {
     const navigate = useNavigate();
     const { data, loading, error } = useFetch("customers", "/customers");
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [formModalOpen, setFormModalOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [perPage, setPerPage] = useState(20);
@@ -47,12 +49,12 @@ export default function CustomerList() {
         mutationFn: (id) => api.delete(`/customers/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["customers"] });
-            toast.success("Customer deleted");
+            toast.success(t("customers.toast.deleted"));
             setSelectedCustomer(null);
         },
         onError: (err) => {
             toast.error(
-                err.response?.data?.message || "Failed to delete customer",
+                err.response?.data?.message || t("customers.toast.deleteFailed"),
             );
         },
     });
@@ -70,20 +72,20 @@ export default function CustomerList() {
     };
 
     const columns = [
-        { key: "name", label: "Name" },
-        { key: "email", label: "Email" },
-        { key: "phone", label: "Phone" },
-        { key: "contact_person", label: "Contact Person" },
+        { key: "name", label: t("customers.table.name") },
+        { key: "email", label: t("customers.table.email") },
+        { key: "phone", label: t("customers.table.phone") },
+        { key: "contact_person", label: t("customers.table.contactPerson") },
         {
             key: "actions",
-            label: "Actions",
+            label: t("customers.table.actions"),
             align: "right",
             render: (_, row) => (
                 <div className="flex items-center justify-end gap-1">
                     <button
                         onClick={() => navigate(`/customers/${row.id}`)}
                         className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="View"
+                        title={t("customers.actions.view")}
                     >
                         <Eye className="w-4 h-4" />
                     </button>
@@ -94,7 +96,7 @@ export default function CustomerList() {
                                 setFormModalOpen(true);
                             }}
                             className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
-                            title="Edit"
+                            title={t("customers.actions.edit")}
                         >
                             <Pencil className="w-4 h-4" />
                         </button>
@@ -103,7 +105,7 @@ export default function CustomerList() {
                         <button
                             onClick={() => handleDeleteClick(row)}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Delete"
+                            title={t("customers.actions.delete")}
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -115,7 +117,9 @@ export default function CustomerList() {
 
     if (error) {
         const errorMessage =
-            error?.response?.data?.message || error?.message || "Unknown error";
+            error?.response?.data?.message ||
+            error?.message ||
+            t("common.unknown");
         const isPermissionError = error?.response?.status === 403;
 
         return (
@@ -123,7 +127,9 @@ export default function CustomerList() {
                 className={`p-4 rounded ${isPermissionError ? "bg-yellow-50 text-yellow-800" : "bg-red-50 text-red-800"}`}
             >
                 <p className="font-semibold">
-                    {isPermissionError ? "Permission Denied" : "Error"}
+                    {isPermissionError
+                        ? t("customers.errors.permissionDenied")
+                        : t("customers.errors.error")}
                 </p>
                 <p>{errorMessage}</p>
             </div>
@@ -133,7 +139,7 @@ export default function CustomerList() {
     return (
         <div>
             <PageHeader
-                title="Customers"
+                title={t("customers.title")}
                 actions={
                     hasPermission("create customers") && (
                         <button
@@ -144,7 +150,7 @@ export default function CustomerList() {
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
                         >
                             <Plus className="w-5 h-5" />
-                            Add customer
+                            {t("customers.actions.add")}
                         </button>
                     )
                 }
@@ -158,14 +164,14 @@ export default function CustomerList() {
                     onPerPageChange={handlePerPageChange}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search customers..."
+                    searchPlaceholder={t("customers.searchPlaceholder")}
                     pagination={{
                         currentPage: page,
                         lastPage,
                         total: filteredData.length,
                         onPageChange: setPage,
                     }}
-                    totalRecordName="customers"
+                    totalRecordName={t("customers.totalRecordName")}
                 />
             </div>
 
@@ -180,14 +186,16 @@ export default function CustomerList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete customer?"
+                title={t("customers.confirmDelete.title")}
                 description={
                     customerToDelete
-                        ? `Delete customer "${customerToDelete.name}"?`
+                        ? t("customers.confirmDelete.description", {
+                              name: customerToDelete.name,
+                          })
                         : ""
                 }
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                confirmLabel={t("customers.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

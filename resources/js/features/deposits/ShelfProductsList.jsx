@@ -1,20 +1,31 @@
-import React from 'react';
+import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function ShelfProductsList({ products, isLoading, error }) {
+    const { t } = useTranslation();
+
     if (error) {
         return (
             <p className="text-sm text-red-500 mb-2">
-                Error loading products: {error.message}
+                {t("deposits.shelfProducts.errorLoading")}: {error.message}
             </p>
         );
     }
 
     if (isLoading) {
-        return <p className="text-sm text-gray-500">Loading products...</p>;
+        return (
+            <p className="text-sm text-gray-500">
+                {t("deposits.shelfProducts.loading")}
+            </p>
+        );
     }
 
     if (!Array.isArray(products) || products.length === 0) {
-        return <p className="text-sm text-gray-500">No products assigned to this shelf</p>;
+        return (
+            <p className="text-sm text-gray-500">
+                {t("deposits.shelfProducts.empty")}
+            </p>
+        );
     }
 
     return (
@@ -31,12 +42,21 @@ export default function ShelfProductsList({ products, isLoading, error }) {
                                 {product.name}
                             </p>
                             <p className="text-xs text-gray-500 truncate">
-                                SKU: {product.sku}
+                                {t("deposits.shelfProducts.sku")}: {product.sku}
                             </p>
                             <p className="text-xs text-gray-600 mt-1">
-                                Quantity on Shelf: <span className="font-semibold">{currentQuantity}</span> | 
-                                Total Inventory: <span className="font-semibold">{totalInventory}</span> | 
-                                Available: <span className="font-semibold text-green-600">{available}</span>
+                                {t("deposits.shelfProducts.quantityOnShelf")}:{" "}
+                                <span className="font-semibold">
+                                    {currentQuantity}
+                                </span>{" "}
+                                | {t("deposits.shelfProducts.totalInventory")}:{" "}
+                                <span className="font-semibold">
+                                    {totalInventory}
+                                </span>{" "}
+                                | {t("deposits.shelfProducts.available")}:{" "}
+                                <span className="font-semibold text-green-600">
+                                    {available}
+                                </span>
                             </p>
                         </div>
                     </div>

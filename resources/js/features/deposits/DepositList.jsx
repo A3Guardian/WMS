@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Pencil, Settings, Trash2 } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
@@ -9,11 +10,15 @@ import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import DepositFormModal from "./DepositFormModal";
 
 export default function DepositList() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { id: routeDepositId } = useParams();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [statusFilter, setStatusFilter] = useState("");
@@ -21,6 +26,47 @@ export default function DepositList() {
     const [search, setSearch] = useState("");
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [depositToDelete, setDepositToDelete] = useState(null);
+    const [formModalOpen, setFormModalOpen] = useState(false);
+    const [formModalMode, setFormModalMode] = useState("create"); // "create" | "edit"
+    const [selectedDepositId, setSelectedDepositId] = useState(null);
+
+    const handleOpenCreate = useCallback(() => {
+        setSelectedDepositId(null);
+        setFormModalMode("create");
+        setFormModalOpen(true);
+    }, []);
+
+    const handleOpenEdit = useCallback((deposit) => {
+        setSelectedDepositId(deposit?.id);
+        setFormModalMode("edit");
+        setFormModalOpen(true);
+    }, []);
+
+    const handleCloseFormModal = useCallback(() => {
+        setFormModalOpen(false);
+        setSelectedDepositId(null);
+        if (
+            location.pathname.endsWith("/create") ||
+            location.pathname.endsWith("/edit")
+        ) {
+            navigate("/deposits");
+        }
+    }, [location.pathname, navigate]);
+
+    useEffect(() => {
+        // Allow deep-links, but keep the user on /deposits (modal overlay)
+        if (location.pathname === "/deposits/create") {
+            handleOpenCreate();
+            navigate("/deposits", { replace: true });
+            return;
+        }
+        if (location.pathname.endsWith("/edit") && routeDepositId) {
+            setSelectedDepositId(routeDepositId);
+            setFormModalMode("edit");
+            setFormModalOpen(true);
+            navigate("/deposits", { replace: true });
+        }
+    }, [handleOpenCreate, location.pathname, navigate, routeDepositId]);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["deposits", page, perPage, statusFilter, locationFilter],
@@ -43,12 +89,12 @@ export default function DepositList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["deposits"] });
-            toast.success("Deposit deleted successfully");
+            toast.success(t("deposits.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete deposit", {
+            toast.error(t("deposits.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -81,9 +127,13 @@ export default function DepositList() {
 
     const formatDimensions = (width, height, depth) => {
         if (width && height && depth) {
-            return `${width}m × ${height}m × ${depth}m`;
+            return t("deposits.dimensionsFormat", {
+                width,
+                height,
+                depth,
+            });
         }
-        return "N/A";
+        return t("common.na");
     };
 
     const pageData = data?.data || [];
@@ -97,42 +147,49 @@ export default function DepositList() {
 
     const columns = [
         {
-            header: "Name",
+            header: t("deposits.table.name"),
             accessor: "name",
         },
         {
-            header: "Code",
+            header: t("deposits.table.code"),
             accessor: "code",
-            cell: (value) => value || "N/A",
+            cell: (value) => value || t("common.na"),
         },
         {
-            header: "Location",
+            header: t("deposits.table.location"),
             accessor: "location",
-            cell: (value) => value || "N/A",
+            cell: (value) => value || t("common.na"),
         },
         {
-            header: "Dimensions",
+            header: t("deposits.table.dimensions"),
             accessor: (row) =>
                 formatDimensions(row.width, row.height, row.depth),
         },
         {
-            header: "Capacity",
+            header: t("deposits.table.capacity"),
             accessor: "capacity",
-            cell: (value) => (value ? `${value} m³` : "N/A"),
+            cell: (value) =>
+                value
+                    ? t("deposits.capacityFormat", { value })
+                    : t("common.na"),
         },
         {
-            header: "Status",
+            header: t("deposits.table.status"),
             accessor: "status",
             cell: (value) => (
                 <span
                     className={`px-2 py-1 text-xs rounded-full ${getStatusColor(value)}`}
                 >
-                    {value ? value.toUpperCase() : "N/A"}
+                    {value
+                        ? t(`deposits.status.${value}`, {
+                              defaultValue: value.toUpperCase(),
+                          })
+                        : t("common.na")}
                 </span>
             ),
         },
         {
-            header: "Actions",
+            header: t("deposits.table.actions"),
             accessor: "id",
             align: "right",
             cell: (id, row) => (
@@ -141,16 +198,18 @@ export default function DepositList() {
                         <button
                             onClick={() => navigate(`/deposits/${id}/configure`)}
                             className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-                            title="Configure"
+                            title={t("deposits.actions.configure")}
                         >
                             <Settings className="w-4 h-4" />
                         </button>
                     )}
                     {hasPermission("edit deposits") && (
                         <button
-                            onClick={() => navigate(`/deposits/${id}/edit`)}
+                            onClick={() => {
+                                handleOpenEdit(row);
+                            }}
                             className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
-                            title="Edit"
+                            title={t("deposits.actions.edit")}
                         >
                             <Pencil className="w-4 h-4" />
                         </button>
@@ -159,7 +218,7 @@ export default function DepositList() {
                         <button
                             onClick={() => handleDeleteClick(row)}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Delete"
+                            title={t("deposits.actions.delete")}
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -172,7 +231,7 @@ export default function DepositList() {
     if (error) {
         return (
             <div className="text-red-500 p-4">
-                Error loading deposits: {error.message}
+                {t("deposits.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -180,14 +239,16 @@ export default function DepositList() {
     return (
         <div>
             <PageHeader
-                title="Storage Deposits"
+                title={t("deposits.title")}
                 actions={
                     hasPermission("create deposits") && (
                         <button
-                            onClick={() => navigate("/deposits/create")}
+                            onClick={() => {
+                                handleOpenCreate();
+                            }}
                             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
-                            Add Deposit
+                            {t("deposits.actions.add")}
                         </button>
                     )
                 }
@@ -197,7 +258,7 @@ export default function DepositList() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Status
+                            {t("deposits.filters.status")}
                         </label>
                         <SearchableSelect
                             value={statusFilter}
@@ -206,17 +267,29 @@ export default function DepositList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Statuses" },
-                                { value: "active", label: "Active" },
-                                { value: "inactive", label: "Inactive" },
-                                { value: "maintenance", label: "Maintenance" },
+                                {
+                                    value: "",
+                                    label: t("deposits.filters.allStatuses"),
+                                },
+                                {
+                                    value: "active",
+                                    label: t("deposits.status.active"),
+                                },
+                                {
+                                    value: "inactive",
+                                    label: t("deposits.status.inactive"),
+                                },
+                                {
+                                    value: "maintenance",
+                                    label: t("deposits.status.maintenance"),
+                                },
                             ]}
-                            placeholder="All Statuses"
+                            placeholder={t("deposits.filters.allStatuses")}
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Location
+                            {t("deposits.filters.location")}
                         </label>
                         <input
                             type="text"
@@ -225,7 +298,7 @@ export default function DepositList() {
                                 setLocationFilter(e.target.value);
                                 setPage(1);
                             }}
-                            placeholder="Filter by location"
+                            placeholder={t("deposits.filters.locationPlaceholder")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
                     </div>
@@ -248,22 +321,30 @@ export default function DepositList() {
                     }}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search deposits..."
-                    totalRecordName="deposits"
+                    searchPlaceholder={t("deposits.searchPlaceholder")}
+                    totalRecordName={t("deposits.totalRecordName")}
                 />
             </div>
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete deposit?"
+                title={t("deposits.confirmDelete.title")}
                 description={
                     depositToDelete
-                        ? `Are you sure you want to delete deposit "${depositToDelete.name}"?`
+                        ? t("deposits.confirmDelete.description", {
+                              name: depositToDelete.name,
+                          })
                         : ""
                 }
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                confirmLabel={t("deposits.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
+            />
+            <DepositFormModal
+                isOpen={formModalOpen}
+                onClose={handleCloseFormModal}
+                mode={formModalMode}
+                depositId={formModalMode === "edit" ? selectedDepositId : null}
             />
         </div>
     );

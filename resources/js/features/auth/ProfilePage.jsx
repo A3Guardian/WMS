@@ -5,12 +5,14 @@ import { useAuth } from "./AuthContext";
 import api from "../../utils/api";
 import { toast } from "sonner";
 import { Camera, User, Phone, Lock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const AVATAR_INPUT_ID = "avatar-upload";
 
 export default function ProfilePage() {
     const { user, refreshUser } = useAuth();
     const [avatarUploading, setAvatarUploading] = React.useState(false);
+    const { t } = useTranslation();
 
     const initialValues = {
         name: user?.name ?? "",
@@ -50,7 +52,7 @@ export default function ProfilePage() {
             }
             await api.put("/user", payload);
             await refreshUser();
-            toast.success("Profil actualizat.");
+            toast.success(t("profile.toast.updated"));
         },
     );
 
@@ -83,12 +85,12 @@ export default function ProfilePage() {
             formData.append("avatar", file);
             await api.post("/user/avatar", formData);
             await refreshUser();
-            toast.success("Poza de profil a fost actualizată.");
+            toast.success(t("profile.toast.avatarUpdated"));
         } catch (err) {
             const msg =
                 err.response?.data?.message ||
                 err.response?.data?.errors?.avatar?.[0] ||
-                "Eroare la încărcare.";
+                t("profile.toast.avatarUploadError");
             console.error(
                 "[Profil Avatar] Eroare upload",
                 err.response?.data ?? err,
@@ -105,25 +107,25 @@ export default function ProfilePage() {
 
     return (
         <div className="w-full max-w-4xl mx-auto px-4 sm:px-6">
-            <PageHeader title="Profilul meu" showBack={true} />
+            <PageHeader title={t("profile.title")} showBack={true} />
             <form
                 onSubmit={handleSubmit}
                 className="bg-white shadow-md rounded-lg p-6"
             >
                 <div className="flex flex-col md:flex-row md:items-start gap-8">
                     {/* Left: avatar (desktop) / top (mobile) */}
-                    <div className="flex flex-col sm:flex-row md:flex-col items-center gap-4 md:w-48 flex-shrink-0">
+                    <div className="flex flex-col sm:flex-row md:flex-col items-center gap-4 md:w-48 shrink-0">
                         <input
                             id={AVATAR_INPUT_ID}
                             type="file"
                             accept="image/jpeg,image/png,image/gif,image/webp"
                             onChange={handleAvatarChange}
                             className="sr-only"
-                            aria-label="Încarcă poză de profil"
+                            aria-label={t("profile.avatar.uploadAriaLabel")}
                         />
                         <label
                             htmlFor={AVATAR_INPUT_ID}
-                            className="relative w-24 h-24 md:w-32 md:h-32 flex-shrink-0 group cursor-pointer block"
+                            className="relative w-24 h-24 md:w-32 md:h-32 shrink-0 group cursor-pointer block"
                         >
                             <div className="absolute inset-0 w-full h-full rounded-full bg-blue-500 text-white flex items-center justify-center overflow-hidden text-3xl md:text-4xl font-medium">
                                 {avatarUrl ? (
@@ -147,7 +149,7 @@ export default function ProfilePage() {
                         </label>
                         <div className="text-center md:text-center">
                             <p className="text-sm text-gray-500">
-                                Apasă pe poză pentru a o schimba
+                                {t("profile.avatar.clickToChange")}
                             </p>
                             <p className="text-gray-700 font-medium mt-1">
                                 {displayName || user?.email}
@@ -162,14 +164,14 @@ export default function ProfilePage() {
                         <section className="space-y-4">
                             <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-800 uppercase tracking-wide border-b border-gray-200 pb-2">
                                 <User className="w-4 h-4 text-blue-600" />
-                                Informații personale
+                                {t("profile.sections.personalInfo")}
                             </h2>
                             <div>
                                 <label
                                     htmlFor="name"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Nume
+                                    {t("profile.fields.name")}
                                 </label>
                                 <input
                                     type="text"
@@ -191,7 +193,7 @@ export default function ProfilePage() {
                                     htmlFor="email"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Email
+                                    {t("profile.fields.email")}
                                 </label>
                                 <input
                                     type="email"
@@ -214,14 +216,14 @@ export default function ProfilePage() {
                         <section className="space-y-4">
                             <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-800 uppercase tracking-wide border-b border-gray-200 pb-2">
                                 <Phone className="w-4 h-4 text-blue-600" />
-                                Contact
+                                {t("profile.sections.contact")}
                             </h2>
                             <div>
                                 <label
                                     htmlFor="phone"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Telefon
+                                    {t("profile.fields.phone")}
                                 </label>
                                 <input
                                     type="tel"
@@ -230,7 +232,7 @@ export default function ProfilePage() {
                                     autoComplete="tel"
                                     value={values.phone}
                                     onChange={handleChange}
-                                    placeholder="Ex: 0722 123 456"
+                                    placeholder={t("profile.placeholders.phone")}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                                 {errors.phone && (
@@ -244,7 +246,7 @@ export default function ProfilePage() {
                                     htmlFor="address"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Adresă
+                                    {t("profile.fields.address")}
                                 </label>
                                 <input
                                     type="text"
@@ -253,7 +255,7 @@ export default function ProfilePage() {
                                     autoComplete="street-address"
                                     value={values.address}
                                     onChange={handleChange}
-                                    placeholder="Strada, nr., localitate, județ"
+                                    placeholder={t("profile.placeholders.address")}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                                 {errors.address && (
@@ -267,14 +269,14 @@ export default function ProfilePage() {
                         <section className="space-y-4">
                             <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-800 uppercase tracking-wide border-b border-gray-200 pb-2">
                                 <Lock className="w-4 h-4 text-blue-600" />
-                                Securitate
+                                {t("profile.sections.security")}
                             </h2>
                             <div>
                                 <label
                                     htmlFor="password"
                                     className="block text-sm font-medium text-gray-700 mb-1"
                                 >
-                                    Parolă nouă
+                                    {t("profile.fields.newPassword")}
                                 </label>
                                 <input
                                     type="password"
@@ -287,7 +289,7 @@ export default function ProfilePage() {
                                     minLength={8}
                                 />
                                 <p className="mt-1 text-sm text-gray-500">
-                                    Lasă gol pentru a păstra parola actuală
+                                    {t("profile.hints.keepPassword")}
                                 </p>
                                 {errors.password && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -302,7 +304,7 @@ export default function ProfilePage() {
                                         htmlFor="password_confirmation"
                                         className="block text-sm font-medium text-gray-700 mb-1"
                                     >
-                                        Confirmă parola
+                                        {t("profile.fields.confirmPassword")}
                                     </label>
                                     <input
                                         type="password"
@@ -335,7 +337,9 @@ export default function ProfilePage() {
                                 disabled={isSubmitting}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isSubmitting ? "Se salvează..." : "Salvează"}
+                                {isSubmitting
+                                    ? t("common.saving")
+                                    : t("common.save")}
                             </button>
                         </div>
                     </div>

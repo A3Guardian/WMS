@@ -15,6 +15,7 @@ import {
     Legend,
     ResponsiveContainer,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import SearchableSelect from "../../components/SearchableSelect";
 import { formatCurrency, formatDate } from "../../utils/formatters";
@@ -37,6 +38,7 @@ const COLORS = [
 ];
 
 export default function FinancialDashboard() {
+    const { t } = useTranslation();
     const [dateFrom, setDateFrom] = useState(
         new Date(new Date().getFullYear(), new Date().getMonth(), 1)
             .toISOString()
@@ -91,39 +93,52 @@ export default function FinancialDashboard() {
             const doc = new jsPDF();
 
             doc.setFontSize(18);
-            doc.text("Financial Report", 14, 22);
+            doc.text(t("financialDashboard.export.pdf.title"), 14, 22);
             doc.setFontSize(12);
             doc.text(
-                `Period: ${formatDate(dateFrom)} - ${formatDate(dateTo)}`,
+                t("financialDashboard.export.period", {
+                    from: formatDate(dateFrom),
+                    to: formatDate(dateTo),
+                }),
                 14,
                 30,
             );
 
             if (dashboardData?.summary) {
                 doc.setFontSize(14);
-                doc.text("Summary", 14, 45);
+                doc.text(t("financialDashboard.export.summary"), 14, 45);
                 doc.setFontSize(10);
                 let yPos = 52;
                 doc.text(
-                    `Total Income: ${formatCurrency(dashboardData.summary.total_income)}`,
+                    t("financialDashboard.export.totalIncome", {
+                        value: formatCurrency(dashboardData.summary.total_income),
+                    }),
                     14,
                     yPos,
                 );
                 yPos += 7;
                 doc.text(
-                    `Total Expenses: ${formatCurrency(dashboardData.summary.total_expenses)}`,
+                    t("financialDashboard.export.totalExpenses", {
+                        value: formatCurrency(
+                            dashboardData.summary.total_expenses,
+                        ),
+                    }),
                     14,
                     yPos,
                 );
                 yPos += 7;
                 doc.text(
-                    `Net Profit: ${formatCurrency(dashboardData.summary.net_profit)}`,
+                    t("financialDashboard.export.netProfit", {
+                        value: formatCurrency(dashboardData.summary.net_profit),
+                    }),
                     14,
                     yPos,
                 );
                 yPos += 7;
                 doc.text(
-                    `Stock Value: ${formatCurrency(dashboardData.summary.stock_value)}`,
+                    t("financialDashboard.export.stockValue", {
+                        value: formatCurrency(dashboardData.summary.stock_value),
+                    }),
                     14,
                     yPos,
                 );
@@ -133,7 +148,13 @@ export default function FinancialDashboard() {
                     autoTable(doc, {
                         startY: yPos,
                         head: [
-                            ["Invoice #", "Type", "Status", "Date", "Amount"],
+                            [
+                                t("financialDashboard.export.table.invoiceNumber"),
+                                t("financialDashboard.export.table.type"),
+                                t("financialDashboard.export.table.status"),
+                                t("financialDashboard.export.table.date"),
+                                t("financialDashboard.export.table.amount"),
+                            ],
                         ],
                         body: response.data.data.map((inv) => [
                             inv.invoice_number,
@@ -146,7 +167,9 @@ export default function FinancialDashboard() {
                 }
             }
 
-            doc.save(`financial-report-${dateFrom}-${dateTo}.pdf`);
+            doc.save(
+                `${t("financialDashboard.export.filePrefix")}-${dateFrom}-${dateTo}.pdf`,
+            );
         } catch (error) {
             console.error("Export error:", error);
         }
@@ -187,11 +210,11 @@ export default function FinancialDashboard() {
             XLSX.utils.book_append_sheet(
                 workbook,
                 worksheet,
-                "Financial Report",
+                t("financialDashboard.export.excel.sheetName"),
             );
             XLSX.writeFile(
                 workbook,
-                `financial-report-${dateFrom}-${dateTo}.xlsx`,
+                `${t("financialDashboard.export.filePrefix")}-${dateFrom}-${dateTo}.xlsx`,
             );
         } catch (error) {
             console.error("Export error:", error);
@@ -199,7 +222,7 @@ export default function FinancialDashboard() {
     };
 
     if (isLoading) {
-        return <div>Loading dashboard...</div>;
+        return <div>{t("financialDashboard.loading")}</div>;
     }
 
     const summary = dashboardData?.summary || {};
@@ -217,7 +240,7 @@ export default function FinancialDashboard() {
     return (
         <div>
             <PageHeader
-                title="Financial Dashboard"
+                title={t("financialDashboard.title")}
                 actions={
                     <div className="flex space-x-2">
                         <button
@@ -225,14 +248,14 @@ export default function FinancialDashboard() {
                             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                         >
                             <Download className="inline mr-2" size={16} />
-                            Export PDF
+                            {t("financialDashboard.actions.exportPdf")}
                         </button>
                         <button
                             onClick={handleExportExcel}
                             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                         >
                             <Download className="inline mr-2" size={16} />
-                            Export Excel
+                            {t("financialDashboard.actions.exportExcel")}
                         </button>
                     </div>
                 }
@@ -242,7 +265,7 @@ export default function FinancialDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date From
+                            {t("financialDashboard.filters.dateFrom")}
                         </label>
                         <input
                             type="date"
@@ -253,7 +276,7 @@ export default function FinancialDashboard() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date To
+                            {t("financialDashboard.filters.dateTo")}
                         </label>
                         <input
                             type="date"
@@ -264,26 +287,26 @@ export default function FinancialDashboard() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Supplier
+                            {t("financialDashboard.filters.supplier")}
                         </label>
                         <SearchableSelect
                             value={supplierId}
                             onChange={(v) => setSupplierId(v || "")}
                             fetchOptions={fetchSuppliers}
                             displayValue={(sup) => sup?.name}
-                            placeholder="All Suppliers"
+                            placeholder={t("financialDashboard.filters.allSuppliers")}
                             cacheKey="dashboard-suppliers"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Category
+                            {t("financialDashboard.filters.category")}
                         </label>
                         <input
                             type="text"
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
-                            placeholder="Filter by category"
+                            placeholder={t("financialDashboard.filters.categoryPlaceholder")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
                     </div>
@@ -295,7 +318,7 @@ export default function FinancialDashboard() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600">
-                                Total Income
+                                {t("financialDashboard.cards.totalIncome")}
                             </p>
                             <p className="text-2xl font-bold text-green-600">
                                 {formatCurrency(summary.total_income || 0)}
@@ -308,7 +331,7 @@ export default function FinancialDashboard() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600">
-                                Total Expenses
+                                {t("financialDashboard.cards.totalExpenses")}
                             </p>
                             <p className="text-2xl font-bold text-red-600">
                                 {formatCurrency(summary.total_expenses || 0)}
@@ -320,7 +343,9 @@ export default function FinancialDashboard() {
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600">Net Profit</p>
+                            <p className="text-sm text-gray-600">
+                                {t("financialDashboard.cards.netProfit")}
+                            </p>
                             <p
                                 className={`text-2xl font-bold ${(summary.net_profit || 0) >= 0 ? "text-green-600" : "text-red-600"}`}
                             >
@@ -333,7 +358,9 @@ export default function FinancialDashboard() {
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600">Stock Value</p>
+                            <p className="text-sm text-gray-600">
+                                {t("financialDashboard.cards.stockValue")}
+                            </p>
                             <p className="text-2xl font-bold text-blue-600">
                                 {formatCurrency(summary.stock_value || 0)}
                             </p>
@@ -346,7 +373,7 @@ export default function FinancialDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <h3 className="text-lg font-semibold mb-4">
-                        Income vs Expenses (Last 12 Months)
+                        {t("financialDashboard.charts.incomeVsExpenses")}
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={incomeExpensesData}>
@@ -361,13 +388,13 @@ export default function FinancialDashboard() {
                                 type="monotone"
                                 dataKey="income"
                                 stroke="#22c55e"
-                                name="Income"
+                                name={t("financialDashboard.charts.income")}
                             />
                             <Line
                                 type="monotone"
                                 dataKey="expenses"
                                 stroke="#ef4444"
-                                name="Expenses"
+                                name={t("financialDashboard.charts.expenses")}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -375,7 +402,7 @@ export default function FinancialDashboard() {
 
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <h3 className="text-lg font-semibold mb-4">
-                        Expenses by Category
+                        {t("financialDashboard.charts.expensesByCategory")}
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
@@ -409,7 +436,7 @@ export default function FinancialDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <h3 className="text-lg font-semibold mb-4">
-                        Payment Methods
+                        {t("financialDashboard.charts.paymentMethods")}
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={charts.payment_methods || []}>
@@ -427,7 +454,7 @@ export default function FinancialDashboard() {
 
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <h3 className="text-lg font-semibold mb-4">
-                        Top Suppliers by Payment
+                        {t("financialDashboard.topSuppliers.title")}
                     </h3>
                     <div className="space-y-3">
                         {topSuppliers.length > 0 ? (
@@ -447,7 +474,9 @@ export default function FinancialDashboard() {
                                 </div>
                             ))
                         ) : (
-                            <p className="text-gray-500">No data available</p>
+                            <p className="text-gray-500">
+                                {t("financialDashboard.topSuppliers.empty")}
+                            </p>
                         )}
                     </div>
                 </div>
@@ -455,26 +484,26 @@ export default function FinancialDashboard() {
 
             <div className="bg-white shadow-md rounded-lg p-6">
                 <h3 className="text-lg font-semibold mb-4">
-                    Recent Transactions
+                    {t("financialDashboard.recentTransactions.title")}
                 </h3>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Date
+                                    {t("financialDashboard.recentTransactions.table.date")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Transaction #
+                                    {t("financialDashboard.recentTransactions.table.transactionNumber")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Supplier
+                                    {t("financialDashboard.recentTransactions.table.supplier")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Type
+                                    {t("financialDashboard.recentTransactions.table.type")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Amount
+                                    {t("financialDashboard.recentTransactions.table.amount")}
                                 </th>
                             </tr>
                         </thead>
@@ -489,7 +518,7 @@ export default function FinancialDashboard() {
                                             {txn.transaction_number}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {txn.supplier?.name || "N/A"}
+                                            {txn.supplier?.name || t("common.na")}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
@@ -507,7 +536,7 @@ export default function FinancialDashboard() {
                                         colSpan="5"
                                         className="px-6 py-4 text-center text-gray-500"
                                     >
-                                        No recent transactions
+                                        {t("financialDashboard.recentTransactions.empty")}
                                     </td>
                                 </tr>
                             )}

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import PageHeader from "../../components/PageHeader";
 import { formatCurrency, formatDate } from "../../utils/formatters";
@@ -49,6 +50,7 @@ function getTypeColor(type) {
 export default function InvoiceView() {
     const { id } = useParams();
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
 
     const {
         data: invoice,
@@ -77,7 +79,7 @@ export default function InvoiceView() {
     if (error) {
         return (
             <div className="p-4 bg-red-50 text-red-800 rounded">
-                Failed to load invoice: {error.message}
+                {t("invoices.view.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -98,8 +100,8 @@ export default function InvoiceView() {
             company?.iban,
     );
     const companyPartner = {
-        company_name: company?.name || "Company (not configured)",
-        name: company?.name || "Company (not configured)",
+        company_name: company?.name || t("invoices.view.companyNotConfigured"),
+        name: company?.name || t("invoices.view.companyNotConfigured"),
         tax_number: company?.cui || "",
         phone: company?.phone || "",
         email: company?.email || "",
@@ -121,11 +123,11 @@ export default function InvoiceView() {
     const supplierMissing = isExpense ? !invoice?.supplier_id : false;
 
     const STATUS_OPTIONS = [
-        { value: "draft", label: "Draft" },
-        { value: "sent", label: "Sent" },
-        { value: "paid", label: "Paid" },
-        { value: "overdue", label: "Overdue" },
-        { value: "cancelled", label: "Cancelled" },
+        { value: "draft", label: t("invoices.status.draft") },
+        { value: "sent", label: t("invoices.status.sent") },
+        { value: "paid", label: t("invoices.status.paid") },
+        { value: "overdue", label: t("invoices.status.overdue") },
+        { value: "cancelled", label: t("invoices.status.cancelled") },
     ];
 
     const fetchProducts = (params) =>
@@ -238,10 +240,12 @@ export default function InvoiceView() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["invoice", id] });
-            toast.success("Status updated");
+            toast.success(t("invoices.view.toast.statusUpdated"));
         },
         onError: (e) => {
-            toast.error(e.response?.data?.message || "Failed to update status");
+            toast.error(
+                e.response?.data?.message || t("invoices.view.toast.statusUpdateFailed"),
+            );
         },
     });
 
@@ -254,12 +258,12 @@ export default function InvoiceView() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["invoice", id] });
-            toast.success("Customer updated");
+            toast.success(t("invoices.view.toast.customerUpdated"));
             setShowCustomerSelect(false);
         },
         onError: (e) => {
             toast.error(
-                e.response?.data?.message || "Failed to update customer",
+                e.response?.data?.message || t("invoices.view.toast.customerUpdateFailed"),
             );
         },
     });
@@ -273,12 +277,12 @@ export default function InvoiceView() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["invoice", id] });
-            toast.success("Supplier updated");
+            toast.success(t("invoices.view.toast.supplierUpdated"));
             setShowSupplierSelect(false);
         },
         onError: (e) => {
             toast.error(
-                e.response?.data?.message || "Failed to update supplier",
+                e.response?.data?.message || t("invoices.view.toast.supplierUpdateFailed"),
             );
         },
     });
@@ -319,10 +323,12 @@ export default function InvoiceView() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["invoice", id] });
-            toast.success("Invoice items updated");
+            toast.success(t("invoices.view.toast.itemsUpdated"));
         },
         onError: (e) => {
-            toast.error(e.response?.data?.message || "Failed to save items");
+            toast.error(
+                e.response?.data?.message || t("invoices.view.toast.itemsUpdateFailed"),
+            );
         },
     });
 
@@ -336,7 +342,7 @@ export default function InvoiceView() {
                 logoUrl: invoiceSettings?.logo_url ?? null,
             });
         } catch (e) {
-            toast.error("Failed to generate PDF");
+            toast.error(t("invoices.view.toast.pdfFailed"));
         }
     };
 
@@ -345,8 +351,10 @@ export default function InvoiceView() {
             <PageHeader
                 title={
                     invoice?.invoice_number
-                        ? `Invoice ${invoice.invoice_number}`
-                        : "Invoice details"
+                        ? t("invoices.view.titleWithNumber", {
+                              number: invoice.invoice_number,
+                          })
+                        : t("invoices.view.title")
                 }
                 actions={
                     <button
@@ -356,7 +364,7 @@ export default function InvoiceView() {
                         disabled={!invoice?.id}
                     >
                         <Download className="w-4 h-4" />
-                        Download invoice
+                        {t("invoices.view.actions.download")}
                     </button>
                 }
             />
@@ -366,7 +374,7 @@ export default function InvoiceView() {
                     <div className="bg-white shadow-md rounded-lg p-6">
                         {isLoading ? (
                             <div className="text-gray-500">
-                                Loading invoice...
+                                {t("invoices.view.loading")}
                             </div>
                         ) : (
                             <div className="space-y-6">
@@ -377,7 +385,9 @@ export default function InvoiceView() {
                                                 invoice.type,
                                             )}
                                         >
-                                            {String(invoice.type).toUpperCase()}
+                                            {t(`invoices.type.${String(invoice.type).toLowerCase()}`, {
+                                                defaultValue: String(invoice.type).toUpperCase(),
+                                            })}
                                         </Badge>
                                     )}
                                     {invoice?.status && (
@@ -386,27 +396,27 @@ export default function InvoiceView() {
                                                 invoice.status,
                                             )}
                                         >
-                                            {String(
-                                                invoice.status,
-                                            ).toUpperCase()}
+                                            {t(`invoices.status.${String(invoice.status).toLowerCase()}`, {
+                                                defaultValue: String(invoice.status).toUpperCase(),
+                                            })}
                                         </Badge>
                                     )}
                                     {!isDraft && (
                                         <span className="text-xs text-gray-500">
-                                            Locked (read-only)
+                                            {t("invoices.view.locked")}
                                         </span>
                                     )}
                                 </div>
 
                                 <h2 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
                                     <ClipboardList className="w-5 h-5 text-violet-500" />
-                                    Invoice details
+                                    {t("invoices.view.details.title")}
                                 </h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div>
                                         <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                             <Hash className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                                            Invoice #
+                                            {t("invoices.view.details.invoiceNumber")}
                                         </div>
                                         <div className="text-gray-900 font-medium">
                                             {invoice?.invoice_number ?? "-"}
@@ -415,7 +425,7 @@ export default function InvoiceView() {
                                     <div>
                                         <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                             <ClipboardList className="w-3.5 h-3.5 text-violet-500 shrink-0" />
-                                            Status
+                                            {t("invoices.view.details.status")}
                                         </div>
                                         <div className="mt-1 max-w-[200px]">
                                             <SearchableSelect
@@ -431,7 +441,7 @@ export default function InvoiceView() {
                                                     }
                                                 }}
                                                 options={STATUS_OPTIONS}
-                                                placeholder="Status"
+                                                placeholder={t("invoices.view.placeholders.status")}
                                                 cacheKey="invoice-view-status"
                                                 disabled={
                                                     updateInvoiceStatusMutation.isPending
@@ -443,7 +453,7 @@ export default function InvoiceView() {
                                     <div>
                                         <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                             <Calendar className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                                            Issue date
+                                            {t("invoices.view.details.issueDate")}
                                         </div>
                                         <div className="text-gray-900">
                                             {invoice?.issue_date
@@ -454,7 +464,7 @@ export default function InvoiceView() {
                                     <div>
                                         <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1">
                                             <Banknote className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                            Total
+                                            {t("invoices.view.details.total")}
                                         </div>
                                         <div className="text-gray-900 font-semibold">
                                             {formatCurrency(
@@ -469,7 +479,7 @@ export default function InvoiceView() {
                                         {invoice?.description && (
                                             <div>
                                                 <div className="text-sm text-gray-500">
-                                                    Description
+                                                    {t("invoices.view.details.description")}
                                                 </div>
                                                 <div className="text-gray-900 whitespace-pre-wrap">
                                                     {invoice.description}
@@ -479,7 +489,7 @@ export default function InvoiceView() {
                                         {invoice?.notes && (
                                             <div>
                                                 <div className="text-sm text-gray-500">
-                                                    Notes
+                                                    {t("invoices.view.details.notes")}
                                                 </div>
                                                 <div className="text-gray-900 whitespace-pre-wrap">
                                                     {invoice.notes}
@@ -496,15 +506,17 @@ export default function InvoiceView() {
                         <div className="bg-white shadow-md rounded-lg p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <User className="w-5 h-5 text-slate-600" />
-                                Customer
+                                {t("invoices.view.customer.title")}
                             </h2>
 
                             {isLoading ? (
-                                <div className="text-gray-500">Loading...</div>
+                                <div className="text-gray-500">
+                                    {t("common.loading")}
+                                </div>
                             ) : isIncome && customerMissing && isDraft ? (
                                 <div className="max-w-xl">
                                     <div className="text-sm text-gray-600 mb-2">
-                                        Select customer for this invoice.
+                                        {t("invoices.view.customer.selectHint")}
                                     </div>
                                     <SearchableSelect
                                         value=""
@@ -518,7 +530,7 @@ export default function InvoiceView() {
                                         displayValue={(p) =>
                                             p?.company_name || p?.name || ""
                                         }
-                                        placeholder="Select customer"
+                                        placeholder={t("invoices.view.customer.placeholders.select")}
                                         cacheKey="invoice-view-customer"
                                         disabled={
                                             updateCustomerMutation.isPending
@@ -529,22 +541,18 @@ export default function InvoiceView() {
                                 <>
                                     {!isIncome && invoiceSettingsError && (
                                         <div className="mb-4 p-3 rounded bg-yellow-50 text-yellow-800 text-sm">
-                                            Company details could not be loaded
-                                            from settings (permission or server
-                                            issue).
+                                            {t("invoices.view.company.loadFailed")}
                                         </div>
                                     )}
                                     {!isIncome && !invoiceSettingsError && !companyConfigured && (
                                         <div className="mb-4 p-3 rounded bg-yellow-50 text-yellow-800 text-sm">
-                                            Company details are not configured
-                                            yet. Fill them in Settings to show
-                                            here.
+                                            {t("invoices.view.company.notConfiguredHint")}
                                         </div>
                                     )}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                         <div>
                                             <div className="text-gray-500">
-                                                Name
+                                                {t("invoices.view.partner.name")}
                                             </div>
                                             <div className="font-medium text-gray-900">
                                                 {customerPartner?.company_name ||
@@ -560,27 +568,27 @@ export default function InvoiceView() {
                                         </div>
                                         <div>
                                             <div className="text-gray-500">
-                                                Company
+                                                {t("invoices.view.partner.company")}
                                             </div>
                                             <div className="text-gray-700">
-                                                CUI:{" "}
+                                                {t("invoices.view.partner.taxId")}{" "}
                                                 {customerPartner?.tax_number ||
                                                     "—"}
                                             </div>
                                             <div className="text-gray-700">
-                                                Reg:{" "}
+                                                {t("invoices.view.partner.registration")}{" "}
                                                 {customerPartner?.registration_number ||
                                                     "—"}
                                             </div>
                                             <div className="text-gray-700">
-                                                Contact:{" "}
+                                                {t("invoices.view.partner.contact")}{" "}
                                                 {customerPartner?.contact_person ||
                                                     "—"}
                                             </div>
                                         </div>
                                         <div className="md:col-span-2">
                                             <div className="text-gray-500">
-                                                Billing address
+                                                {t("invoices.view.partner.billingAddress")}
                                             </div>
                                             <div className="text-gray-900">
                                                 {[
@@ -599,7 +607,7 @@ export default function InvoiceView() {
                                         </div>
                                         <div className="md:col-span-2">
                                             <div className="text-gray-500">
-                                                Bank
+                                                {t("invoices.view.partner.bank")}
                                             </div>
                                             <div className="text-gray-900">
                                                 {[
@@ -625,8 +633,8 @@ export default function InvoiceView() {
                                             >
                                                 <Building2 className="w-4 h-4 text-indigo-500" />
                                                 {showCustomerSelect
-                                                    ? "Cancel"
-                                                    : "Change customer"}
+                                                    ? t("common.cancel")
+                                                    : t("invoices.view.customer.change")}
                                             </button>
                                             {showCustomerSelect && (
                                                 <div className="mt-3 max-w-xl">
@@ -646,7 +654,7 @@ export default function InvoiceView() {
                                                             p?.name ||
                                                             ""
                                                         }
-                                                        placeholder="Select customer"
+                                                        placeholder={t("invoices.view.customer.placeholders.select")}
                                                         cacheKey="invoice-view-customer-change"
                                                         disabled={
                                                             updateCustomerMutation.isPending
@@ -663,15 +671,17 @@ export default function InvoiceView() {
                         <div className="bg-white shadow-md rounded-lg p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <Building2 className="w-5 h-5 text-slate-600" />
-                                Supplier
+                                {t("invoices.view.supplier.title")}
                             </h2>
 
                             {isLoading ? (
-                                <div className="text-gray-500">Loading...</div>
+                                <div className="text-gray-500">
+                                    {t("common.loading")}
+                                </div>
                             ) : isExpense && supplierMissing && isDraft ? (
                                 <div className="max-w-xl">
                                     <div className="text-sm text-gray-600 mb-2">
-                                        Select supplier for this invoice.
+                                        {t("invoices.view.supplier.selectHint")}
                                     </div>
                                     <SearchableSelect
                                         value=""
@@ -685,7 +695,7 @@ export default function InvoiceView() {
                                         displayValue={(p) =>
                                             p?.company_name || p?.name || ""
                                         }
-                                        placeholder="Select supplier"
+                                        placeholder={t("invoices.view.supplier.placeholders.select")}
                                         cacheKey="invoice-view-supplier"
                                         disabled={
                                             updateSupplierMutation.isPending
@@ -696,22 +706,18 @@ export default function InvoiceView() {
                                 <>
                                     {!isExpense && invoiceSettingsError && (
                                         <div className="mb-4 p-3 rounded bg-yellow-50 text-yellow-800 text-sm">
-                                            Company details could not be loaded
-                                            from settings (permission or server
-                                            issue).
+                                            {t("invoices.view.company.loadFailed")}
                                         </div>
                                     )}
                                     {!isExpense && !invoiceSettingsError && !companyConfigured && (
                                         <div className="mb-4 p-3 rounded bg-yellow-50 text-yellow-800 text-sm">
-                                            Company details are not configured
-                                            yet. Fill them in Settings to show
-                                            here.
+                                            {t("invoices.view.company.notConfiguredHint")}
                                         </div>
                                     )}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                         <div>
                                             <div className="text-gray-500">
-                                                Name
+                                                {t("invoices.view.partner.name")}
                                             </div>
                                             <div className="font-medium text-gray-900">
                                                 {supplierPartner?.company_name ||
@@ -727,27 +733,27 @@ export default function InvoiceView() {
                                         </div>
                                         <div>
                                             <div className="text-gray-500">
-                                                Company
+                                                {t("invoices.view.partner.company")}
                                             </div>
                                             <div className="text-gray-700">
-                                                CUI:{" "}
+                                                {t("invoices.view.partner.taxId")}{" "}
                                                 {supplierPartner?.tax_number ||
                                                     "—"}
                                             </div>
                                             <div className="text-gray-700">
-                                                Reg:{" "}
+                                                {t("invoices.view.partner.registration")}{" "}
                                                 {supplierPartner?.registration_number ||
                                                     "—"}
                                             </div>
                                             <div className="text-gray-700">
-                                                Contact:{" "}
+                                                {t("invoices.view.partner.contact")}{" "}
                                                 {supplierPartner?.contact_person ||
                                                     "—"}
                                             </div>
                                         </div>
                                         <div className="md:col-span-2">
                                             <div className="text-gray-500">
-                                                Billing address
+                                                {t("invoices.view.partner.billingAddress")}
                                             </div>
                                             <div className="text-gray-900">
                                                 {[
@@ -766,7 +772,7 @@ export default function InvoiceView() {
                                         </div>
                                         <div className="md:col-span-2">
                                             <div className="text-gray-500">
-                                                Bank
+                                                {t("invoices.view.partner.bank")}
                                             </div>
                                             <div className="text-gray-900">
                                                 {[
@@ -792,8 +798,8 @@ export default function InvoiceView() {
                                             >
                                                 <Building2 className="w-4 h-4 text-indigo-500" />
                                                 {showSupplierSelect
-                                                    ? "Cancel"
-                                                    : "Change supplier"}
+                                                    ? t("common.cancel")
+                                                    : t("invoices.view.supplier.change")}
                                             </button>
                                             {showSupplierSelect && (
                                                 <div className="mt-3 max-w-xl">
@@ -813,7 +819,7 @@ export default function InvoiceView() {
                                                             p?.name ||
                                                             ""
                                                         }
-                                                        placeholder="Select supplier"
+                                                        placeholder={t("invoices.view.supplier.placeholders.select")}
                                                         cacheKey="invoice-view-supplier-change"
                                                         disabled={
                                                             updateSupplierMutation.isPending
@@ -837,12 +843,12 @@ export default function InvoiceView() {
                             <div>
                                 <div className="text-lg font-semibold flex items-center gap-2">
                                     <Package className="w-5 h-5 text-indigo-500" />
-                                    Invoice items
+                                    {t("invoices.view.items.title")}
                                 </div>
                                 <div className="text-sm text-gray-500">
                                     {isDraft
-                                        ? "You can edit items while status is draft."
-                                        : "Items are locked because the invoice is not draft."}
+                                        ? t("invoices.view.items.editableHint")
+                                        : t("invoices.view.items.lockedHint")}
                                 </div>
                             </div>
                             {isDraft && (
@@ -853,7 +859,7 @@ export default function InvoiceView() {
                                         className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700"
                                     >
                                         <Plus className="w-4 h-4" />
-                                        Add product
+                                        {t("invoices.view.items.addProduct")}
                                     </button>
                                     <button
                                         type="button"
@@ -861,7 +867,7 @@ export default function InvoiceView() {
                                         className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700"
                                     >
                                         <Plus className="w-4 h-4" />
-                                        Add service
+                                        {t("invoices.view.items.addService")}
                                     </button>
                                     <button
                                         type="button"
@@ -872,7 +878,7 @@ export default function InvoiceView() {
                                         className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 rounded-md text-white disabled:opacity-50"
                                     >
                                         <Save className="w-4 h-4" />
-                                        Save items
+                                        {t("invoices.view.items.save")}
                                     </button>
                                 </div>
                             )}
@@ -883,20 +889,20 @@ export default function InvoiceView() {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Item
+                                        {t("invoices.view.items.table.item")}
                                     </th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Qty
+                                        {t("invoices.view.items.table.qty")}
                                     </th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Price
+                                        {t("invoices.view.items.table.price")}
                                     </th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total
+                                        {t("invoices.view.items.table.total")}
                                     </th>
                                     {isDraft && (
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Actions
+                                            {t("invoices.view.items.table.actions")}
                                         </th>
                                     )}
                                 </tr>
@@ -925,14 +931,14 @@ export default function InvoiceView() {
                                                             options={[
                                                                 {
                                                                     value: "product",
-                                                                    label: "Product",
+                                                                    label: t("invoices.view.items.type.product"),
                                                                 },
                                                                 {
                                                                     value: "service",
-                                                                    label: "Service",
+                                                                    label: t("invoices.view.items.type.service"),
                                                                 },
                                                             ]}
-                                                            placeholder="Type"
+                                                            placeholder={t("invoices.view.items.placeholders.type")}
                                                             className="min-w-[140px]"
                                                         />
                                                         {row.item_type ===
@@ -960,7 +966,7 @@ export default function InvoiceView() {
                                                                     `${p?.sku ? `${p.sku} - ` : ""}${p?.name || ""}`
                                                                 }
                                                                 searchParam="search"
-                                                                placeholder="Select product"
+                                                                placeholder={t("invoices.view.items.placeholders.selectProduct")}
                                                                 cacheKey="invoice-view-products"
                                                                 className="min-w-[220px] text-sm"
                                                             />
@@ -977,7 +983,7 @@ export default function InvoiceView() {
                                                                     )
                                                                 }
                                                                 className="px-2 py-1.5 border border-gray-300 rounded text-sm min-w-[220px]"
-                                                                placeholder="Service name"
+                                                                placeholder={t("invoices.view.items.placeholders.serviceName")}
                                                             />
                                                         )}
                                                     </div>
@@ -996,7 +1002,7 @@ export default function InvoiceView() {
                                                                 )
                                                             }
                                                             className="px-2 py-1.5 border border-gray-300 rounded text-sm"
-                                                            placeholder="Description (optional)"
+                                                            placeholder={t("invoices.view.items.placeholders.descriptionOptional")}
                                                         />
                                                     </div>
                                                 </td>
@@ -1034,7 +1040,7 @@ export default function InvoiceView() {
                                                     <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-600">
                                                         <div>
                                                             <div className="text-gray-500">
-                                                                Tax %
+                                                                {t("invoices.view.items.taxPercent")}
                                                             </div>
                                                             <input
                                                                 type="number"
@@ -1090,7 +1096,7 @@ export default function InvoiceView() {
                                                             removeItemRow(index)
                                                         }
                                                         className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded"
-                                                        title="Remove"
+                                                            title={t("invoices.view.items.actions.remove")}
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -1164,7 +1170,7 @@ export default function InvoiceView() {
                                             colSpan={isDraft ? 5 : 4}
                                             className="px-6 py-6 text-sm text-gray-500 text-center"
                                         >
-                                            No items.
+                                            {t("invoices.view.items.empty")}
                                         </td>
                                     </tr>
                                 )}
@@ -1174,19 +1180,25 @@ export default function InvoiceView() {
                     {isDraft && (
                         <div className="p-6 border-t flex items-center justify-end gap-6 text-sm text-gray-700">
                             <div>
-                                <span className="text-gray-500">Subtotal:</span>{" "}
+                                <span className="text-gray-500">
+                                    {t("invoices.view.items.summary.subtotal")}:
+                                </span>{" "}
                                 <span className="font-semibold">
                                     {formatCurrency(computed.subtotal)}
                                 </span>
                             </div>
                             <div>
-                                <span className="text-gray-500">Tax:</span>{" "}
+                                <span className="text-gray-500">
+                                    {t("invoices.view.items.summary.tax")}:
+                                </span>{" "}
                                 <span className="font-semibold">
                                     {formatCurrency(computed.tax)}
                                 </span>
                             </div>
                             <div>
-                                <span className="text-gray-500">Total:</span>{" "}
+                                <span className="text-gray-500">
+                                    {t("invoices.view.items.summary.total")}:
+                                </span>{" "}
                                 <span className="font-semibold">
                                     {formatCurrency(computed.total)}
                                 </span>

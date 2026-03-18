@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -14,6 +15,7 @@ export default function DepartmentFormModal({
 }) {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
 
     const isEdit = mode === "edit";
 
@@ -47,21 +49,21 @@ export default function DepartmentFormModal({
 
             if (isEdit) {
                 await api.put(`/departments/${departmentId}`, submitData);
-                toast.success("Department updated successfully");
+                toast.success(t("departments.toast.updated"));
             } else {
                 await api.post("/departments", submitData);
-                toast.success("Department created successfully");
+                toast.success(t("departments.toast.created"));
             }
 
             queryClient.invalidateQueries({ queryKey: ["departments"] });
             onClose();
         } catch (error) {
             const errorMessage =
-                error.response?.data?.message || "An error occurred";
+                error.response?.data?.message || t("common.genericError");
             toast.error(
                 isEdit
-                    ? "Failed to update department"
-                    : "Failed to create department",
+                    ? t("departments.toast.updateFailed")
+                    : t("departments.toast.createFailed"),
                 {
                     description: errorMessage,
                 },
@@ -89,7 +91,9 @@ export default function DepartmentFormModal({
         return null;
     }
 
-    const title = isEdit ? "Edit Department" : "Create Department";
+    const title = isEdit
+        ? t("departments.modal.editTitle")
+        : t("departments.modal.createTitle");
 
     return (
         <Dialog.Root
@@ -107,7 +111,7 @@ export default function DepartmentFormModal({
                         {title}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Manage department name and description.
+                        {t("departments.modal.description")}
                     </Dialog.Description>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -116,7 +120,8 @@ export default function DepartmentFormModal({
                                 htmlFor="name"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Name <span className="text-red-500">*</span>
+                                {t("departments.fields.name")}{" "}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
@@ -139,7 +144,7 @@ export default function DepartmentFormModal({
                                 htmlFor="description"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Description
+                                {t("departments.fields.description")}
                             </label>
                             <textarea
                                 id="description"
@@ -169,7 +174,7 @@ export default function DepartmentFormModal({
                                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                                     onClick={onClose}
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -178,10 +183,10 @@ export default function DepartmentFormModal({
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting
-                                    ? "Saving..."
+                                    ? t("common.saving")
                                     : isEdit
-                                      ? "Update Department"
-                                      : "Create Department"}
+                                      ? t("departments.actions.update")
+                                      : t("departments.actions.create")}
                             </button>
                         </div>
                     </form>

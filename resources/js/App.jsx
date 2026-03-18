@@ -1,4 +1,5 @@
 import "./bootstrap";
+import "./i18n";
 
 import React from "react";
 import { createRoot } from "react-dom/client";
@@ -50,7 +51,6 @@ import InvoiceView from "./features/financial/InvoiceView";
 import CostReports from "./features/financial/CostReports";
 import SupplierPaymentList from "./features/financial/SupplierPaymentList";
 import DepositList from "./features/deposits/DepositList";
-import DepositForm from "./features/deposits/DepositForm";
 import DepositConfigurator from "./features/deposits/DepositConfigurator";
 
 import { AuthProvider } from "./features/auth/AuthContext";
@@ -140,8 +140,8 @@ const routes = createRoutesFromElements(
                 <Route path="/payments/create" element={<SupplierPaymentList />} />
                 <Route path="/payments/:id/edit" element={<SupplierPaymentList />} />
                 <Route path="/payments" element={<SupplierPaymentList />} />
-                <Route path="/deposits/create" element={<DepositForm />} />
-                <Route path="/deposits/:id/edit" element={<DepositForm />} />
+                <Route path="/deposits/create" element={<DepositList />} />
+                <Route path="/deposits/:id/edit" element={<DepositList />} />
                 <Route
                     path="/deposits/:id/configure"
                     element={<DepositConfigurator />}

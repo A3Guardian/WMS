@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { useForm } from '../../hooks/useForm';
-import api from '../../utils/api';
-import { usePermissions } from '../../hooks/usePermissions';
-import SearchableSelect from '../../components/SearchableSelect';
+import React, { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { useForm } from "../../hooks/useForm";
+import api from "../../utils/api";
+import { usePermissions } from "../../hooks/usePermissions";
+import SearchableSelect from "../../components/SearchableSelect";
 
 export default function DepositForm() {
     const { id } = useParams();
@@ -13,9 +14,10 @@ export default function DepositForm() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const isEdit = !!id;
+    const { t } = useTranslation();
 
     const { data: depositData } = useQuery({
-        queryKey: ['deposit', id],
+        queryKey: ["deposit", id],
         queryFn: async () => {
             const response = await api.get(`/deposits/${id}`);
             return response.data;
@@ -31,9 +33,9 @@ export default function DepositForm() {
         height: '',
         depth: '',
         capacity: '',
-        status: 'active',
-        description: '',
-        notes: '',
+        status: "active",
+        description: "",
+        notes: "",
     };
 
     const { values, errors, isSubmitting, handleChange, handleSubmit, setValues } = useForm(
@@ -55,19 +57,25 @@ export default function DepositForm() {
 
                 if (isEdit) {
                     await api.put(`/deposits/${id}`, submitData);
-                    toast.success('Deposit updated successfully');
+                    toast.success(t("deposits.toast.updated"));
                 } else {
-                    await api.post('/deposits', submitData);
-                    toast.success('Deposit created successfully');
+                    await api.post("/deposits", submitData);
+                    toast.success(t("deposits.toast.created"));
                 }
 
-                queryClient.invalidateQueries({ queryKey: ['deposits'] });
-                navigate('/deposits');
+                queryClient.invalidateQueries({ queryKey: ["deposits"] });
+                navigate("/deposits");
             } catch (error) {
-                const errorMessage = error.response?.data?.message || 'An error occurred';
-                toast.error(isEdit ? 'Failed to update deposit' : 'Failed to create deposit', {
+                const errorMessage =
+                    error.response?.data?.message || t("common.genericError");
+                toast.error(
+                    isEdit
+                        ? t("deposits.toast.updateFailed")
+                        : t("deposits.toast.createFailed"),
+                    {
                     description: errorMessage,
-                });
+                    },
+                );
                 throw error;
             }
         }
@@ -83,9 +91,9 @@ export default function DepositForm() {
                 height: depositData.height || '',
                 depth: depositData.depth || '',
                 capacity: depositData.capacity || '',
-                status: depositData.status || 'active',
-                description: depositData.description || '',
-                notes: depositData.notes || '',
+                status: depositData.status || "active",
+                description: depositData.description || "",
+                notes: depositData.notes || "",
             });
         }
     }, [depositData, setValues]);
@@ -97,18 +105,18 @@ export default function DepositForm() {
         }
     }, [values.width, values.height, values.depth]);
 
-    if (isEdit && !hasPermission('edit deposits')) {
+    if (isEdit && !hasPermission("edit deposits")) {
         return (
             <div className="text-red-500 p-4">
-                You don't have permission to edit deposits.
+                {t("deposits.errors.noPermissionEdit")}
             </div>
         );
     }
 
-    if (!isEdit && !hasPermission('create deposits')) {
+    if (!isEdit && !hasPermission("create deposits")) {
         return (
             <div className="text-red-500 p-4">
-                You don't have permission to create deposits.
+                {t("deposits.errors.noPermissionCreate")}
             </div>
         );
     }
@@ -116,14 +124,17 @@ export default function DepositForm() {
     return (
         <div className="max-w-4xl mx-auto p-6">
             <h1 className="text-3xl font-bold mb-6">
-                {isEdit ? 'Edit Deposit' : 'Create Deposit'}
+                {isEdit
+                    ? t("deposits.form.editTitle")
+                    : t("deposits.form.createTitle")}
             </h1>
 
             <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                            Name <span className="text-red-500">*</span>
+                            {t("deposits.form.fields.name")}{" "}
+                            <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -133,13 +144,13 @@ export default function DepositForm() {
                             onChange={handleChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             required
-                            placeholder="e.g., Warehouse A, Storage Room 1"
+                            placeholder={t("deposits.form.placeholders.name")}
                         />
                     </div>
 
                     <div>
                         <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
-                            Code
+                            {t("deposits.form.fields.code")}
                         </label>
                         <input
                             type="text"
@@ -148,14 +159,16 @@ export default function DepositForm() {
                             value={values.code}
                             onChange={handleChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            placeholder="Auto-generated if not provided"
+                            placeholder={t("deposits.form.placeholders.code")}
                         />
-                        <p className="mt-1 text-xs text-gray-500">Auto-generated if not provided</p>
+                        <p className="mt-1 text-xs text-gray-500">
+                            {t("deposits.form.hints.code")}
+                        </p>
                     </div>
 
                     <div className="md:col-span-2">
                         <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                            Location
+                            {t("deposits.form.fields.location")}
                         </label>
                         <input
                             type="text"
@@ -164,13 +177,13 @@ export default function DepositForm() {
                             value={values.location}
                             onChange={handleChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            placeholder="e.g., Building A, Floor 2, Room 201"
+                            placeholder={t("deposits.form.placeholders.location")}
                         />
                     </div>
 
                     <div>
                         <label htmlFor="width" className="block text-sm font-medium text-gray-700 mb-1">
-                            Width (meters)
+                            {t("deposits.form.fields.width")}
                         </label>
                         <input
                             type="number"
@@ -181,13 +194,13 @@ export default function DepositForm() {
                             step="0.01"
                             min="0"
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            placeholder="0.00"
+                            placeholder={t("deposits.form.placeholders.dimension")}
                         />
                     </div>
 
                     <div>
                         <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-1">
-                            Height (meters)
+                            {t("deposits.form.fields.height")}
                         </label>
                         <input
                             type="number"
@@ -198,13 +211,13 @@ export default function DepositForm() {
                             step="0.01"
                             min="0"
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            placeholder="0.00"
+                            placeholder={t("deposits.form.placeholders.dimension")}
                         />
                     </div>
 
                     <div>
                         <label htmlFor="depth" className="block text-sm font-medium text-gray-700 mb-1">
-                            Depth (meters)
+                            {t("deposits.form.fields.depth")}
                         </label>
                         <input
                             type="number"
@@ -215,13 +228,13 @@ export default function DepositForm() {
                             step="0.01"
                             min="0"
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            placeholder="0.00"
+                            placeholder={t("deposits.form.placeholders.dimension")}
                         />
                     </div>
 
                     <div>
                         <label htmlFor="capacity" className="block text-sm font-medium text-gray-700 mb-1">
-                            Capacity (cubic meters)
+                            {t("deposits.form.fields.capacity")}
                         </label>
                         <input
                             type="number"
@@ -232,34 +245,53 @@ export default function DepositForm() {
                             step="0.01"
                             min="0"
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            placeholder="Auto-calculated from dimensions"
+                            placeholder={t("deposits.form.placeholders.capacity")}
                         />
                         <p className="mt-1 text-xs text-gray-500">
                             {values.width && values.height && values.depth
-                                ? `Calculated: ${(parseFloat(values.width || 0) * parseFloat(values.height || 0) * parseFloat(values.depth || 0)).toFixed(2)} m³`
-                                : 'Auto-calculated from dimensions'}
+                                ? t("deposits.form.hints.calculatedCapacity", {
+                                      value: (
+                                          parseFloat(values.width || 0) *
+                                          parseFloat(values.height || 0) *
+                                          parseFloat(values.depth || 0)
+                                      ).toFixed(2),
+                                  })
+                                : t("deposits.form.hints.capacity")}
                         </p>
                     </div>
 
                     <div>
                         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                            Status
+                            {t("deposits.form.fields.status")}
                         </label>
                         <SearchableSelect
                             value={values.status}
-                            onChange={(v) => handleChange({ target: { name: 'status', value: v } })}
+                            onChange={(v) =>
+                                handleChange({
+                                    target: { name: "status", value: v },
+                                })
+                            }
                             options={[
-                                { value: 'active', label: 'Active' },
-                                { value: 'inactive', label: 'Inactive' },
-                                { value: 'maintenance', label: 'Maintenance' },
+                                {
+                                    value: "active",
+                                    label: t("deposits.status.active"),
+                                },
+                                {
+                                    value: "inactive",
+                                    label: t("deposits.status.inactive"),
+                                },
+                                {
+                                    value: "maintenance",
+                                    label: t("deposits.status.maintenance"),
+                                },
                             ]}
-                            placeholder="Select status"
+                            placeholder={t("deposits.form.placeholders.status")}
                         />
                     </div>
 
                     <div className="md:col-span-2">
                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                            Description
+                            {t("deposits.form.fields.description")}
                         </label>
                         <textarea
                             id="description"
@@ -268,13 +300,13 @@ export default function DepositForm() {
                             onChange={handleChange}
                             rows={3}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            placeholder="Deposit description"
+                            placeholder={t("deposits.form.placeholders.description")}
                         />
                     </div>
 
                     <div className="md:col-span-2">
                         <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                            Notes
+                            {t("deposits.form.fields.notes")}
                         </label>
                         <textarea
                             id="notes"
@@ -283,7 +315,7 @@ export default function DepositForm() {
                             onChange={handleChange}
                             rows={3}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            placeholder="Additional notes"
+                            placeholder={t("deposits.form.placeholders.notes")}
                         />
                     </div>
                 </div>
@@ -300,14 +332,18 @@ export default function DepositForm() {
                         disabled={isSubmitting}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                     >
-                        {isSubmitting ? 'Saving...' : isEdit ? 'Update Deposit' : 'Create Deposit'}
+                        {isSubmitting
+                            ? t("common.saving")
+                            : isEdit
+                              ? t("deposits.form.actions.update")
+                              : t("deposits.form.actions.create")}
                     </button>
                     <button
                         type="button"
-                        onClick={() => navigate('/deposits')}
+                        onClick={() => navigate("/deposits")}
                         className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                     >
-                        Cancel
+                        {t("common.cancel")}
                     </button>
                 </div>
             </form>

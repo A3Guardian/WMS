@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
@@ -17,6 +18,7 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 export default function PayrollRecordList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [employeeFilter, setEmployeeFilter] = useState("");
@@ -69,12 +71,12 @@ export default function PayrollRecordList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["payroll-records"] });
-            toast.success("Payroll record deleted successfully");
+            toast.success(t("payroll.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete payroll record", {
+            toast.error(t("payroll.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -93,7 +95,9 @@ export default function PayrollRecordList() {
 
     const getStatusBadge = (status) => {
         const color = PAYROLL_STATUS_COLORS[status] || "gray";
-        const label = PAYROLL_STATUS_LABELS[status] || status;
+        const label = t(`payroll.status.${status}`, {
+            defaultValue: PAYROLL_STATUS_LABELS[status] || status,
+        });
 
         const colorClasses = {
             blue: "bg-blue-100 text-blue-800",
@@ -114,18 +118,18 @@ export default function PayrollRecordList() {
     const getMonthName = (month) => {
         const months = [
             "",
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December",
+            t("common.months.january"),
+            t("common.months.february"),
+            t("common.months.march"),
+            t("common.months.april"),
+            t("common.months.may"),
+            t("common.months.june"),
+            t("common.months.july"),
+            t("common.months.august"),
+            t("common.months.september"),
+            t("common.months.october"),
+            t("common.months.november"),
+            t("common.months.december"),
         ];
         return months[month] || month;
     };
@@ -156,36 +160,36 @@ export default function PayrollRecordList() {
 
     const columns = [
         {
-            header: "Employee",
+            header: t("payroll.list.table.employee"),
             accessor: (row) =>
                 row.employee?.user?.name ||
                 row.employee?.employee_code ||
-                "N/A",
+                t("common.na"),
         },
         {
-            header: "Period",
+            header: t("payroll.list.table.period"),
             accessor: (row) => `${getMonthName(row.month)} ${row.year}`,
         },
         {
-            header: "Base Salary",
+            header: t("payroll.list.table.baseSalary"),
             accessor: "base_salary",
             cell: (value) =>
                 `$${parseFloat(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
         },
         {
-            header: "Bonuses",
+            header: t("payroll.list.table.bonuses"),
             accessor: "bonuses",
             cell: (value) =>
                 `$${parseFloat(value || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
         },
         {
-            header: "Deductions",
+            header: t("payroll.list.table.deductions"),
             accessor: "deductions",
             cell: (value) =>
                 `$${parseFloat(value || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
         },
         {
-            header: "Net Salary",
+            header: t("payroll.list.table.netSalary"),
             accessor: "net_salary",
             cell: (value) => (
                 <span className="font-semibold">
@@ -198,12 +202,12 @@ export default function PayrollRecordList() {
             ),
         },
         {
-            header: "Status",
+            header: t("payroll.list.table.status"),
             accessor: "status",
             cell: (value) => getStatusBadge(value),
         },
         {
-            header: "Actions",
+            header: t("payroll.list.table.actions"),
             accessor: "id",
             align: "center",
             cell: (id, row) => (
@@ -212,7 +216,7 @@ export default function PayrollRecordList() {
                         type="button"
                         onClick={() => handleOpenEdit(row)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="Edit"
+                        title={t("payroll.actions.edit")}
                         disabled={!hasPermission("manage payroll")}
                     >
                         <Pencil className="w-4 h-4" />
@@ -221,7 +225,7 @@ export default function PayrollRecordList() {
                         type="button"
                         onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
-                        title="Delete"
+                        title={t("payroll.actions.delete")}
                         disabled={!hasPermission("manage payroll")}
                     >
                         <Trash2 className="w-4 h-4" />
@@ -237,7 +241,7 @@ export default function PayrollRecordList() {
     if (error) {
         return (
             <div className="text-red-500 p-4">
-                Error loading payroll records: {error.message}
+                {t("payroll.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -245,7 +249,7 @@ export default function PayrollRecordList() {
     return (
         <div>
             <PageHeader
-                title="Payroll Records"
+                title={t("payroll.list.title")}
                 actions={
                     hasPermission("manage payroll") && (
                         <button
@@ -254,7 +258,7 @@ export default function PayrollRecordList() {
                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
                             <Plus className="w-4 h-4" />
-                            Create Payroll
+                            {t("payroll.actions.create")}
                         </button>
                     )
                 }
@@ -264,7 +268,7 @@ export default function PayrollRecordList() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Employee
+                            {t("payroll.filters.employee")}
                         </label>
                         <SearchableSelect
                             value={employeeFilter}
@@ -278,15 +282,15 @@ export default function PayrollRecordList() {
                                     .then((r) => r.data)
                             }
                             displayValue={(emp) =>
-                                `${emp.employee_code} - ${emp.user?.name || "N/A"}`
+                                `${emp.employee_code} - ${emp.user?.name || t("common.na")}`
                             }
-                            placeholder="All Employees"
+                            placeholder={t("payroll.filters.allEmployees")}
                             cacheKey="payroll-list-employees"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Month
+                            {t("payroll.filters.month")}
                         </label>
                         <SearchableSelect
                             value={monthFilter}
@@ -295,21 +299,18 @@ export default function PayrollRecordList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Months" },
+                                { value: "", label: t("payroll.filters.allMonths") },
                                 ...Array.from({ length: 12 }, (_, i) => ({
                                     value: String(i + 1),
-                                    label: new Date(2000, i).toLocaleString(
-                                        "default",
-                                        { month: "long" },
-                                    ),
+                                    label: getMonthName(i + 1),
                                 })),
                             ]}
-                            placeholder="All Months"
+                            placeholder={t("payroll.filters.allMonths")}
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Year
+                            {t("payroll.filters.year")}
                         </label>
                         <SearchableSelect
                             value={yearFilter}
@@ -318,18 +319,18 @@ export default function PayrollRecordList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Years" },
+                                { value: "", label: t("payroll.filters.allYears") },
                                 ...years.map((y) => ({
                                     value: String(y),
                                     label: String(y),
                                 })),
                             ]}
-                            placeholder="All Years"
+                            placeholder={t("payroll.filters.allYears")}
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Status
+                            {t("payroll.filters.status")}
                         </label>
                         <SearchableSelect
                             value={statusFilter}
@@ -338,12 +339,20 @@ export default function PayrollRecordList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Statuses" },
+                                {
+                                    value: "",
+                                    label: t("payroll.filters.allStatuses"),
+                                },
                                 ...Object.entries(PAYROLL_STATUS_LABELS).map(
-                                    ([value, label]) => ({ value, label }),
+                                    ([value, label]) => ({
+                                        value,
+                                        label: t(`payroll.status.${value}`, {
+                                            defaultValue: label,
+                                        }),
+                                    }),
                                 ),
                             ]}
-                            placeholder="All Statuses"
+                            placeholder={t("payroll.filters.allStatuses")}
                         />
                     </div>
                 </div>
@@ -365,8 +374,8 @@ export default function PayrollRecordList() {
                     }}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search payroll records..."
-                    totalRecordName="payroll records"
+                    searchPlaceholder={t("payroll.list.searchPlaceholder")}
+                    totalRecordName={t("payroll.list.totalRecordName")}
                 />
             </div>
             <PayrollRecordFormModal
@@ -378,10 +387,10 @@ export default function PayrollRecordList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete payroll record?"
-                description="Are you sure you want to delete this payroll record?"
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                title={t("payroll.confirmDelete.title")}
+                description={t("payroll.confirmDelete.description")}
+                confirmLabel={t("payroll.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

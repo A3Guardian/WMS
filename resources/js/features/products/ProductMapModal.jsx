@@ -1,18 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import * as Dialog from '@radix-ui/react-dialog';
-import api from '../../utils/api';
-import ProductDepositMap from '../../components/ProductDepositMap';
+import React, { useState, useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import * as Dialog from "@radix-ui/react-dialog";
+import { useTranslation } from "react-i18next";
+import api from "../../utils/api";
+import ProductDepositMap from "../../components/ProductDepositMap";
 
-export default function ProductMapModal({ 
-    isOpen, 
-    onClose, 
-    product 
+export default function ProductMapModal({
+    isOpen,
+    onClose,
+    product,
 }) {
     const mapContainerRef = useRef(null);
     const [mapScale, setMapScale] = useState(1);
     const [baseScale, setBaseScale] = useState(1);
     const [selectedDepositId, setSelectedDepositId] = useState(null);
+    const { t } = useTranslation();
 
     const inventories = product?.inventories || [];
     const byDeposit = inventories.reduce((acc, inv) => {
@@ -28,40 +30,48 @@ export default function ProductMapModal({
     const firstInventory = currentGroup?.items?.[0] ?? null;
 
     const { data: depositDetails, isLoading: depositLoading } = useQuery({
-        queryKey: ['deposit', firstInventory?.deposit_id],
+        queryKey: ["deposit", firstInventory?.deposit_id],
         queryFn: async () => {
             if (!firstInventory?.deposit_id) return null;
-            const response = await api.get(`/deposits/${firstInventory.deposit_id}`);
+            const response = await api.get(
+                `/deposits/${firstInventory.deposit_id}`,
+            );
             return response.data;
         },
         enabled: !!firstInventory?.deposit_id && isOpen,
     });
 
     const { data: mapShelves, isLoading: shelvesLoading } = useQuery({
-        queryKey: ['shelves', firstInventory?.deposit_id],
+        queryKey: ["shelves", firstInventory?.deposit_id],
         queryFn: async () => {
             if (!firstInventory?.deposit_id) return [];
-            const response = await api.get(`/deposits/${firstInventory.deposit_id}/shelves`);
+            const response = await api.get(
+                `/deposits/${firstInventory.deposit_id}/shelves`,
+            );
             return response.data?.data || response.data || [];
         },
         enabled: !!firstInventory?.deposit_id && isOpen,
     });
 
     const { data: mapWalls, isLoading: wallsLoading } = useQuery({
-        queryKey: ['walls', firstInventory?.deposit_id],
+        queryKey: ["walls", firstInventory?.deposit_id],
         queryFn: async () => {
             if (!firstInventory?.deposit_id) return [];
-            const response = await api.get(`/deposits/${firstInventory.deposit_id}/walls`);
+            const response = await api.get(
+                `/deposits/${firstInventory.deposit_id}/walls`,
+            );
             return response.data?.data || response.data || [];
         },
         enabled: !!firstInventory?.deposit_id && isOpen,
     });
 
     const { data: mapDoors, isLoading: doorsLoading } = useQuery({
-        queryKey: ['doors', firstInventory?.deposit_id],
+        queryKey: ["doors", firstInventory?.deposit_id],
         queryFn: async () => {
             if (!firstInventory?.deposit_id) return [];
-            const response = await api.get(`/deposits/${firstInventory.deposit_id}/doors`);
+            const response = await api.get(
+                `/deposits/${firstInventory.deposit_id}/doors`,
+            );
             return response.data?.data || response.data || [];
         },
         enabled: !!firstInventory?.deposit_id && isOpen,
@@ -107,9 +117,9 @@ export default function ProductMapModal({
             }
         };
 
-        container.addEventListener('wheel', handleWheel, { passive: false });
+        container.addEventListener("wheel", handleWheel, { passive: false });
         return () => {
-            container.removeEventListener('wheel', handleWheel);
+            container.removeEventListener("wheel", handleWheel);
         };
     }, [isOpen]);
 
@@ -134,35 +144,47 @@ export default function ProductMapModal({
     if (!product) return null;
 
     return (
-        <Dialog.Root open={isOpen} onOpenChange={(open) => {
-            if (!open) {
-                handleClose();
-            }
-        }}>
+        <Dialog.Root
+            open={isOpen}
+            onOpenChange={(open) => {
+                if (!open) {
+                    handleClose();
+                }
+            }}
+        >
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
-                <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-6xl max-h-[90vh] min-h-[32rem] overflow-hidden z-50 flex flex-col">
+                <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-6xl max-h-[90vh] min-h-128 overflow-hidden z-50 flex flex-col">
                     <Dialog.Title className="text-2xl font-bold mb-2">
-                        Product Location - {product.name}
+                        {t("products.map.title", { name: product.name })}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-600 mb-4">
-                        View the product location on the deposit map
+                        {t("products.map.description")}
                     </Dialog.Description>
                     {depositList.length > 1 && (
                         <div className="flex flex-wrap gap-2 mb-4 border-b border-gray-200 pb-3">
-                            <span className="text-sm font-medium text-gray-700 self-center mr-2">Deposit:</span>
+                            <span className="text-sm font-medium text-gray-700 self-center mr-2">
+                                {t("products.map.deposit")}:
+                            </span>
                             {depositList.map((group) => {
-                                const name = group.deposit?.name || `Deposit #${group.deposit_id}`;
-                                const isSelected = group.deposit_id === currentDepositId;
+                                const name =
+                                    group.deposit?.name ||
+                                    t("products.map.depositNumber", {
+                                        id: group.deposit_id,
+                                    });
+                                const isSelected =
+                                    group.deposit_id === currentDepositId;
                                 return (
                                     <button
                                         key={group.deposit_id}
                                         type="button"
-                                        onClick={() => setSelectedDepositId(group.deposit_id)}
+                                        onClick={() =>
+                                            setSelectedDepositId(group.deposit_id)
+                                        }
                                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                                             isSelected
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                         }`}
                                     >
                                         {name}
@@ -177,30 +199,45 @@ export default function ProductMapModal({
                                 className="w-10 h-10 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"
                                 aria-hidden
                             />
-                            <p className="text-sm font-medium">Loading map...</p>
+                            <p className="text-sm font-medium">
+                                {t("products.map.loading")}
+                            </p>
                         </div>
                     ) : depositDetails && mapShelves && firstInventory ? (
                         <div className="flex-1 overflow-hidden flex flex-col">
                             <div className="mb-4 flex flex-col md:flex-row md:items-end md:justify-between gap-3">
                                 <div className="space-y-1">
                                     <p className="text-gray-600">
-                                        <strong>Deposit:</strong> {depositDetails.name} ({depositDetails.width}m × {depositDetails.height}m)
+                                        <strong>
+                                            {t("products.map.deposit")}:
+                                        </strong>{" "}
+                                        {depositDetails.name} (
+                                        {depositDetails.width}m ×{" "}
+                                        {depositDetails.height}m)
                                     </p>
                                     {firstInventory.shelf && (
                                         <p className="text-gray-600">
-                                            <strong>Shelf:</strong> {firstInventory.shelf.name} at ({firstInventory.shelf.x_position}m, {firstInventory.shelf.y_position}m)
+                                            <strong>
+                                                {t("products.map.shelf")}:
+                                            </strong>{" "}
+                                            {firstInventory.shelf.name}{" "}
+                                            {t("products.map.at")} (
+                                            {firstInventory.shelf.x_position}m,{" "}
+                                            {firstInventory.shelf.y_position}m)
                                         </p>
                                     )}
                                     <p className="text-sm text-gray-500 mt-1">
-                                        Use Ctrl+Scroll to zoom • Click and drag to pan (if implemented)
+                                        {t("products.map.hint")}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-700">Zoom:</span>
+                                    <span className="text-sm text-gray-700">
+                                        {t("products.map.zoom")}:
+                                    </span>
                                     <button
                                         onClick={handleZoomOut}
                                         className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"
-                                        title="Zoom Out"
+                                        title={t("products.map.zoomOut")}
                                     >
                                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
@@ -217,7 +254,7 @@ export default function ProductMapModal({
                                     <button
                                         onClick={handleZoomIn}
                                         className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md"
-                                        title="Zoom In"
+                                        title={t("products.map.zoomIn")}
                                     >
                                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
@@ -226,9 +263,9 @@ export default function ProductMapModal({
                                     <button
                                         onClick={handleZoomReset}
                                         className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-md"
-                                        title="Reset Zoom"
+                                        title={t("products.map.resetZoom")}
                                     >
-                                        Reset
+                                        {t("products.map.reset")}
                                     </button>
                                 </div>
                             </div>
@@ -244,13 +281,13 @@ export default function ProductMapModal({
                         </div>
                     ) : (
                         <div className="flex-1 min-h-[320px] flex items-center justify-center text-gray-500">
-                            <p>No inventory location found for this product.</p>
+                            <p>{t("products.map.noLocation")}</p>
                         </div>
                     )}
                     <div className="flex justify-end mt-4 pt-4 border-t">
                         <Dialog.Close asChild>
                             <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                                Close
+                                {t("common.close")}
                             </button>
                         </Dialog.Close>
                     </div>

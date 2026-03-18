@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
@@ -15,6 +16,7 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 export default function SalaryList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [perPage, setPerPage] = useState(10);
@@ -52,12 +54,12 @@ export default function SalaryList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["salaries"] });
-            toast.success("Salary deleted successfully");
+            toast.success(t("salaries.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete salary", {
+            toast.error(t("salaries.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -100,39 +102,41 @@ export default function SalaryList() {
 
     const columns = [
         {
-            header: "Employee",
+            header: t("salaries.list.table.employee"),
             accessor: (row) =>
                 row.employee?.user?.name ||
                 row.employee?.employee_code ||
-                "N/A",
+                t("common.na"),
         },
         {
-            header: "Amount",
+            header: t("salaries.list.table.amount"),
             accessor: "amount",
             cell: (value) =>
                 `$${parseFloat(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
         },
         {
-            header: "Type",
+            header: t("salaries.list.table.type"),
             accessor: "type",
             cell: (value) => (
                 <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                    {SALARY_TYPE_LABELS[value] || value}
+                    {t(`salaries.type.${value}`, {
+                        defaultValue: SALARY_TYPE_LABELS[value] || value,
+                    })}
                 </span>
             ),
         },
         {
-            header: "Effective Date",
+            header: t("salaries.list.table.effectiveDate"),
             accessor: "effective_date",
             cell: (value) => formatDate(value),
         },
         {
-            header: "End Date",
+            header: t("salaries.list.table.endDate"),
             accessor: "end_date",
-            cell: (value) => (value ? formatDate(value) : "N/A"),
+            cell: (value) => (value ? formatDate(value) : t("common.na")),
         },
         {
-            header: "Actions",
+            header: t("salaries.list.table.actions"),
             accessor: "id",
             align: "center",
             cell: (id, row) => (
@@ -141,7 +145,7 @@ export default function SalaryList() {
                         type="button"
                         onClick={() => handleOpenEdit(row)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="Edit"
+                        title={t("salaries.actions.edit")}
                         disabled={!hasPermission("manage salaries")}
                     >
                         <Pencil className="w-4 h-4" />
@@ -150,7 +154,7 @@ export default function SalaryList() {
                         type="button"
                         onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
-                        title="Delete"
+                        title={t("salaries.actions.delete")}
                         disabled={!hasPermission("manage salaries")}
                     >
                         <Trash2 className="w-4 h-4" />
@@ -163,7 +167,7 @@ export default function SalaryList() {
     if (error) {
         return (
             <div className="text-red-500 p-4">
-                Error loading salaries: {error.message}
+                {t("salaries.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -171,7 +175,7 @@ export default function SalaryList() {
     return (
         <div>
             <PageHeader
-                title="Salaries"
+                title={t("salaries.list.title")}
                 actions={
                     hasPermission("manage salaries") && (
                         <button
@@ -180,7 +184,7 @@ export default function SalaryList() {
                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
                             <Plus className="w-4 h-4" />
-                            Add Salary
+                            {t("salaries.actions.add")}
                         </button>
                     )
                 }
@@ -190,7 +194,7 @@ export default function SalaryList() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Employee
+                            {t("salaries.filters.employee")}
                         </label>
                         <SearchableSelect
                             value={employeeFilter}
@@ -204,15 +208,15 @@ export default function SalaryList() {
                                     .then((r) => r.data)
                             }
                             displayValue={(emp) =>
-                                `${emp.employee_code} - ${emp.user?.name || "N/A"}`
+                                `${emp.employee_code} - ${emp.user?.name || t("common.na")}`
                             }
-                            placeholder="All Employees"
+                            placeholder={t("salaries.filters.allEmployees")}
                             cacheKey="salary-list-employees"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Type
+                            {t("salaries.filters.type")}
                         </label>
                         <SearchableSelect
                             value={typeFilter}
@@ -221,12 +225,17 @@ export default function SalaryList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Types" },
+                                { value: "", label: t("salaries.filters.allTypes") },
                                 ...Object.entries(SALARY_TYPE_LABELS).map(
-                                    ([value, label]) => ({ value, label }),
+                                    ([value, label]) => ({
+                                        value,
+                                        label: t(`salaries.type.${value}`, {
+                                            defaultValue: label,
+                                        }),
+                                    }),
                                 ),
                             ]}
-                            placeholder="All Types"
+                            placeholder={t("salaries.filters.allTypes")}
                         />
                     </div>
                 </div>
@@ -248,8 +257,8 @@ export default function SalaryList() {
                     }}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search salary records..."
-                    totalRecordName="salary records"
+                    searchPlaceholder={t("salaries.list.searchPlaceholder")}
+                    totalRecordName={t("salaries.list.totalRecordName")}
                 />
             </div>
             <SalaryFormModal
@@ -261,10 +270,10 @@ export default function SalaryList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete salary record?"
-                description="Are you sure you want to delete this salary record?"
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                title={t("salaries.confirmDelete.title")}
+                description={t("salaries.confirmDelete.description")}
+                confirmLabel={t("salaries.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

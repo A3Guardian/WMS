@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import SearchableSelect from "../../components/SearchableSelect";
 import { Plus, Trash2, Upload, Star } from "lucide-react";
@@ -15,6 +16,7 @@ const emptyInventoryRow = () => ({
 
 export default function ProductFormModal({ isOpen, onClose, product = null }) {
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         name: "",
         sku: "",
@@ -61,13 +63,14 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["products"] });
             queryClient.invalidateQueries({ queryKey: ["inventory"] });
-            toast.success("Product created successfully");
+            toast.success(t("products.toast.created"));
             handleClose();
         },
         onError: (error) => {
-            toast.error("Failed to create product", {
+            toast.error(t("products.toast.createFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message ||
+                    t("products.toast.genericError"),
             });
         },
     });
@@ -80,13 +83,14 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["products"] });
             queryClient.invalidateQueries({ queryKey: ["inventory"] });
-            toast.success("Product updated successfully");
+            toast.success(t("products.toast.updated"));
             handleClose();
         },
         onError: (error) => {
-            toast.error("Failed to update product", {
+            toast.error(t("products.toast.updateFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message ||
+                    t("products.toast.genericError"),
             });
         },
     });
@@ -111,10 +115,12 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                     images: data.product.images,
                 }));
             }
-            toast.success("Image uploaded");
+            toast.success(t("products.toast.imageUploaded"));
         },
         onError: (err) => {
-            toast.error(err.response?.data?.message || "Upload failed");
+            toast.error(
+                err.response?.data?.message || t("products.toast.uploadFailed"),
+            );
         },
     });
 
@@ -130,10 +136,12 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                 images: (prev.images || []).filter((img) => img.url !== url),
             }));
             queryClient.invalidateQueries({ queryKey: ["products"] });
-            toast.success("Image removed");
+            toast.success(t("products.toast.imageRemoved"));
         },
         onError: (err) => {
-            toast.error(err.response?.data?.message || "Delete failed");
+            toast.error(
+                err.response?.data?.message || t("products.toast.deleteFailed"),
+            );
         },
     });
 
@@ -151,7 +159,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                 setFormData((prev) => ({ ...prev, images: data.images }));
             }
             queryClient.invalidateQueries({ queryKey: ["products"] });
-            toast.success("Main image updated");
+            toast.success(t("products.toast.mainImageUpdated"));
         },
     });
 
@@ -310,12 +318,14 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
                 <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto z-50">
                     <Dialog.Title className="text-2xl font-bold mb-4">
-                        {product ? "Edit Product" : "Create Product"}
+                        {product
+                            ? t("products.form.editTitle")
+                            : t("products.form.createTitle")}
                     </Dialog.Title>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Name *
+                                {t("products.form.name")} *
                             </label>
                             <input
                                 type="text"
@@ -351,7 +361,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Description
+                                {t("products.form.description")}
                             </label>
                             <textarea
                                 value={formData.description}
@@ -368,7 +378,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Price *
+                                {t("products.form.price")} *
                             </label>
                             <input
                                 type="number"
@@ -388,7 +398,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Product type *
+                                {t("products.form.productType")} *
                             </label>
                             <div className="flex flex-wrap gap-3 mt-1 text-sm">
                                 <label className="inline-flex items-center gap-2">
@@ -404,7 +414,9 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                             })
                                         }
                                     />
-                                    <span>Cumpărat de la furnizor</span>
+                                    <span>
+                                        {t("products.form.origin.purchased")}
+                                    </span>
                                 </label>
                                 <label className="inline-flex items-center gap-2">
                                     <input
@@ -420,7 +432,11 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                             })
                                         }
                                     />
-                                    <span>Fabricat intern</span>
+                                    <span>
+                                        {t(
+                                            "products.form.origin.manufactured",
+                                        )}
+                                    </span>
                                 </label>
                                 <label className="inline-flex items-center gap-2">
                                     <input
@@ -435,12 +451,13 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                             })
                                         }
                                     />
-                                    <span>Atât cumpărat, cât și fabricat</span>
+                                    <span>
+                                        {t("products.form.origin.both")}
+                                    </span>
                                 </label>
                             </div>
                             <p className="mt-1 text-xs text-gray-500">
-                                Alege dacă produsul este cumpărat de la furnizor, fabricat în
-                                companie sau poate fi și cumpărat, și fabricat.
+                                {t("products.form.originHint")}
                             </p>
                         </div>
 
@@ -448,7 +465,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                             formData.origin === "both") && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Supplier
+                                    {t("products.form.supplier")}
                                 </label>
                                 <SearchableSelect
                                     value={formData.supplier_id || ""}
@@ -460,7 +477,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                     }
                                     fetchOptions={fetchSuppliers}
                                     displayValue={(opt) => opt?.name}
-                                    placeholder="Select Supplier"
+                                    placeholder={t("products.form.selectSupplier")}
                                     cacheKey="product-suppliers"
                                 />
                             </div>
@@ -469,13 +486,13 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                         <div className="border-t pt-4 mt-4">
                             <h3 className="text-lg font-semibold mb-2 text-gray-800">
                                 {isEditMode
-                                    ? "Inventory locations"
-                                    : "Initial inventory (optional)"}
+                                    ? t("products.inventory.editTitle")
+                                    : t("products.inventory.createTitle")}
                             </h3>
                             <p className="text-sm text-gray-600 mb-3">
                                 {isEditMode
-                                    ? "Edit quantities and reorder levels, add or remove locations."
-                                    : "Add one or more locations with quantities."}
+                                    ? t("products.inventory.editDescription")
+                                    : t("products.inventory.createDescription")}
                             </p>
 
                             {(formData.inventories || []).map((row, index) => (
@@ -485,7 +502,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                 >
                                     <div className="flex-1 min-w-[120px]">
                                         <label className="block text-xs font-medium text-gray-600 mb-0.5">
-                                            Deposit
+                                            {t("products.inventory.deposit")}
                                         </label>
                                         <SearchableSelect
                                             value={row.deposit_id || ""}
@@ -498,14 +515,14 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                             }
                                             fetchOptions={fetchDeposits}
                                             displayValue={(opt) => opt?.name}
-                                            placeholder="Select deposit"
+                                            placeholder={t("products.inventory.selectDeposit")}
                                             cacheKey="product-deposits"
                                             className="min-h-[34px] px-2 py-1.5 text-sm"
                                         />
                                     </div>
                                     <div className="flex-1 min-w-[100px]">
                                         <label className="block text-xs font-medium text-gray-600 mb-0.5">
-                                            Shelf
+                                            {t("products.inventory.shelf")}
                                         </label>
                                         <SearchableSelect
                                             value={row.shelf_id || ""}
@@ -521,14 +538,14 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                                 name: s.name,
                                             }))}
                                             displayValue={(opt) => opt?.name}
-                                            placeholder="Shelf"
+                                            placeholder={t("products.inventory.shelfPlaceholder")}
                                             disabled={!row.deposit_id}
                                             className="min-h-[34px] px-2 py-1.5 text-sm"
                                         />
                                     </div>
                                     <div className="w-20">
                                         <label className="block text-xs font-medium text-gray-600 mb-0.5">
-                                            Qty
+                                            {t("products.inventory.qty")}
                                         </label>
                                         <input
                                             type="number"
@@ -542,12 +559,12 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                                 )
                                             }
                                             className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
-                                            placeholder="0"
+                                            placeholder={t("products.inventory.zero")}
                                         />
                                     </div>
                                     <div className="w-20">
                                         <label className="block text-xs font-medium text-gray-600 mb-0.5">
-                                            Reorder
+                                            {t("products.inventory.reorder")}
                                         </label>
                                         <input
                                             type="number"
@@ -561,7 +578,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                                 )
                                             }
                                             className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded"
-                                            placeholder="0"
+                                            placeholder={t("products.inventory.zero")}
                                         />
                                     </div>
                                     <button
@@ -571,7 +588,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                             formData.inventories.length <= 1
                                         }
                                         className="p-1.5 text-gray-500 hover:text-red-600 disabled:opacity-40"
-                                        title="Remove location"
+                                        title={t("products.inventory.removeLocation")}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -584,17 +601,17 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                 className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 mt-2"
                             >
                                 <Plus className="w-4 h-4" />
-                                Add location
+                                {t("products.inventory.addLocation")}
                             </button>
                         </div>
 
                         {isEditMode && product?.id && (
                             <div className="border-t pt-4 mt-4">
                                 <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                                    Product images
+                                    {t("products.images.title")}
                                 </h3>
                                 <p className="text-sm text-gray-600 mb-3">
-                                    Main image (display_type 1) and additional images. Upload or set as main.
+                                    {t("products.images.description")}
                                 </p>
                                 <div className="flex flex-wrap gap-3 mb-3">
                                     {sortedImages.map((img) => (
@@ -610,7 +627,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                             />
                                             {img.display_type === 1 && (
                                                 <span className="absolute top-0 left-0 bg-blue-600 text-white text-xs px-1 rounded-br">
-                                                    Main
+                                                    {t("products.images.main")}
                                                 </span>
                                             )}
                                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
@@ -619,7 +636,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                                         type="button"
                                                         onClick={() => handleSetMain(img)}
                                                         className="p-1.5 bg-white rounded hover:bg-gray-100"
-                                                        title="Set as main"
+                                                        title={t("products.images.setAsMain")}
                                                     >
                                                         <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
                                                     </button>
@@ -628,7 +645,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                                     type="button"
                                                     onClick={() => handleDeleteImage(img.url)}
                                                     className="p-1.5 bg-white rounded hover:bg-red-50 text-red-600"
-                                                    title="Remove"
+                                                    title={t("products.images.remove")}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -639,7 +656,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                 <div className="flex flex-wrap gap-2">
                                     <label className="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-md cursor-pointer text-sm">
                                         <Upload className="w-4 h-4" />
-                                        Add (additional)
+                                        {t("products.images.addAdditional")}
                                         <input
                                             type="file"
                                             accept="image/jpeg,image/png,image/gif,image/webp"
@@ -651,7 +668,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                     </label>
                                     <label className="inline-flex items-center gap-1 px-3 py-2 bg-blue-100 hover:bg-blue-200 rounded-md cursor-pointer text-sm">
                                         <Upload className="w-4 h-4" />
-                                        Add as main
+                                        {t("products.images.addAsMain")}
                                         <input
                                             type="file"
                                             accept="image/jpeg,image/png,image/gif,image/webp"
@@ -671,7 +688,7 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                                     type="button"
                                     className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -684,8 +701,8 @@ export default function ProductFormModal({ isOpen, onClose, product = null }) {
                             >
                                 {createMutation.isPending ||
                                 updateMutation.isPending
-                                    ? "Saving..."
-                                    : "Save"}
+                                    ? t("common.saving")
+                                    : t("common.save")}
                             </button>
                         </div>
                     </form>

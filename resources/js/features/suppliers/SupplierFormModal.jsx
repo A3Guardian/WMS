@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 
 const initialFormData = () => ({
@@ -109,6 +110,7 @@ export default function SupplierFormModal({
     const queryClient = useQueryClient();
     const isEdit = !!supplier;
     const [formData, setFormData] = useState(() => initialFormData());
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (!isOpen) return;
@@ -122,12 +124,13 @@ export default function SupplierFormModal({
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-            toast.success("Supplier created");
+            toast.success(t("suppliers.toast.created"));
             onClose();
         },
         onError: (err) => {
-            toast.error("Failed to create supplier", {
-                description: err.response?.data?.message || "An error occurred",
+            toast.error(t("suppliers.toast.createFailed"), {
+                description:
+                    err.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -139,12 +142,13 @@ export default function SupplierFormModal({
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["suppliers"] });
-            toast.success("Supplier updated");
+            toast.success(t("suppliers.toast.updated"));
             onClose();
         },
         onError: (err) => {
-            toast.error("Failed to update supplier", {
-                description: err.response?.data?.message || "An error occurred",
+            toast.error(t("suppliers.toast.updateFailed"), {
+                description:
+                    err.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -175,14 +179,20 @@ export default function SupplierFormModal({
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
                 <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-3xl z-50 max-h-[90vh] overflow-y-auto">
                     <Dialog.Title className="text-2xl font-bold mb-4">
-                        {isEdit ? "Edit supplier" : "Add supplier"}
+                        {isEdit
+                            ? t("suppliers.form.editTitle")
+                            : t("suppliers.form.createTitle")}
                     </Dialog.Title>
 
                     <form onSubmit={handleSubmit} className="space-y-3">
-                        <div className={sectionTitleClass}>General</div>
+                        <div className={sectionTitleClass}>
+                            {t("suppliers.form.sections.general")}
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className={labelClass}>Name *</label>
+                                <label className={labelClass}>
+                                    {t("suppliers.form.fields.name")} *
+                                </label>
                                 <input
                                     type="text"
                                     required
@@ -193,7 +203,7 @@ export default function SupplierFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Company name
+                                    {t("suppliers.form.fields.companyName")}
                                 </label>
                                 <input
                                     type="text"
@@ -203,7 +213,9 @@ export default function SupplierFormModal({
                                 />
                             </div>
                             <div>
-                                <label className={labelClass}>Email *</label>
+                                <label className={labelClass}>
+                                    {t("suppliers.form.fields.email")} *
+                                </label>
                                 <input
                                     type="email"
                                     required
@@ -214,7 +226,7 @@ export default function SupplierFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Contact person
+                                    {t("suppliers.form.fields.contactPerson")}
                                 </label>
                                 <input
                                     type="text"
@@ -226,7 +238,9 @@ export default function SupplierFormModal({
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label className={labelClass}>Main phone</label>
+                                <label className={labelClass}>
+                                    {t("suppliers.form.fields.mainPhone")}
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.phone}
@@ -236,7 +250,7 @@ export default function SupplierFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Billing phone
+                                    {t("suppliers.form.fields.billingPhone")}
                                 </label>
                                 <input
                                     type="text"
@@ -247,7 +261,7 @@ export default function SupplierFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Shipping phone
+                                    {t("suppliers.form.fields.shippingPhone")}
                                 </label>
                                 <input
                                     type="text"
@@ -258,11 +272,13 @@ export default function SupplierFormModal({
                             </div>
                         </div>
 
-                        <div className={sectionTitleClass}>Billing address</div>
+                        <div className={sectionTitleClass}>
+                            {t("suppliers.form.sections.billingAddress")}
+                        </div>
                         <div className="space-y-4">
                             <div>
                                 <label className={labelClass}>
-                                    Billing address
+                                    {t("suppliers.form.fields.billingAddress")}
                                 </label>
                                 <textarea
                                     rows={2}
@@ -273,7 +289,9 @@ export default function SupplierFormModal({
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
-                                    <label className={labelClass}>City</label>
+                                    <label className={labelClass}>
+                                        {t("suppliers.form.fields.city")}
+                                    </label>
                                     <input
                                         type="text"
                                         value={formData.billing_city}
@@ -283,7 +301,7 @@ export default function SupplierFormModal({
                                 </div>
                                 <div>
                                     <label className={labelClass}>
-                                        Postcode
+                                        {t("suppliers.form.fields.postcode")}
                                     </label>
                                     <input
                                         type="text"
@@ -294,7 +312,7 @@ export default function SupplierFormModal({
                                 </div>
                                 <div>
                                     <label className={labelClass}>
-                                        Country
+                                        {t("suppliers.form.fields.country")}
                                     </label>
                                     <input
                                         type="text"
@@ -307,12 +325,12 @@ export default function SupplierFormModal({
                         </div>
 
                         <div className={sectionTitleClass}>
-                            Shipping address
+                            {t("suppliers.form.sections.shippingAddress")}
                         </div>
                         <div className="space-y-4">
                             <div>
                                 <label className={labelClass}>
-                                    Shipping address
+                                    {t("suppliers.form.fields.shippingAddress")}
                                 </label>
                                 <textarea
                                     rows={2}
@@ -323,7 +341,9 @@ export default function SupplierFormModal({
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
-                                    <label className={labelClass}>City</label>
+                                    <label className={labelClass}>
+                                        {t("suppliers.form.fields.city")}
+                                    </label>
                                     <input
                                         type="text"
                                         value={formData.shipping_city}
@@ -333,7 +353,7 @@ export default function SupplierFormModal({
                                 </div>
                                 <div>
                                     <label className={labelClass}>
-                                        Postcode
+                                        {t("suppliers.form.fields.postcode")}
                                     </label>
                                     <input
                                         type="text"
@@ -344,7 +364,7 @@ export default function SupplierFormModal({
                                 </div>
                                 <div>
                                     <label className={labelClass}>
-                                        Country
+                                        {t("suppliers.form.fields.country")}
                                     </label>
                                     <input
                                         type="text"
@@ -357,11 +377,13 @@ export default function SupplierFormModal({
                         </div>
 
                         <div className={sectionTitleClass}>
-                            Tax & registration
+                            {t("suppliers.form.sections.taxRegistration")}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className={labelClass}>Tax number</label>
+                                <label className={labelClass}>
+                                    {t("suppliers.form.fields.taxNumber")}
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.tax_number}
@@ -371,7 +393,7 @@ export default function SupplierFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Registration number
+                                    {t("suppliers.form.fields.registrationNumber")}
                                 </label>
                                 <input
                                     type="text"
@@ -382,10 +404,14 @@ export default function SupplierFormModal({
                             </div>
                         </div>
 
-                        <div className={sectionTitleClass}>Banking</div>
+                        <div className={sectionTitleClass}>
+                            {t("suppliers.form.sections.banking")}
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label className={labelClass}>Bank name</label>
+                                <label className={labelClass}>
+                                    {t("suppliers.form.fields.bankName")}
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.bank_name}
@@ -414,12 +440,12 @@ export default function SupplierFormModal({
                         </div>
 
                         <div className={sectionTitleClass}>
-                            Payment terms & credit limit
+                            {t("suppliers.form.sections.paymentTermsCredit")}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className={labelClass}>
-                                    Payment terms (days)
+                                    {t("suppliers.form.fields.paymentTermsDays")}
                                 </label>
                                 <input
                                     type="number"
@@ -432,7 +458,7 @@ export default function SupplierFormModal({
                             </div>
                             <div>
                                 <label className={labelClass}>
-                                    Credit limit
+                                    {t("suppliers.form.fields.creditLimit")}
                                 </label>
                                 <input
                                     type="number"
@@ -451,7 +477,7 @@ export default function SupplierFormModal({
                                     type="button"
                                     className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -459,7 +485,7 @@ export default function SupplierFormModal({
                                 disabled={isSaving}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                             >
-                                {isSaving ? "Saving..." : "Save"}
+                                {isSaving ? t("common.saving") : t("common.save")}
                             </button>
                         </div>
                     </form>

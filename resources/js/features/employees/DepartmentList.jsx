@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Pencil, Trash2, Plus, Users } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -14,6 +15,7 @@ export default function DepartmentList() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -57,12 +59,12 @@ export default function DepartmentList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["departments"] });
-            toast.success("Department deleted successfully");
+            toast.success(t("departments.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete department", {
+            toast.error(t("departments.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -98,21 +100,21 @@ export default function DepartmentList() {
 
     const columns = [
         {
-            header: "Name",
+            header: t("departments.list.table.name"),
             accessor: "name",
         },
         {
-            header: "Description",
+            header: t("departments.list.table.description"),
             accessor: "description",
             cell: (value) =>
                 value
                     ? value.length > 100
                         ? value.substring(0, 100) + "..."
                         : value
-                    : "N/A",
+                    : t("common.na"),
         },
         {
-            header: "Actions",
+            header: t("departments.list.table.actions"),
             accessor: "id",
             align: "center",
             cell: (id, row) => (
@@ -121,7 +123,7 @@ export default function DepartmentList() {
                         type="button"
                         onClick={() => navigate(`/departments/${id}`)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="View team"
+                        title={t("departments.actions.viewTeam")}
                     >
                         <Users className="w-4 h-4" />
                     </button>
@@ -129,7 +131,7 @@ export default function DepartmentList() {
                         type="button"
                         onClick={() => handleOpenEdit(row)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="Edit"
+                        title={t("departments.actions.edit")}
                         disabled={!hasPermission("edit employees")}
                     >
                         <Pencil className="w-4 h-4" />
@@ -138,7 +140,7 @@ export default function DepartmentList() {
                         type="button"
                         onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
-                        title="Delete"
+                        title={t("departments.actions.delete")}
                         disabled={!hasPermission("delete employees")}
                     >
                         <Trash2 className="w-4 h-4" />
@@ -151,7 +153,7 @@ export default function DepartmentList() {
     if (error) {
         return (
             <div className="text-red-500 p-4">
-                Error loading departments: {error.message}
+                {t("departments.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -159,7 +161,7 @@ export default function DepartmentList() {
     return (
         <div>
             <PageHeader
-                title="Departments"
+                title={t("departments.list.title")}
                 actions={
                     hasPermission("create employees") && (
                         <button
@@ -168,7 +170,7 @@ export default function DepartmentList() {
                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
                             <Plus className="w-4 h-4" />
-                            Add Department
+                            {t("departments.actions.add")}
                         </button>
                     )
                 }
@@ -194,8 +196,8 @@ export default function DepartmentList() {
                     }
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search by name or description..."
-                    totalRecordName="departments"
+                    searchPlaceholder={t("departments.list.searchPlaceholder")}
+                    totalRecordName={t("departments.list.totalRecordName")}
                 />
             </div>
             <DepartmentFormModal
@@ -207,14 +209,16 @@ export default function DepartmentList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete department?"
+                title={t("departments.confirmDelete.title")}
                 description={
                     departmentToDelete
-                        ? `Are you sure you want to delete department "${departmentToDelete.name}"?`
+                        ? t("departments.confirmDelete.description", {
+                              name: departmentToDelete.name,
+                          })
                         : ""
                 }
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                confirmLabel={t("departments.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

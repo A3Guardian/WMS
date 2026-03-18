@@ -2,6 +2,7 @@ import { formatCurrency } from "./formatters";
 import "jspdf";
 import "../../fonts/Roboto-Regular";
 import "../../fonts/Roboto-Bold";
+import i18n from "../i18n";
 
 function todayStr() {
     const d = new Date();
@@ -11,7 +12,8 @@ function todayStr() {
 function formatDateShort(dateStr) {
     if (!dateStr) return "";
     const d = new Date(dateStr);
-    return d.toLocaleDateString("ro-RO", {
+    const locale = i18n.language === "ro" ? "ro-RO" : "en-US";
+    return d.toLocaleDateString(locale, {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
@@ -20,7 +22,7 @@ function formatDateShort(dateStr) {
 
 async function loadImageAsDataUrl(url) {
     const response = await fetch(url, { mode: "cors" });
-    if (!response.ok) throw new Error("Failed to load image");
+    if (!response.ok) throw new Error(i18n.t("invoicePdf.errors.imageLoadFailed"));
     const blob = await response.blob();
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -67,13 +69,21 @@ export async function generateInvoicePdf({
 
     doc.setFontSize(10);
     const companyName = company.name;
-    const companyCui = company.cui ? `CUI: ${company.cui}` : null;
+    const companyCui = company.cui
+        ? `${i18n.t("invoicePdf.labels.taxId")}: ${company.cui}`
+        : null;
     const companyAddress = company.address || null;
     const companyCityCounty =
         [company.city, company.county].filter(Boolean).join(", ") || null;
-    const companyPhone = company.phone ? `Tel: ${company.phone}` : null;
-    const companyEmail = company.email ? `Email: ${company.email}` : null;
-    const companyBank = company.bank ? `Bancă: ${company.bank}` : null;
+    const companyPhone = company.phone
+        ? `${i18n.t("invoicePdf.labels.phone")}: ${company.phone}`
+        : null;
+    const companyEmail = company.email
+        ? `${i18n.t("invoicePdf.labels.email")}: ${company.email}`
+        : null;
+    const companyBank = company.bank
+        ? `${i18n.t("invoicePdf.labels.bank")}: ${company.bank}`
+        : null;
     const companyIban = company.iban ? `IBAN: ${company.iban}` : null;
 
     const companyLineWidth = 80;
@@ -118,30 +128,43 @@ export async function generateInvoicePdf({
     yPos += 8;
 
     doc.setFontSize(11);
-    doc.text(`Nr. factură: ${invoiceNumber}`, tableRightEdge, 14, {
+    doc.text(
+        `${i18n.t("invoicePdf.labels.invoiceNumber")}: ${invoiceNumber}`,
+        tableRightEdge,
+        14,
+        {
         align: "right",
-    });
-    doc.text(`Data: ${formatDateShort(issueDate)}`, tableRightEdge, 20, {
+        },
+    );
+    doc.text(
+        `${i18n.t("invoicePdf.labels.date")}: ${formatDateShort(issueDate)}`,
+        tableRightEdge,
+        20,
+        {
         align: "right",
-    });
+        },
+    );
 
     yPos = Math.max(yPos, 50);
     doc.setFont("Roboto-Bold", "normal");
     doc.setFontSize(20);
-    doc.text("FACTURĂ", leftCol, yPos);
+    doc.text(i18n.t("invoicePdf.title"), leftCol, yPos);
     doc.setFont("Roboto-Regular", "normal");
     yPos += 12;
 
     const partner =
         invoice?.type === "income" ? invoice?.customer : invoice?.supplier;
-    const partnerTitle = invoice?.type === "income" ? "Client" : "Furnizor";
+    const partnerTitle =
+        invoice?.type === "income"
+            ? i18n.t("invoicePdf.partner.customer")
+            : i18n.t("invoicePdf.partner.supplier");
     const partnerCol = leftCol;
     const metaCol = rightCol;
 
     doc.setFontSize(10);
     doc.setFont("Roboto-Bold", "normal");
     doc.text(partnerTitle, partnerCol, yPos);
-    doc.text("Detalii", metaCol, yPos);
+    doc.text(i18n.t("invoicePdf.detailsTitle"), metaCol, yPos);
     doc.setFont("Roboto-Regular", "normal");
     let partnerY = yPos + 5;
     let metaY = yPos + 5;
@@ -150,20 +173,32 @@ export async function generateInvoicePdf({
     doc.text(partnerName, partnerCol, partnerY);
     partnerY += 5;
     if (partner?.email) {
-        doc.text(`Email: ${partner.email}`, partnerCol, partnerY);
+        doc.text(
+            `${i18n.t("invoicePdf.labels.email")}: ${partner.email}`,
+            partnerCol,
+            partnerY,
+        );
         partnerY += 5;
     }
     if (partner?.phone) {
-        doc.text(`Tel: ${partner.phone}`, partnerCol, partnerY);
+        doc.text(
+            `${i18n.t("invoicePdf.labels.phone")}: ${partner.phone}`,
+            partnerCol,
+            partnerY,
+        );
         partnerY += 5;
     }
     if (partner?.tax_number) {
-        doc.text(`CUI: ${partner.tax_number}`, partnerCol, partnerY);
+        doc.text(
+            `${i18n.t("invoicePdf.labels.taxId")}: ${partner.tax_number}`,
+            partnerCol,
+            partnerY,
+        );
         partnerY += 5;
     }
     if (partner?.registration_number) {
         doc.text(
-            `Reg. Com.: ${partner.registration_number}`,
+            `${i18n.t("invoicePdf.labels.registrationNumber")}: ${partner.registration_number}`,
             partnerCol,
             partnerY,
         );
@@ -178,14 +213,14 @@ export async function generateInvoicePdf({
     }
 
     doc.text(
-        `Status: ${(invoice?.status || "—").toUpperCase()}`,
+        `${i18n.t("invoicePdf.labels.status")}: ${(invoice?.status || "—").toUpperCase()}`,
         metaCol,
         metaY,
     );
     metaY += 5;
     if (invoice?.due_date) {
         doc.text(
-            `Scadență: ${formatDateShort(invoice.due_date)}`,
+            `${i18n.t("invoicePdf.labels.dueDate")}: ${formatDateShort(invoice.due_date)}`,
             metaCol,
             metaY,
         );
@@ -193,14 +228,18 @@ export async function generateInvoicePdf({
     }
     if (invoice?.paid_date) {
         doc.text(
-            `Plătită: ${formatDateShort(invoice.paid_date)}`,
+            `${i18n.t("invoicePdf.labels.paidDate")}: ${formatDateShort(invoice.paid_date)}`,
             metaCol,
             metaY,
         );
         metaY += 5;
     }
     if (invoice?.category) {
-        doc.text(`Categorie: ${invoice.category}`, metaCol, metaY);
+        doc.text(
+            `${i18n.t("invoicePdf.labels.category")}: ${invoice.category}`,
+            metaCol,
+            metaY,
+        );
         metaY += 5;
     }
 
@@ -221,7 +260,14 @@ export async function generateInvoicePdf({
 
     autoTable(doc, {
         startY: tableStartY,
-        head: [["Articol", "Cant.", "Preț", "Total"]],
+        head: [
+            [
+                i18n.t("invoicePdf.table.item"),
+                i18n.t("invoicePdf.table.qty"),
+                i18n.t("invoicePdf.table.price"),
+                i18n.t("invoicePdf.table.total"),
+            ],
+        ],
         body: rows,
         styles: {
             font: "Roboto-Regular",
@@ -253,24 +299,24 @@ export async function generateInvoicePdf({
     const summaryLabelX = 120;
     const summaryValueX = 196;
     doc.setFontSize(10);
-    doc.text("Subtotal", summaryLabelX, afterTableY);
+    doc.text(i18n.t("invoicePdf.summary.subtotal"), summaryLabelX, afterTableY);
     doc.text(formatCurrency(subtotal), summaryValueX, afterTableY, {
         align: "right",
     });
     afterTableY += 6;
-    doc.text("TVA", summaryLabelX, afterTableY);
+    doc.text(i18n.t("invoicePdf.summary.tax"), summaryLabelX, afterTableY);
     doc.text(formatCurrency(tax), summaryValueX, afterTableY, {
         align: "right",
     });
     afterTableY += 6;
-    doc.text("Discount", summaryLabelX, afterTableY);
+    doc.text(i18n.t("invoicePdf.summary.discount"), summaryLabelX, afterTableY);
     doc.text(formatCurrency(discount), summaryValueX, afterTableY, {
         align: "right",
     });
     afterTableY += 6;
     doc.setFont("Roboto-Bold", "normal");
     doc.setFontSize(11);
-    doc.text("Total", summaryLabelX, afterTableY);
+    doc.text(i18n.t("invoicePdf.summary.total"), summaryLabelX, afterTableY);
     doc.text(formatCurrency(total), summaryValueX, afterTableY, {
         align: "right",
     });

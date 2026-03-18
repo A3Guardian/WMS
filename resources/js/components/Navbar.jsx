@@ -1,11 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Power, Maximize, Minimize } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../features/auth/useAuth";
 
 export default function Navbar({ onMenuClick = () => {} }) {
     const { user, logout } = useAuth();
     const [isFullscreen, setIsFullscreen] = React.useState(false);
+    const { t, i18n } = useTranslation();
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -29,6 +31,17 @@ export default function Navbar({ onMenuClick = () => {} }) {
 
     const handleLogout = async () => {
         await logout();
+    };
+
+    const currentLang = (i18n.resolvedLanguage || i18n.language || "en")
+        .toLowerCase()
+        .startsWith("ro")
+        ? "ro"
+        : "en";
+
+    const toggleLanguage = async () => {
+        const next = currentLang === "ro" ? "en" : "ro";
+        await i18n.changeLanguage(next);
     };
 
     const avatarContent = user?.avatar_url ? (
@@ -75,22 +88,32 @@ export default function Navbar({ onMenuClick = () => {} }) {
                         <button
                             onClick={handleLogout}
                             className="p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                            aria-label="Logout"
+                            aria-label={t("navbar.logout")}
+                            title={t("navbar.logout")}
                         >
                             <Power className="w-5 h-5" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={toggleLanguage}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors border border-gray-200"
+                            aria-label={t("navbar.languageToggle")}
+                            title={t("navbar.languageToggle")}
+                        >
+                            {(currentLang === "ro" ? "EN" : "RO")}
                         </button>
                         <button
                             onClick={toggleFullscreen}
                             className="p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                             aria-label={
                                 isFullscreen
-                                    ? "Ieșire fullscreen"
-                                    : "Fullscreen"
+                                    ? t("navbar.exitFullscreen")
+                                    : t("navbar.fullscreen")
                             }
                             title={
                                 isFullscreen
-                                    ? "Ieșire fullscreen"
-                                    : "Fullscreen"
+                                    ? t("navbar.exitFullscreen")
+                                    : t("navbar.fullscreen")
                             }
                         >
                             {isFullscreen ? (
@@ -103,7 +126,7 @@ export default function Navbar({ onMenuClick = () => {} }) {
                             to="/profile"
                             className="flex items-center justify-center w-8 h-8 bg-blue-500 rounded-full text-white overflow-hidden hover:ring-2 hover:ring-blue-400 hover:ring-offset-2 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             title={user?.name || user?.email}
-                            aria-label="Profil"
+                            aria-label={t("navbar.profile")}
                         >
                             {avatarContent}
                         </Link>

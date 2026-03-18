@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import DataTable from "../../components/DataTable";
 import PageHeader from "../../components/PageHeader";
 import SearchableSelect from "../../components/SearchableSelect";
 import { formatCurrency, formatDate } from "../../utils/formatters";
-import { ORDER_STATUS_LABELS } from "../../utils/constants";
 import api from "../../utils/api";
 import OrderFormModal from "./OrderFormModal";
 import { Plus, Pencil, Trash2, Eye } from "lucide-react";
@@ -14,17 +14,18 @@ import { usePermissions } from "../../hooks/usePermissions";
 import ConfirmDialog from "../../components/ConfirmDialog";
 
 const STATUS_OPTIONS = [
-    { value: "", label: "Toate" },
-    { value: "pending", label: ORDER_STATUS_LABELS.pending },
-    { value: "processing", label: ORDER_STATUS_LABELS.processing },
-    { value: "completed", label: ORDER_STATUS_LABELS.completed },
-    { value: "cancelled", label: ORDER_STATUS_LABELS.cancelled },
+    { value: "", labelKey: "orders.filters.status.all" },
+    { value: "pending", labelKey: "orders.status.pending" },
+    { value: "processing", labelKey: "orders.status.processing" },
+    { value: "completed", labelKey: "orders.status.completed" },
+    { value: "cancelled", labelKey: "orders.status.cancelled" },
 ];
 
 export default function OrderList() {
     const navigate = useNavigate();
     const { hasRole } = usePermissions();
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
     const [perPage, setPerPage] = useState(20);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
@@ -72,12 +73,12 @@ export default function OrderList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["orders"] });
-            toast.success("Comandă ștearsă");
+            toast.success(t("orders.toast.deleted"));
             setDeletingId(null);
         },
         onError: (err) => {
             toast.error(
-                err.response?.data?.message || "Eroare la ștergerea comenzii",
+                err.response?.data?.message || t("orders.toast.deleteFailed"),
             );
             setDeletingId(null);
         },
@@ -126,37 +127,39 @@ export default function OrderList() {
     };
 
     const columns = [
-        { key: "order_number", label: "Nr. comandă" },
+        { key: "order_number", label: t("orders.table.orderNumber") },
         {
             key: "customer",
-            label: "Client",
+            label: t("orders.table.customer"),
             render: (_, row) =>
-                row.customer?.name || row.customer?.company_name || "-",
+                row.customer?.name ||
+                row.customer?.company_name ||
+                t("common.dash"),
         },
         {
             key: "status",
-            label: "Status",
-            render: (value) => ORDER_STATUS_LABELS[value] || value,
+            label: t("orders.table.status"),
+            render: (value) => t(`orders.status.${value}`, { defaultValue: value }),
         },
         {
             key: "total_amount",
-            label: "Total",
+            label: t("orders.table.total"),
             render: (value) => formatCurrency(value),
         },
         {
             key: "created_at",
-            label: "Data",
+            label: t("orders.table.date"),
             render: (value) => formatDate(value),
         },
         {
             key: "actions",
-            label: "Acțiuni",
+            label: t("orders.table.actions"),
             render: (_, row) => (
                 <div className="flex items-center gap-2">
                     <Link
                         to={`/orders/${row.id}`}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="Vizualizare"
+                        title={t("orders.actions.view")}
                     >
                         <Eye className="w-4 h-4" />
                     </Link>
@@ -164,7 +167,7 @@ export default function OrderList() {
                         type="button"
                         onClick={() => handleEdit(row)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="Editează"
+                        title={t("orders.actions.edit")}
                     >
                         <Pencil className="w-4 h-4" />
                     </button>
@@ -173,7 +176,7 @@ export default function OrderList() {
                         onClick={() => handleDeleteClick(row)}
                         disabled={deletingId === row.id}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
-                        title="Șterge"
+                        title={t("orders.actions.delete")}
                     >
                         <Trash2 className="w-4 h-4" />
                     </button>
@@ -186,16 +189,20 @@ export default function OrderList() {
 
     if (error) {
         const errorMessage =
-            error?.response?.data?.message || error?.message || "Eroare";
+            error?.response?.data?.message ||
+            error?.message ||
+            t("orders.errors.generic");
         const isPermissionError = error?.response?.status === 403;
         return (
             <div>
-                <PageHeader title="Comenzi" />
+                <PageHeader title={t("orders.title")} />
                 <div
                     className={`p-4 rounded ${isPermissionError ? "bg-yellow-50 text-yellow-800" : "bg-red-50 text-red-800"}`}
                 >
                     <p className="font-semibold">
-                        {isPermissionError ? "Acces interzis" : "Eroare"}
+                        {isPermissionError
+                            ? t("orders.errors.permissionDenied")
+                            : t("orders.errors.error")}
                     </p>
                     <p>{errorMessage}</p>
                 </div>
@@ -206,7 +213,7 @@ export default function OrderList() {
     return (
         <div>
             <PageHeader
-                title="Comenzi"
+                title={t("orders.title")}
                 actions={
                     <button
                         type="button"
@@ -214,7 +221,7 @@ export default function OrderList() {
                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     >
                         <Plus className="w-4 h-4" />
-                        Comandă nouă
+                        {t("orders.actions.new")}
                     </button>
                 }
             />
@@ -223,7 +230,7 @@ export default function OrderList() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Data de la
+                            {t("orders.filters.dateFrom")}
                         </label>
                         <input
                             type="date"
@@ -237,7 +244,7 @@ export default function OrderList() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Data până la
+                            {t("orders.filters.dateTo")}
                         </label>
                         <input
                             type="date"
@@ -251,7 +258,7 @@ export default function OrderList() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Client
+                            {t("orders.filters.customer")}
                         </label>
                         <SearchableSelect
                             value={customerFilter}
@@ -263,13 +270,13 @@ export default function OrderList() {
                             displayValue={(opt) =>
                                 opt?.company_name || opt?.name || opt?.email
                             }
-                            placeholder="Toți clienții"
+                            placeholder={t("orders.filters.customerAll")}
                             cacheKey="orders-filter-customers"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Status
+                            {t("orders.filters.status.label")}
                         </label>
                         <SearchableSelect
                             value={statusFilter}
@@ -277,8 +284,11 @@ export default function OrderList() {
                                 setStatusFilter(v || "");
                                 setPage(1);
                             }}
-                            options={STATUS_OPTIONS}
-                            placeholder="Toate"
+                            options={STATUS_OPTIONS.map((o) => ({
+                                value: o.value,
+                                label: t(o.labelKey),
+                            }))}
+                            placeholder={t("orders.filters.status.all")}
                             cacheKey="orders-filter-status"
                         />
                     </div>
@@ -301,8 +311,8 @@ export default function OrderList() {
                         setSearch(v);
                         setPage(1);
                     }}
-                    searchPlaceholder="Caută nr. comandă sau client..."
-                    totalRecordName="comenzi"
+                    searchPlaceholder={t("orders.searchPlaceholder")}
+                    totalRecordName={t("orders.totalRecordName")}
                 />
             </div>
             <OrderFormModal
@@ -313,14 +323,16 @@ export default function OrderList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Ștergi comanda?"
+                title={t("orders.confirmDelete.title")}
                 description={
                     orderToDelete
-                        ? `Sigur vrei să ștergi comanda ${orderToDelete.order_number || orderToDelete.id}?`
+                        ? t("orders.confirmDelete.description", {
+                              order: orderToDelete.order_number || orderToDelete.id,
+                          })
                         : ""
                 }
-                confirmLabel="Da, șterge"
-                cancelLabel="Anulează"
+                confirmLabel={t("orders.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

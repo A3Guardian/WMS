@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import SearchableSelect from "../../components/SearchableSelect";
 
@@ -11,6 +12,7 @@ export default function InventoryFormModal({
     inventory = null,
 }) {
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
     const isEdit = !!inventory;
     const [formData, setFormData] = useState({
         product_id: "",
@@ -63,12 +65,12 @@ export default function InventoryFormModal({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["inventory"] });
             queryClient.invalidateQueries({ queryKey: ["products"] });
-            toast.success("Inventory created");
+            toast.success(t("inventory.toast.created"));
             onClose();
         },
         onError: (err) => {
             toast.error(
-                err.response?.data?.message || "Failed to create inventory"
+                err.response?.data?.message || t("inventory.toast.createFailed")
             );
         },
     });
@@ -81,12 +83,12 @@ export default function InventoryFormModal({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["inventory"] });
             queryClient.invalidateQueries({ queryKey: ["products"] });
-            toast.success("Inventory updated");
+            toast.success(t("inventory.toast.updated"));
             onClose();
         },
         onError: (err) => {
             toast.error(
-                err.response?.data?.message || "Failed to update inventory"
+                err.response?.data?.message || t("inventory.toast.updateFailed")
             );
         },
     });
@@ -122,13 +124,15 @@ export default function InventoryFormModal({
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
                 <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-md z-50">
                     <Dialog.Title className="text-xl font-bold mb-4">
-                        {isEdit ? "Edit inventory" : "Add inventory"}
+                        {isEdit
+                            ? t("inventory.form.editTitle")
+                            : t("inventory.form.createTitle")}
                     </Dialog.Title>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {!isEdit && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Product *
+                                    {t("inventory.form.product")} *
                                 </label>
                                 <SearchableSelect
                                     value={formData.product_id || ""}
@@ -140,7 +144,7 @@ export default function InventoryFormModal({
                                     }
                                     fetchOptions={fetchProducts}
                                     displayValue={(p) => (p ? `${p.name} (${p.sku || ""})` : "")}
-                                    placeholder="Select product"
+                                    placeholder={t("inventory.form.selectProduct")}
                                     cacheKey="inventory-products"
                                 />
                             </div>
@@ -148,17 +152,17 @@ export default function InventoryFormModal({
                         {isEdit && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Product
+                                    {t("inventory.form.product")}
                                 </label>
                                 <p className="py-2 text-gray-900">
-                                    {inventory.product?.name ?? "-"}
+                                    {inventory.product?.name ?? t("common.dash")}
                                 </p>
                             </div>
                         )}
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Deposit *
+                                {t("inventory.form.deposit")} *
                             </label>
                             <SearchableSelect
                                 value={formData.deposit_id || ""}
@@ -171,14 +175,14 @@ export default function InventoryFormModal({
                                 }
                                 fetchOptions={fetchDeposits}
                                 displayValue={(d) => d?.name}
-                                placeholder="Select deposit"
+                                placeholder={t("inventory.form.selectDeposit")}
                                 cacheKey="inventory-deposits"
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Shelf
+                                {t("inventory.form.shelf")}
                             </label>
                             <SearchableSelect
                                 value={formData.shelf_id || ""}
@@ -190,14 +194,14 @@ export default function InventoryFormModal({
                                 }
                                 options={shelves.map((s) => ({ id: s.id, name: s.name }))}
                                 displayValue={(s) => s?.name}
-                                placeholder="Select shelf"
+                                placeholder={t("inventory.form.selectShelf")}
                                 disabled={!formData.deposit_id}
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Quantity *
+                                {t("inventory.form.quantity")} *
                             </label>
                             <input
                                 type="number"
@@ -216,7 +220,7 @@ export default function InventoryFormModal({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Reorder level
+                                {t("inventory.form.reorderLevel")}
                             </label>
                             <input
                                 type="number"
@@ -239,7 +243,7 @@ export default function InventoryFormModal({
                                     type="button"
                                     className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -252,8 +256,8 @@ export default function InventoryFormModal({
                             >
                                 {createMutation.isPending ||
                                 updateMutation.isPending
-                                    ? "Saving..."
-                                    : "Save"}
+                                    ? t("common.saving")
+                                    : t("common.save")}
                             </button>
                         </div>
                     </form>

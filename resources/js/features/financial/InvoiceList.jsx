@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Eye, Pencil, Trash2, Plus, Download } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
@@ -19,6 +20,7 @@ export default function InvoiceList() {
     const { id: routeInvoiceId } = useParams();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [typeFilter, setTypeFilter] = useState("");
@@ -104,12 +106,12 @@ export default function InvoiceList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["invoices"] });
-            toast.success("Invoice deleted successfully");
+            toast.success(t("invoices.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete invoice", {
+            toast.error(t("invoices.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -145,10 +147,10 @@ export default function InvoiceList() {
                 company: settings?.company ?? {},
                 logoUrl: settings?.logo_url ?? null,
             });
-            toast.success("Invoice downloaded");
+            toast.success(t("invoices.toast.downloaded"));
         } catch (e) {
             toast.error(
-                e.response?.data?.message || "Failed to download invoice",
+                e.response?.data?.message || t("invoices.toast.downloadFailed"),
             );
         }
     };
@@ -181,73 +183,77 @@ export default function InvoiceList() {
 
     const columns = [
         {
-            header: "Invoice #",
+            header: t("invoices.list.table.invoiceNumber"),
             accessor: "invoice_number",
         },
         {
-            header: "Partner",
+            header: t("invoices.list.table.partner"),
             accessor: (row) => {
                 if (row?.type === "income") {
                     return (
                         row.customer?.company_name ||
                         row.customer?.name ||
-                        "N/A"
+                        t("common.na")
                     );
                 }
                 if (row?.type === "expense") {
                     return (
                         row.supplier?.company_name ||
                         row.supplier?.name ||
-                        "N/A"
+                        t("common.na")
                     );
                 }
-                return "N/A";
+                return t("common.na");
             },
         },
         {
-            header: "Type",
+            header: t("invoices.list.table.type"),
             accessor: "type",
             cell: (value) => (
                 <span
                     className={`px-2 py-1 text-xs rounded-full ${getTypeColor(value)}`}
                 >
-                    {value.toUpperCase()}
+                    {t(`invoices.type.${value}`, {
+                        defaultValue: value.toUpperCase(),
+                    })}
                 </span>
             ),
         },
         {
-            header: "Status",
+            header: t("invoices.list.table.status"),
             accessor: "status",
             cell: (value) => (
                 <span
                     className={`px-2 py-1 text-xs rounded-full ${getStatusColor(value)}`}
                 >
-                    {value.toUpperCase()}
+                    {t(`invoices.status.${value}`, {
+                        defaultValue: value.toUpperCase(),
+                    })}
                 </span>
             ),
         },
         {
-            header: "Issue Date",
+            header: t("invoices.list.table.issueDate"),
             accessor: "issue_date",
             cell: (value) => formatDate(value),
         },
         {
-            header: "Due Date",
+            header: t("invoices.list.table.dueDate"),
             accessor: "due_date",
-            cell: (value) => (value ? formatDate(value) : "N/A"),
+            cell: (value) => (value ? formatDate(value) : t("common.na")),
         },
         {
-            header: "Total Amount",
+            header: t("invoices.list.table.totalAmount"),
             accessor: "total_amount",
             cell: (value) => formatCurrency(value),
         },
         {
-            header: "Category",
+            header: t("invoices.list.table.category"),
             accessor: "category",
-            cell: (value) => value || "N/A",
+            cell: (value) => value || t("common.na"),
         },
         {
-            header: "Actions",
+            header: t("invoices.list.table.actions"),
             accessor: "id",
             cell: (id, row) => (
                 <div className="flex items-center justify-end gap-1">
@@ -255,7 +261,7 @@ export default function InvoiceList() {
                         type="button"
                         onClick={() => navigate(`/invoices/${id}`)}
                         className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="View invoice"
+                        title={t("invoices.actions.view")}
                     >
                         <Eye className="w-4 h-4" />
                     </button>
@@ -263,7 +269,7 @@ export default function InvoiceList() {
                         type="button"
                         onClick={() => handleDownloadInvoice(id)}
                         className="p-2 text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 rounded transition-colors"
-                        title="Download invoice"
+                        title={t("invoices.actions.download")}
                     >
                         <Download className="w-4 h-4" />
                     </button>
@@ -272,7 +278,7 @@ export default function InvoiceList() {
                             type="button"
                             onClick={() => handleOpenEdit(row)}
                             className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
-                            title="Edit invoice"
+                            title={t("invoices.actions.edit")}
                             disabled={row?.status !== "draft"}
                         >
                             <Pencil className="w-4 h-4" />
@@ -283,7 +289,7 @@ export default function InvoiceList() {
                             type="button"
                             onClick={() => handleDeleteClick(row)}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Delete invoice"
+                            title={t("invoices.actions.delete")}
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -296,7 +302,7 @@ export default function InvoiceList() {
     if (error) {
         return (
             <div className="text-red-500 p-4">
-                Error loading invoices: {error.message}
+                {t("invoices.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -304,7 +310,7 @@ export default function InvoiceList() {
     return (
         <div>
             <PageHeader
-                title="Invoices"
+                title={t("invoices.list.title")}
                 actions={
                     hasPermission("create invoices") && (
                         <button
@@ -313,7 +319,7 @@ export default function InvoiceList() {
                             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
-                            Add Invoice
+                            {t("invoices.actions.add")}
                         </button>
                     )
                 }
@@ -323,7 +329,7 @@ export default function InvoiceList() {
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Type
+                            {t("invoices.filters.type")}
                         </label>
                         <SearchableSelect
                             value={typeFilter}
@@ -332,16 +338,25 @@ export default function InvoiceList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Types" },
-                                { value: "income", label: "Income" },
-                                { value: "expense", label: "Expense" },
+                                {
+                                    value: "",
+                                    label: t("invoices.filters.allTypes"),
+                                },
+                                {
+                                    value: "income",
+                                    label: t("invoices.type.income"),
+                                },
+                                {
+                                    value: "expense",
+                                    label: t("invoices.type.expense"),
+                                },
                             ]}
-                            placeholder="All Types"
+                            placeholder={t("invoices.filters.allTypes")}
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Status
+                            {t("invoices.filters.status")}
                         </label>
                         <SearchableSelect
                             value={statusFilter}
@@ -350,19 +365,37 @@ export default function InvoiceList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Statuses" },
-                                { value: "draft", label: "Draft" },
-                                { value: "sent", label: "Sent" },
-                                { value: "paid", label: "Paid" },
-                                { value: "overdue", label: "Overdue" },
-                                { value: "cancelled", label: "Cancelled" },
+                                {
+                                    value: "",
+                                    label: t("invoices.filters.allStatuses"),
+                                },
+                                {
+                                    value: "draft",
+                                    label: t("invoices.status.draft"),
+                                },
+                                {
+                                    value: "sent",
+                                    label: t("invoices.status.sent"),
+                                },
+                                {
+                                    value: "paid",
+                                    label: t("invoices.status.paid"),
+                                },
+                                {
+                                    value: "overdue",
+                                    label: t("invoices.status.overdue"),
+                                },
+                                {
+                                    value: "cancelled",
+                                    label: t("invoices.status.cancelled"),
+                                },
                             ]}
-                            placeholder="All Statuses"
+                            placeholder={t("invoices.filters.allStatuses")}
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Supplier
+                            {t("invoices.filters.supplier")}
                         </label>
                         <SearchableSelect
                             value={supplierFilter}
@@ -370,15 +403,19 @@ export default function InvoiceList() {
                                 setSupplierFilter(v || "");
                                 setPage(1);
                             }}
-                            fetchOptions={(params) => api.get("/suppliers?" + params).then((r) => r.data)}
+                            fetchOptions={(params) =>
+                                api
+                                    .get("/suppliers?" + params)
+                                    .then((r) => r.data)
+                            }
                             displayValue={(sup) => sup?.name}
-                            placeholder="All Suppliers"
+                            placeholder={t("invoices.filters.allSuppliers")}
                             cacheKey="invoice-list-suppliers"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Category
+                            {t("invoices.filters.category")}
                         </label>
                         <input
                             type="text"
@@ -387,13 +424,13 @@ export default function InvoiceList() {
                                 setCategoryFilter(e.target.value);
                                 setPage(1);
                             }}
-                            placeholder="Category"
+                            placeholder={t("invoices.filters.categoryPlaceholder")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date From
+                            {t("invoices.filters.dateFrom")}
                         </label>
                         <input
                             type="date"
@@ -407,7 +444,7 @@ export default function InvoiceList() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date To
+                            {t("invoices.filters.dateTo")}
                         </label>
                         <input
                             type="date"
@@ -442,21 +479,23 @@ export default function InvoiceList() {
                     }
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search invoices..."
-                    totalRecordName="invoices"
+                    searchPlaceholder={t("invoices.list.searchPlaceholder")}
+                    totalRecordName={t("invoices.list.totalRecordName")}
                 />
             </div>
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete invoice?"
+                title={t("invoices.confirmDelete.title")}
                 description={
                     invoiceToDelete
-                        ? `Are you sure you want to delete invoice ${invoiceToDelete.invoice_number}?`
+                        ? t("invoices.confirmDelete.description", {
+                              number: invoiceToDelete.invoice_number,
+                          })
                         : ""
                 }
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                confirmLabel={t("invoices.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
             <InvoiceFormModal

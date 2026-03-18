@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -16,6 +17,7 @@ export default function SalaryFormModal({
 }) {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
 
     const isEdit = mode === "edit";
 
@@ -55,19 +57,21 @@ export default function SalaryFormModal({
 
             if (isEdit) {
                 await api.put(`/salaries/${salaryId}`, submitData);
-                toast.success("Salary updated successfully");
+                toast.success(t("salaries.toast.updated"));
             } else {
                 await api.post("/salaries", submitData);
-                toast.success("Salary created successfully");
+                toast.success(t("salaries.toast.created"));
             }
 
             queryClient.invalidateQueries({ queryKey: ["salaries"] });
             onClose();
         } catch (error) {
             const errorMessage =
-                error.response?.data?.message || "An error occurred";
+                error.response?.data?.message || t("common.genericError");
             toast.error(
-                isEdit ? "Failed to update salary" : "Failed to create salary",
+                isEdit
+                    ? t("salaries.toast.updateFailed")
+                    : t("salaries.toast.createFailed"),
                 {
                     description: errorMessage,
                 },
@@ -104,7 +108,9 @@ export default function SalaryFormModal({
         return null;
     }
 
-    const title = isEdit ? "Edit Salary" : "Create Salary";
+    const title = isEdit
+        ? t("salaries.modal.editTitle")
+        : t("salaries.modal.createTitle");
 
     return (
         <Dialog.Root
@@ -122,7 +128,7 @@ export default function SalaryFormModal({
                         {title}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Manage salary details for the selected employee.
+                        {t("salaries.modal.description")}
                     </Dialog.Description>
 
                     <form
@@ -134,7 +140,8 @@ export default function SalaryFormModal({
                                 htmlFor="employee_id"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Employee <span className="text-red-500">*</span>
+                                {t("salaries.fields.employee")}{" "}
+                                <span className="text-red-500">*</span>
                             </label>
                             <SearchableSelect
                                 cacheKey="salary-employee-modal"
@@ -152,11 +159,11 @@ export default function SalaryFormModal({
                                     return response.data;
                                 }}
                                 searchParam="search"
-                                placeholder="Select Employee"
+                                placeholder={t("salaries.placeholders.selectEmployee")}
                                 displayValue={(emp) =>
-                                    `${emp.employee_code} - ${emp.user?.name || "N/A"}`
+                                    `${emp.employee_code} - ${emp.user?.name || t("common.na")}`
                                 }
-                                emptyMessage="No employees found."
+                                emptyMessage={t("salaries.empty.employees")}
                             />
                             {errors.employee_id && (
                                 <p className="mt-1 text-sm text-red-600">
@@ -170,7 +177,8 @@ export default function SalaryFormModal({
                                 htmlFor="amount"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Amount <span className="text-red-500">*</span>
+                                {t("salaries.fields.amount")}{" "}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="number"
@@ -195,7 +203,8 @@ export default function SalaryFormModal({
                                 htmlFor="type"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Type <span className="text-red-500">*</span>
+                                {t("salaries.fields.type")}{" "}
+                                <span className="text-red-500">*</span>
                             </label>
                             <SearchableSelect
                                 value={values.type}
@@ -205,9 +214,14 @@ export default function SalaryFormModal({
                                     })
                                 }
                                 options={Object.entries(SALARY_TYPE_LABELS).map(
-                                    ([value, label]) => ({ value, label }),
+                                    ([value, label]) => ({
+                                        value,
+                                        label: t(`salaries.type.${value}`, {
+                                            defaultValue: label,
+                                        }),
+                                    }),
                                 )}
-                                placeholder="Select type"
+                                placeholder={t("salaries.placeholders.selectType")}
                             />
                             {errors.type && (
                                 <p className="mt-1 text-sm text-red-600">
@@ -221,7 +235,7 @@ export default function SalaryFormModal({
                                 htmlFor="effective_date"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Effective Date{" "}
+                                {t("salaries.fields.effectiveDate")}{" "}
                                 <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -245,7 +259,7 @@ export default function SalaryFormModal({
                                 htmlFor="end_date"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                End Date
+                                {t("salaries.fields.endDate")}
                             </label>
                             <input
                                 type="date"
@@ -267,7 +281,7 @@ export default function SalaryFormModal({
                                 htmlFor="notes"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Notes
+                                {t("salaries.fields.notes")}
                             </label>
                             <textarea
                                 id="notes"
@@ -297,7 +311,7 @@ export default function SalaryFormModal({
                                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                                     onClick={onClose}
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -306,10 +320,10 @@ export default function SalaryFormModal({
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting
-                                    ? "Saving..."
+                                    ? t("common.saving")
                                     : isEdit
-                                      ? "Update Salary"
-                                      : "Create Salary"}
+                                      ? t("salaries.actions.update")
+                                      : t("salaries.actions.create")}
                             </button>
                         </div>
                     </form>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -12,6 +13,7 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 export default function LeaveTypeList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [search, setSearch] = useState("");
@@ -44,12 +46,12 @@ export default function LeaveTypeList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["leave-types"] });
-            toast.success("Leave type deleted successfully");
+            toast.success(t("leaveTypes.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete leave type", {
+            toast.error(t("leaveTypes.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -92,41 +94,43 @@ export default function LeaveTypeList() {
 
     const columns = [
         {
-            header: "Name",
+            header: t("leaveTypes.list.table.name"),
             accessor: "name",
         },
         {
-            header: "Max Days/Year",
+            header: t("leaveTypes.list.table.maxDaysPerYear"),
             accessor: "max_days_per_year",
         },
         {
-            header: "Carry Forward",
+            header: t("leaveTypes.list.table.carryForward"),
             accessor: "carry_forward",
-            cell: (value) => (value ? "Yes" : "No"),
+            cell: (value) => (value ? t("common.yes") : t("common.no")),
         },
         {
-            header: "Status",
+            header: t("leaveTypes.list.table.status"),
             accessor: "is_active",
             cell: (value) => (
                 <span
                     className={`px-2 py-1 text-xs rounded-full ${value ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
                 >
-                    {value ? "Active" : "Inactive"}
+                    {value
+                        ? t("leaveTypes.status.active")
+                        : t("leaveTypes.status.inactive")}
                 </span>
             ),
         },
         {
-            header: "Description",
+            header: t("leaveTypes.list.table.description"),
             accessor: "description",
             cell: (value) =>
                 value
                     ? value.length > 50
                         ? value.substring(0, 50) + "..."
                         : value
-                    : "N/A",
+                    : t("common.na"),
         },
         {
-            header: "Actions",
+            header: t("leaveTypes.list.table.actions"),
             accessor: "id",
             align: "center",
             cell: (id, row) => (
@@ -135,7 +139,7 @@ export default function LeaveTypeList() {
                         type="button"
                         onClick={() => handleOpenEdit(row)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="Edit"
+                        title={t("leaveTypes.actions.edit")}
                         disabled={!hasPermission("manage leave types")}
                     >
                         <Pencil className="w-4 h-4" />
@@ -144,7 +148,7 @@ export default function LeaveTypeList() {
                         type="button"
                         onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
-                        title="Delete"
+                        title={t("leaveTypes.actions.delete")}
                         disabled={!hasPermission("manage leave types")}
                     >
                         <Trash2 className="w-4 h-4" />
@@ -157,7 +161,7 @@ export default function LeaveTypeList() {
     if (error) {
         return (
             <div className="text-red-500 p-4">
-                Error loading leave types: {error.message}
+                {t("leaveTypes.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -165,7 +169,7 @@ export default function LeaveTypeList() {
     return (
         <div>
             <PageHeader
-                title="Leave Types"
+                title={t("leaveTypes.list.title")}
                 actions={
                     hasPermission("manage leave types") && (
                         <button
@@ -174,7 +178,7 @@ export default function LeaveTypeList() {
                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
                             <Plus className="w-4 h-4" />
-                            Add Leave Type
+                            {t("leaveTypes.actions.create")}
                         </button>
                     )
                 }
@@ -200,8 +204,8 @@ export default function LeaveTypeList() {
                     }
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search leave types..."
-                    totalRecordName="leave types"
+                    searchPlaceholder={t("leaveTypes.list.searchPlaceholder")}
+                    totalRecordName={t("leaveTypes.list.totalRecordName")}
                 />
             </div>
             <LeaveTypeFormModal
@@ -213,14 +217,16 @@ export default function LeaveTypeList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete leave type?"
+                title={t("leaveTypes.confirmDelete.title")}
                 description={
                     leaveTypeToDelete
-                        ? `Are you sure you want to delete leave type "${leaveTypeToDelete.name}"?`
+                        ? t("leaveTypes.confirmDelete.description", {
+                              name: leaveTypeToDelete.name,
+                          })
                         : ""
                 }
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                confirmLabel={t("leaveTypes.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

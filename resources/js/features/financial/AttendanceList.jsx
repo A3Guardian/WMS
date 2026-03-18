@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import SearchableSelect from "../../components/SearchableSelect";
@@ -15,6 +16,7 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 export default function AttendanceList() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [employeeFilter, setEmployeeFilter] = useState("");
@@ -58,12 +60,12 @@ export default function AttendanceList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["attendance"] });
-            toast.success("Attendance record deleted successfully");
+            toast.success(t("attendance.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete attendance record", {
+            toast.error(t("attendance.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
     });
@@ -111,39 +113,39 @@ export default function AttendanceList() {
 
     const columns = [
         {
-            header: "Employee",
+            header: t("attendance.list.table.employee"),
             accessor: (row) =>
                 row.employee?.user?.name ||
                 row.employee?.employee_code ||
-                "N/A",
+                t("common.na"),
         },
         {
-            header: "Date",
+            header: t("attendance.list.table.date"),
             accessor: "date",
             cell: (value) => formatDate(value),
         },
         {
-            header: "Clock In",
+            header: t("attendance.list.table.clockIn"),
             accessor: "clock_in",
-            cell: (value) => (value ? formatDateTime(value) : "N/A"),
+            cell: (value) => (value ? formatDateTime(value) : t("common.na")),
         },
         {
-            header: "Clock Out",
+            header: t("attendance.list.table.clockOut"),
             accessor: "clock_out",
-            cell: (value) => (value ? formatDateTime(value) : "N/A"),
+            cell: (value) => (value ? formatDateTime(value) : t("common.na")),
         },
         {
-            header: "Total Hours",
+            header: t("attendance.list.table.totalHours"),
             accessor: "total_hours",
-            cell: (value) => (value ? `${value}h` : "N/A"),
+            cell: (value) => (value ? `${value}h` : t("common.na")),
         },
         {
-            header: "Overtime",
+            header: t("attendance.list.table.overtime"),
             accessor: "overtime_hours",
-            cell: (value) => (value > 0 ? `${value}h` : "N/A"),
+            cell: (value) => (value > 0 ? `${value}h` : t("common.na")),
         },
         {
-            header: "Status",
+            header: t("attendance.list.table.status"),
             accessor: "status",
             cell: (value) => {
                 const colors = {
@@ -157,13 +159,15 @@ export default function AttendanceList() {
                     <span
                         className={`px-2 py-1 text-xs rounded-full ${colors[value] || "bg-gray-100 text-gray-800"}`}
                     >
-                        {ATTENDANCE_STATUS_LABELS[value] || value}
+                        {t(`attendance.status.${value}`, {
+                            defaultValue: ATTENDANCE_STATUS_LABELS[value] || value,
+                        })}
                     </span>
                 );
             },
         },
         {
-            header: "Actions",
+            header: t("attendance.list.table.actions"),
             accessor: "id",
             align: "center",
             cell: (id, row) => (
@@ -172,7 +176,7 @@ export default function AttendanceList() {
                         type="button"
                         onClick={() => handleOpenEdit(row)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="Edit"
+                        title={t("attendance.actions.edit")}
                         disabled={!hasPermission("manage attendance")}
                     >
                         <Pencil className="w-4 h-4" />
@@ -181,7 +185,7 @@ export default function AttendanceList() {
                         type="button"
                         onClick={() => handleDeleteClick(row)}
                         className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
-                        title="Delete"
+                        title={t("attendance.actions.delete")}
                         disabled={!hasPermission("manage attendance")}
                     >
                         <Trash2 className="w-4 h-4" />
@@ -194,7 +198,7 @@ export default function AttendanceList() {
     if (error) {
         return (
             <div className="text-red-500 p-4">
-                Error loading attendance: {error.message}
+                {t("attendance.errors.loadFailed")}: {error.message}
             </div>
         );
     }
@@ -202,7 +206,7 @@ export default function AttendanceList() {
     return (
         <div>
             <PageHeader
-                title="Attendance"
+                title={t("attendance.list.title")}
                 actions={
                     hasPermission("manage attendance") && (
                         <button
@@ -211,7 +215,7 @@ export default function AttendanceList() {
                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         >
                             <Plus className="w-4 h-4" />
-                            Add Attendance
+                            {t("attendance.actions.create")}
                         </button>
                     )
                 }
@@ -221,7 +225,7 @@ export default function AttendanceList() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Employee
+                            {t("attendance.filters.employee")}
                         </label>
                         <SearchableSelect
                             value={employeeFilter}
@@ -229,15 +233,19 @@ export default function AttendanceList() {
                                 setEmployeeFilter(v || "");
                                 setPage(1);
                             }}
-                            fetchOptions={(params) => api.get("/employees?" + params).then((r) => r.data)}
-                            displayValue={(emp) => `${emp.employee_code} - ${emp.user?.name || "N/A"}`}
-                            placeholder="All Employees"
+                            fetchOptions={(params) =>
+                                api.get("/employees?" + params).then((r) => r.data)
+                            }
+                            displayValue={(emp) =>
+                                `${emp.employee_code} - ${emp.user?.name || t("common.na")}`
+                            }
+                            placeholder={t("attendance.filters.allEmployees")}
                             cacheKey="attendance-list-employees"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Status
+                            {t("attendance.filters.status")}
                         </label>
                         <SearchableSelect
                             value={statusFilter}
@@ -246,15 +254,25 @@ export default function AttendanceList() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "", label: "All Statuses" },
-                                ...Object.entries(ATTENDANCE_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+                                {
+                                    value: "",
+                                    label: t("attendance.filters.allStatuses"),
+                                },
+                                ...Object.entries(ATTENDANCE_STATUS_LABELS).map(
+                                    ([value, label]) => ({
+                                        value,
+                                        label: t(`attendance.status.${value}`, {
+                                            defaultValue: label,
+                                        }),
+                                    }),
+                                ),
                             ]}
-                            placeholder="All Statuses"
+                            placeholder={t("attendance.filters.allStatuses")}
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date From
+                            {t("attendance.filters.dateFrom")}
                         </label>
                         <input
                             type="date"
@@ -268,7 +286,7 @@ export default function AttendanceList() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date To
+                            {t("attendance.filters.dateTo")}
                         </label>
                         <input
                             type="date"
@@ -304,8 +322,8 @@ export default function AttendanceList() {
                     }
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search attendance..."
-                    totalRecordName="attendance records"
+                    searchPlaceholder={t("attendance.list.searchPlaceholder")}
+                    totalRecordName={t("attendance.list.totalRecordName")}
                 />
             </div>
             <AttendanceFormModal
@@ -317,10 +335,10 @@ export default function AttendanceList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete attendance record?"
-                description="Are you sure you want to delete this attendance record?"
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                title={t("attendance.confirmDelete.title")}
+                description={t("attendance.confirmDelete.description")}
+                confirmLabel={t("attendance.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

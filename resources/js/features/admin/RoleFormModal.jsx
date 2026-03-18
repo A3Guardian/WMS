@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -14,6 +15,7 @@ export default function RoleFormModal({
 }) {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const isEdit = mode === "edit";
 
     const { data: permissionsData } = useQuery({
@@ -49,19 +51,21 @@ export default function RoleFormModal({
 
                 if (isEdit) {
                     await api.put(`/admin/roles/${roleId}`, submitData);
-                    toast.success("Role updated successfully");
+                    toast.success(t("roles.toast.updated"));
                 } else {
                     await api.post("/admin/roles", submitData);
-                    toast.success("Role created successfully");
+                    toast.success(t("roles.toast.created"));
                 }
 
                 queryClient.invalidateQueries({ queryKey: ["roles"] });
                 onClose();
             } catch (error) {
                 const errorMessage =
-                    error.response?.data?.message || "An error occurred";
+                    error.response?.data?.message || t("common.genericError");
                 toast.error(
-                    isEdit ? "Failed to update role" : "Failed to create role",
+                    isEdit
+                        ? t("roles.toast.updateFailed")
+                        : t("roles.toast.createFailed"),
                     { description: errorMessage },
                 );
                 throw error;
@@ -98,7 +102,7 @@ export default function RoleFormModal({
         setValues({ ...values, permissions: next });
     };
 
-    const title = isEdit ? "Edit Role" : "Create Role";
+    const title = isEdit ? t("roles.modal.editTitle") : t("roles.modal.createTitle");
 
     return (
         <Dialog.Root
@@ -114,13 +118,14 @@ export default function RoleFormModal({
                         {title}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Manage role name and its permissions.
+                        {t("roles.modal.description")}
                     </Dialog.Description>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Role name <span className="text-red-500">*</span>
+                                {t("roles.fields.name")}{" "}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
@@ -140,12 +145,12 @@ export default function RoleFormModal({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Permissions
+                                {t("roles.fields.permissions")}
                             </label>
                             <div className="space-y-2 border border-gray-300 rounded-md p-4 max-h-72 overflow-y-auto">
                                 {permissions.length === 0 ? (
                                     <p className="text-sm text-gray-500">
-                                        No permissions available
+                                        {t("roles.empty.permissions")}
                                     </p>
                                 ) : (
                                     permissions
@@ -194,14 +199,16 @@ export default function RoleFormModal({
                                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
                                 disabled={isSubmitting}
                             >
-                                Cancel
+                                {t("common.cancel")}
                             </button>
                             <button
                                 type="submit"
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                                 disabled={isSubmitting}
                             >
-                                {isEdit ? "Save changes" : "Create role"}
+                                {isEdit
+                                    ? t("roles.actions.saveChanges")
+                                    : t("roles.actions.create")}
                             </button>
                         </div>
                     </form>

@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import SearchableSelect from "../../components/SearchableSelect";
 import { Plus, Trash2 } from "lucide-react";
-import { ORDER_STATUS_LABELS } from "../../utils/constants";
 
 const emptyItemRow = () => ({
     product_id: "",
@@ -14,14 +14,15 @@ const emptyItemRow = () => ({
 });
 
 const STATUS_OPTIONS = [
-    { value: "pending", label: ORDER_STATUS_LABELS.pending },
-    { value: "processing", label: ORDER_STATUS_LABELS.processing },
-    { value: "completed", label: ORDER_STATUS_LABELS.completed },
-    { value: "cancelled", label: ORDER_STATUS_LABELS.cancelled },
+    { value: "pending", labelKey: "orders.status.pending" },
+    { value: "processing", labelKey: "orders.status.processing" },
+    { value: "completed", labelKey: "orders.status.completed" },
+    { value: "cancelled", labelKey: "orders.status.cancelled" },
 ];
 
 export default function OrderFormModal({ isOpen, onClose, order = null }) {
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         customer_id: "",
         status: "pending",
@@ -41,12 +42,12 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["orders"] });
-            toast.success("Comandă creată cu succes");
+            toast.success(t("orders.toast.created"));
             handleClose();
         },
         onError: (err) => {
             toast.error(
-                err.response?.data?.message || "Eroare la crearea comenzii"
+                err.response?.data?.message || t("orders.toast.createFailed"),
             );
         },
     });
@@ -58,12 +59,12 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["orders"] });
-            toast.success("Comandă actualizată cu succes");
+            toast.success(t("orders.toast.updated"));
             handleClose();
         },
         onError: (err) => {
             toast.error(
-                err.response?.data?.message || "Eroare la actualizarea comenzii"
+                err.response?.data?.message || t("orders.toast.updateFailed"),
             );
         },
     });
@@ -141,7 +142,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
             }));
 
         if (itemsPayload.length === 0) {
-            toast.error("Adaugă cel puțin un produs cu cantitate și preț.");
+            toast.error(t("orders.form.itemsRequired"));
             return;
         }
 
@@ -174,20 +175,23 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
                 <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl z-50">
                     <Dialog.Title className="text-2xl font-bold mb-1">
-                        {order ? "Editare comandă" : "Comandă nouă"}
+                        {order
+                            ? t("orders.form.editTitle")
+                            : t("orders.form.createTitle")}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Completează detaliile comenzii și produsele asociate acesteia.
+                        {t("orders.form.description")}
                     </Dialog.Description>
                     {isEdit && order?.order_number && (
                         <p className="text-sm text-gray-500 mb-4">
-                            Nr. comandă: <strong>{order.order_number}</strong>
+                            {t("orders.form.orderNumber")}:{" "}
+                            <strong>{order.order_number}</strong>
                         </p>
                     )}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Client
+                                {t("orders.form.customer")}
                             </label>
                             <SearchableSelect
                                 value={formData.customer_id || ""}
@@ -201,14 +205,14 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                 displayValue={(opt) =>
                                     opt?.company_name || opt?.name || opt?.email
                                 }
-                                placeholder="Selectează client"
+                                placeholder={t("orders.form.selectCustomer")}
                                 cacheKey="order-customers"
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Status
+                                {t("orders.form.status")}
                             </label>
                             <select
                                 value={formData.status}
@@ -225,7 +229,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                         key={opt.value}
                                         value={opt.value}
                                     >
-                                        {opt.label}
+                                        {t(opt.labelKey)}
                                     </option>
                                 ))}
                             </select>
@@ -233,7 +237,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Note
+                                {t("orders.form.notes")}
                             </label>
                             <textarea
                                 value={formData.notes}
@@ -245,13 +249,13 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                 }
                                 rows={2}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                                placeholder="Note opționale"
+                                placeholder={t("orders.form.notesPlaceholder")}
                             />
                         </div>
 
                         <div className="border-t pt-4">
                             <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                                Produse
+                                {t("orders.form.itemsTitle")}
                             </h3>
                             {formData.items.map((row, index) => (
                                 <div
@@ -260,7 +264,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                 >
                                     <div className="flex-1 min-w-[180px]">
                                         <label className="block text-xs font-medium text-gray-600 mb-0.5">
-                                            Produs
+                                            {t("orders.form.item.product")}
                                         </label>
                                         <SearchableSelect
                                             value={row.product_id || ""}
@@ -277,14 +281,16 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                                     ? `${opt.name}${opt.sku ? ` (${opt.sku})` : ""}`
                                                     : opt?.sku
                                             }
-                                            placeholder="Selectează produs"
+                                            placeholder={t(
+                                                "orders.form.item.selectProduct",
+                                            )}
                                             cacheKey="order-products"
                                             className="min-h-[34px] px-2 py-1.5 text-sm"
                                         />
                                     </div>
                                     <div className="w-24">
                                         <label className="block text-xs font-medium text-gray-600 mb-0.5">
-                                            Cantitate
+                                            {t("orders.form.item.quantity")}
                                         </label>
                                         <input
                                             type="number"
@@ -303,7 +309,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                     </div>
                                     <div className="w-28">
                                         <label className="block text-xs font-medium text-gray-600 mb-0.5">
-                                            Preț
+                                            {t("orders.form.item.price")}
                                         </label>
                                         <input
                                             type="number"
@@ -326,7 +332,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                         onClick={() => removeItemRow(index)}
                                         disabled={formData.items.length <= 1}
                                         className="p-1.5 text-gray-500 hover:text-red-600 disabled:opacity-40"
-                                        title="Elimină linia"
+                                        title={t("orders.form.item.removeLine")}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -338,7 +344,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                 className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 mt-2"
                             >
                                 <Plus className="w-4 h-4" />
-                                Adaugă produs
+                                {t("orders.form.item.addProduct")}
                             </button>
                         </div>
 
@@ -348,7 +354,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                     type="button"
                                     className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
                                 >
-                                    Anulare
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -356,7 +362,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                 disabled={isPending}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                             >
-                                {isPending ? "Se salvează..." : "Salvează"}
+                                {isPending ? t("common.saving") : t("common.save")}
                             </button>
                         </div>
                     </form>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
+import { useTranslation } from "react-i18next";
 import DataTable from "../../components/DataTable";
 import PageHeader from "../../components/PageHeader";
 import { formatDate } from "../../utils/formatters";
@@ -15,6 +16,7 @@ import TaskFormModal from "./TaskFormModal";
 import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function TaskList() {
+    const { t } = useTranslation();
     const { hasRole, hasPermission } = usePermissions();
     const isEmployee = hasRole("Employee");
 
@@ -59,12 +61,12 @@ export default function TaskList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
-            toast.success("Task deleted successfully");
+            toast.success(t("tasks.list.toast.deleted"));
         },
         onError: (error) => {
-            toast.error("Failed to delete task", {
+            toast.error(t("tasks.list.toast.deleteFailed"), {
                 description:
-                    error.response?.data?.message || "An error occurred",
+                    error.response?.data?.message || t("common.genericError"),
             });
         },
         onSettled: () => {
@@ -107,7 +109,9 @@ export default function TaskList() {
 
     const getStatusBadge = (status) => {
         const color = TASK_STATUS_COLORS[status] || "gray";
-        const label = TASK_STATUS_LABELS[status] || status;
+        const label = t(`tasks.status.${status}`, {
+            defaultValue: TASK_STATUS_LABELS[status] || status,
+        });
 
         const colorClasses = {
             yellow: "bg-yellow-100 text-yellow-800",
@@ -129,13 +133,13 @@ export default function TaskList() {
     const columns = [
         {
             key: "title",
-            label: "Title",
+            label: t("tasks.list.table.title"),
             render: (value, row) => (
                 <div className="flex items-center gap-2">
                     <span>{value}</span>
                     {row.order_id && (
                         <span className="text-xs font-medium bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">
-                            Comandă
+                            {t("tasks.list.orderTag")}
                         </span>
                     )}
                 </div>
@@ -143,17 +147,17 @@ export default function TaskList() {
         },
         {
             key: "assigned_to.name",
-            label: "Assigned To",
-            render: (value) => value || "-",
+            label: t("tasks.list.table.assignedTo"),
+            render: (value) => value || t("common.dash"),
         },
         {
             key: "assigned_by.name",
-            label: "Assigned By",
-            render: (value) => value || "-",
+            label: t("tasks.list.table.assignedBy"),
+            render: (value) => value || t("common.dash"),
         },
         {
             key: "order.order_number",
-            label: "Order",
+            label: t("tasks.list.table.order"),
             render: (value, row) =>
                 value && row.order ? (
                     <Link
@@ -163,34 +167,34 @@ export default function TaskList() {
                         {value}
                     </Link>
                 ) : (
-                    "-"
+                    t("common.dash")
                 ),
         },
         {
             key: "status",
-            label: "Status",
+            label: t("tasks.list.table.status"),
             render: (value) => getStatusBadge(value),
         },
         {
             key: "due_date",
-            label: "Due Date",
-            render: (value) => (value ? formatDate(value) : "-"),
+            label: t("tasks.list.table.dueDate"),
+            render: (value) => (value ? formatDate(value) : t("common.dash")),
         },
         {
             key: "created_at",
-            label: "Created",
+            label: t("tasks.list.table.created"),
             render: (value) => formatDate(value),
         },
         {
             key: "actions",
-            label: "Actions",
+            label: t("tasks.list.table.actions"),
             render: (value, row) => (
                 <div className="flex items-center justify-center gap-2">
                     <button
                         type="button"
                         onClick={() => handleOpenEdit(row)}
                         className="p-1.5 text-gray-600 hover:text-blue-600 rounded hover:bg-blue-50"
-                        title="Edit"
+                        title={t("tasks.list.actions.edit")}
                         disabled={!hasPermission("edit tasks")}
                     >
                         <Pencil className="w-4 h-4" />
@@ -201,7 +205,7 @@ export default function TaskList() {
                             onClick={() => handleDeleteClick(row)}
                             disabled={deletingId === row.id}
                             className="p-1.5 text-gray-600 hover:text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
-                            title="Delete"
+                            title={t("tasks.list.actions.delete")}
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -213,7 +217,9 @@ export default function TaskList() {
 
     if (error) {
         const errorMessage =
-            error?.response?.data?.message || error?.message || "Unknown error";
+            error?.response?.data?.message ||
+            error?.message ||
+            t("common.unknown");
         const isPermissionError = error?.response?.status === 403;
 
         return (
@@ -221,7 +227,9 @@ export default function TaskList() {
                 className={`p-4 rounded ${isPermissionError ? "bg-yellow-50 text-yellow-800" : "bg-red-50 text-red-800"}`}
             >
                 <p className="font-semibold">
-                    {isPermissionError ? "Permission Denied" : "Error"}
+                    {isPermissionError
+                        ? t("tasks.list.errors.permissionDenied")
+                        : t("tasks.list.errors.error")}
                 </p>
                 <p>{errorMessage}</p>
             </div>
@@ -231,7 +239,7 @@ export default function TaskList() {
     return (
         <div>
             <PageHeader
-                title="Tasks"
+                title={t("tasks.list.title")}
                 actions={
                     hasPermission("create tasks") && (
                     <button
@@ -240,7 +248,7 @@ export default function TaskList() {
                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     >
                         <Plus className="w-4 h-4" />
-                        Create Task
+                        {t("tasks.list.actions.create")}
                     </button>
                     )
                 }
@@ -254,14 +262,14 @@ export default function TaskList() {
                     onPerPageChange={handlePerPageChange}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search tasks..."
+                    searchPlaceholder={t("tasks.list.searchPlaceholder")}
                     pagination={{
                         currentPage: page,
                         lastPage,
                         total: filteredData.length,
                         onPageChange: setPage,
                     }}
-                    totalRecordName="tasks"
+                    totalRecordName={t("tasks.list.totalRecordName")}
                 />
             </div>
             <TaskFormModal
@@ -273,10 +281,10 @@ export default function TaskList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete task?"
-                description="Are you sure you want to delete this task?"
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                title={t("tasks.list.confirmDelete.title")}
+                description={t("tasks.list.confirmDelete.description")}
+                confirmLabel={t("tasks.list.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

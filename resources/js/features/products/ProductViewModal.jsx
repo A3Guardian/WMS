@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { formatCurrency } from "../../utils/formatters";
+import { useTranslation } from "react-i18next";
 
 export default function ProductViewModal({
     isOpen,
@@ -10,6 +11,7 @@ export default function ProductViewModal({
 }) {
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedDepositId, setSelectedDepositId] = useState(null);
+    const { t } = useTranslation();
     if (!product) return null;
 
     const images = Array.isArray(product.images) ? product.images : [];
@@ -36,16 +38,16 @@ export default function ProductViewModal({
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
                 <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto z-50">
                     <Dialog.Title className="text-2xl font-bold mb-4">
-                        Product Details
+                        {t("products.view.title")}
                     </Dialog.Title>
                     <div className="space-y-4">
                         {images.length > 0 && (
                             <div className="border-b pb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Images
+                                    {t("products.view.images")}
                                 </label>
                                 <div className="flex gap-3 flex-wrap">
-                                    <div className="flex-shrink-0">
+                                    <div className="shrink-0">
                                         <img
                                             src={
                                                 (selectedImage || mainImage)
@@ -63,7 +65,7 @@ export default function ProductViewModal({
                                                 onClick={() =>
                                                     setSelectedImage(img)
                                                 }
-                                                className={`w-14 h-14 rounded border overflow-hidden flex-shrink-0 ${
+                                                className={`w-14 h-14 rounded border overflow-hidden shrink-0 ${
                                                     (selectedImage?.url ||
                                                         mainImage?.url) ===
                                                     img.url
@@ -85,7 +87,7 @@ export default function ProductViewModal({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
-                                Name
+                                {t("products.form.name")}
                             </label>
                             <p className="mt-1 text-gray-900">{product.name}</p>
                         </div>
@@ -97,15 +99,15 @@ export default function ProductViewModal({
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
-                                Description
+                                {t("products.form.description")}
                             </label>
                             <p className="mt-1 text-gray-900">
-                                {product.description || "-"}
+                                {product.description || t("common.dash")}
                             </p>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
-                                Price
+                                {t("products.form.price")}
                             </label>
                             <p className="mt-1 text-gray-900">
                                 {formatCurrency(product.price)}
@@ -113,32 +115,32 @@ export default function ProductViewModal({
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
-                                Supplier
+                                {t("products.form.supplier")}
                             </label>
                             <p className="mt-1 text-gray-900">
-                                {product.supplier?.name || "-"}
+                                {product.supplier?.name || t("common.dash")}
                             </p>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
-                                Product type
+                                {t("products.form.productType")}
                             </label>
                             <p className="mt-1 text-gray-900">
                                 {product.origin === "manufactured"
-                                    ? "Fabricat intern"
+                                    ? t("products.form.origin.manufactured")
                                     : product.origin === "both"
-                                    ? "Atât cumpărat, cât și fabricat"
-                                    : "Cumpărat de la furnizor"}
+                                    ? t("products.form.origin.both")
+                                    : t("products.form.origin.purchased")}
                             </p>
                         </div>
 
                         <div className="border-t pt-4 mt-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Stock Locations
+                                {t("products.view.stockLocations")}
                             </label>
                             {inventories.length === 0 ? (
                                 <p className="text-gray-500 text-sm">
-                                    No inventory records found
+                                    {t("products.view.noInventoryRecords")}
                                 </p>
                             ) : (
                                 <>
@@ -148,7 +150,7 @@ export default function ProductViewModal({
                                                 const group = byDeposit[dId];
                                                 const name =
                                                     group?.deposit?.name ||
-                                                    "Unknown";
+                                                    t("common.unknown");
                                                 const isSelected =
                                                     dId === currentDepositId;
                                                 return (
@@ -185,7 +187,7 @@ export default function ProductViewModal({
                                                                 {inv.shelf
                                                                     ? inv.shelf
                                                                           .name
-                                                                    : "No shelf"}
+                                                                    : t("products.view.noShelf")}
                                                             </p>
                                                             {inv.deposit && (
                                                                 <p className="text-xs text-gray-500 mt-0.5">
@@ -201,12 +203,12 @@ export default function ProductViewModal({
                                                             <p className="font-semibold text-gray-900">
                                                                 {inv.quantity ||
                                                                     0}{" "}
-                                                                units
+                                                                {t("products.view.units")}
                                                             </p>
                                                             {inv.reorder_level >
                                                                 0 && (
                                                                 <p className="text-xs text-gray-500">
-                                                                    Reorder:{" "}
+                                                                    {t("products.view.reorder")}:{" "}
                                                                     {
                                                                         inv.reorder_level
                                                                     }
@@ -223,9 +225,11 @@ export default function ProductViewModal({
                             {totalQuantity > 0 && (
                                 <div className="mt-3 pt-3 border-t">
                                     <p className="text-sm font-semibold text-gray-900">
-                                        Total Stock:{" "}
+                                        {t("products.view.totalStock")}:{" "}
                                         <span className="text-blue-600">
-                                            {totalQuantity} units
+                                            {t("products.view.totalStockValue", {
+                                                count: totalQuantity,
+                                            })}
                                         </span>
                                     </p>
                                 </div>
@@ -245,7 +249,7 @@ export default function ProductViewModal({
                                         }}
                                         className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                                     >
-                                        View on Deposit Map
+                                        {t("products.actions.viewOnMap")}
                                     </button>
                                 </div>
                             )}
@@ -253,7 +257,7 @@ export default function ProductViewModal({
                     <div className="flex justify-end mt-6">
                         <Dialog.Close asChild>
                             <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
-                                Close
+                                {t("common.close")}
                             </button>
                         </Dialog.Close>
                     </div>

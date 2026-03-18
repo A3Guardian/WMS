@@ -2,6 +2,7 @@ import { formatCurrency, formatDate } from "./formatters";
 import "jspdf";
 import "../../fonts/Roboto-Regular";
 import "../../fonts/Roboto-Bold";
+import i18n from "../i18n";
 
 function todayStr() {
     const d = new Date();
@@ -11,19 +12,18 @@ function todayStr() {
 function formatDateShort(dateStr) {
     if (!dateStr) return "";
     const d = new Date(dateStr);
-    return d.toLocaleDateString("ro-RO", {
+    const locale = i18n.language === "ro" ? "ro-RO" : "en-US";
+    return d.toLocaleDateString(locale, {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
     });
 }
 
-/**
- * Încarcă o imagine de la URL și o returnează ca data URL (pentru jsPDF).
- */
 async function loadImageAsDataUrl(url) {
     const response = await fetch(url, { mode: "cors" });
-    if (!response.ok) throw new Error("Failed to load image");
+    if (!response.ok)
+        throw new Error(i18n.t("invoicePdf.errors.imageLoadFailed"));
     const blob = await response.blob();
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -63,9 +63,7 @@ export async function generateOrderInvoicePdf({
     if (logoUrl) {
         try {
             logoDataUrl = await loadImageAsDataUrl(logoUrl);
-        } catch (_) {
-            // ignoră dacă logo-ul nu se poate încărca (CORS etc.)
-        }
+        } catch (_) {}
     }
     if (logoDataUrl) {
         const mime = (
@@ -79,13 +77,21 @@ export async function generateOrderInvoicePdf({
     // Bloc date companie (stânga) – adresă cu wrap pentru mai mult spațiu
     doc.setFontSize(10);
     const companyName = company.name;
-    const companyCui = company.cui ? `CUI: ${company.cui}` : null;
+    const companyCui = company.cui
+        ? `${i18n.t("invoicePdf.labels.taxId")}: ${company.cui}`
+        : null;
     const companyAddress = company.address || null;
     const companyCityCounty =
         [company.city, company.county].filter(Boolean).join(", ") || null;
-    const companyPhone = company.phone ? `Tel: ${company.phone}` : null;
-    const companyEmail = company.email ? `Email: ${company.email}` : null;
-    const companyBank = company.bank ? `Bancă: ${company.bank}` : null;
+    const companyPhone = company.phone
+        ? `${i18n.t("invoicePdf.labels.phone")}: ${company.phone}`
+        : null;
+    const companyEmail = company.email
+        ? `${i18n.t("invoicePdf.labels.email")}: ${company.email}`
+        : null;
+    const companyBank = company.bank
+        ? `${i18n.t("invoicePdf.labels.bank")}: ${company.bank}`
+        : null;
     const companyIban = company.iban ? `IBAN: ${company.iban}` : null;
 
     const companyLineWidth = 80;
@@ -132,11 +138,16 @@ export async function generateOrderInvoicePdf({
 
     // Nr. factură și Data facturii – aliniate la dreapta cu tabelul (margin 196)
     doc.setFontSize(11);
-    doc.text(`Nr. factură: ${invoiceNumber}`, tableRightEdge, 14, {
-        align: "right",
-    });
     doc.text(
-        `Data facturii: ${formatDateShort(invoiceDate)}`,
+        `${i18n.t("invoicePdf.labels.invoiceNumber")}: ${invoiceNumber}`,
+        tableRightEdge,
+        14,
+        {
+            align: "right",
+        },
+    );
+    doc.text(
+        `${i18n.t("orderInvoicePdf.labels.invoiceDate")}: ${formatDateShort(invoiceDate)}`,
         tableRightEdge,
         20,
         {
@@ -148,15 +159,19 @@ export async function generateOrderInvoicePdf({
     yPos = Math.max(yPos, 50);
     doc.setFont("Roboto-Bold", "normal");
     doc.setFontSize(20);
-    doc.text("FACTURĂ", leftCol, yPos);
+    doc.text(i18n.t("orderInvoicePdf.title"), leftCol, yPos);
     doc.setFont("Roboto-Regular", "normal");
     yPos += 8;
     doc.setFontSize(10);
-    doc.text(`Comandă: ${orderNumber}`, leftCol, yPos);
+    doc.text(
+        `${i18n.t("orderInvoicePdf.labels.order")}: ${orderNumber}`,
+        leftCol,
+        yPos,
+    );
     yPos += 5;
     if (order.created_at) {
         doc.text(
-            `Data comenzii: ${formatDate(order.created_at)}`,
+            `${i18n.t("orderInvoicePdf.labels.orderDate")}: ${formatDate(order.created_at)}`,
             leftCol,
             yPos,
         );
@@ -171,8 +186,16 @@ export async function generateOrderInvoicePdf({
 
     doc.setFontSize(10);
     doc.setFont("Roboto-Bold", "normal");
-    doc.text("Client (Facturare)", billingCol, clientStartY);
-    doc.text("Adresă livrare", shippingCol, clientStartY);
+    doc.text(
+        i18n.t("orderInvoicePdf.customer.billingTitle"),
+        billingCol,
+        clientStartY,
+    );
+    doc.text(
+        i18n.t("orderInvoicePdf.customer.shippingTitle"),
+        shippingCol,
+        clientStartY,
+    );
     doc.setFont("Roboto-Regular", "normal");
     let billingY = clientStartY + 5;
     let shippingY = clientStartY + 5;
@@ -209,7 +232,11 @@ export async function generateOrderInvoicePdf({
         billingY += 5;
     }
     if (customer.billing_phone) {
-        doc.text(`Tel: ${customer.billing_phone}`, billingCol, billingY);
+        doc.text(
+            `${i18n.t("invoicePdf.labels.phone")}: ${customer.billing_phone}`,
+            billingCol,
+            billingY,
+        );
         billingY += 5;
     }
 
@@ -239,7 +266,11 @@ export async function generateOrderInvoicePdf({
         shippingY += 5;
     }
     if (customer.shipping_phone) {
-        doc.text(`Tel: ${customer.shipping_phone}`, shippingCol, shippingY);
+        doc.text(
+            `${i18n.t("invoicePdf.labels.phone")}: ${customer.shipping_phone}`,
+            shippingCol,
+            shippingY,
+        );
         shippingY += 5;
     }
 
@@ -309,12 +340,16 @@ export async function generateOrderInvoicePdf({
     const summaryLabelX = 120;
     const summaryValueX = 196;
     doc.setFontSize(10);
-    doc.text("Subtotal", summaryLabelX, afterTableY);
+    doc.text(i18n.t("invoicePdf.summary.subtotal"), summaryLabelX, afterTableY);
     doc.text(formatCurrency(subtotal), summaryValueX, afterTableY, {
         align: "right",
     });
     afterTableY += 6;
-    doc.text(`TVA (${taxPct}%)`, summaryLabelX, afterTableY);
+    doc.text(
+        `${i18n.t("invoicePdf.summary.tax")} (${taxPct}%)`,
+        summaryLabelX,
+        afterTableY,
+    );
     doc.text(
         taxPct > 0 ? formatCurrency(taxAmount) : "—",
         summaryValueX,
@@ -323,7 +358,11 @@ export async function generateOrderInvoicePdf({
     );
     if (shipping > 0) {
         afterTableY += 6;
-        doc.text("Transport", summaryLabelX, afterTableY);
+        doc.text(
+            i18n.t("orderInvoicePdf.summary.shipping"),
+            summaryLabelX,
+            afterTableY,
+        );
         doc.text(formatCurrency(shipping), summaryValueX, afterTableY, {
             align: "right",
         });
@@ -331,7 +370,7 @@ export async function generateOrderInvoicePdf({
     afterTableY += 6;
     doc.setFont("Roboto-Bold", "normal");
     doc.setFontSize(11);
-    doc.text("Total", summaryLabelX, afterTableY);
+    doc.text(i18n.t("invoicePdf.summary.total"), summaryLabelX, afterTableY);
     doc.text(formatCurrency(total), summaryValueX, afterTableY, {
         align: "right",
     });
@@ -346,7 +385,8 @@ export async function generateOrderInvoicePdf({
     //     { align: "center" },
     // );
 
-    const fileName = `factura-${invoiceNumber}.pdf`;
+    const prefix = i18n.t("orderInvoicePdf.fileNamePrefix");
+    const fileName = `${prefix}-${invoiceNumber}.pdf`;
     doc.save(fileName);
 
     const pdfBlob = doc.output("blob");

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -16,6 +17,7 @@ export default function LeaveFormModal({
 }) {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const isEdit = mode === "edit";
 
     const { data: employeesData } = useQuery({
@@ -79,10 +81,10 @@ export default function LeaveFormModal({
                     submitData.rejection_reason = formValues.rejection_reason;
                 }
                 await api.put(`/leaves/${leaveId}`, submitData);
-                toast.success("Leave updated successfully");
+                toast.success(t("leaves.toast.updated"));
             } else if (!isEdit && hasPermission("create leaves")) {
                 await api.post("/leaves", submitData);
-                toast.success("Leave request created successfully");
+                toast.success(t("leaves.toast.created"));
             } else {
                 throw new Error("Unauthorized");
             }
@@ -91,9 +93,9 @@ export default function LeaveFormModal({
             onClose();
         } catch (error) {
             const errorMessage =
-                error.response?.data?.message || "An error occurred";
+                error.response?.data?.message || t("common.genericError");
             toast.error(
-                isEdit ? "Failed to update leave" : "Failed to create leave",
+                isEdit ? t("leaves.toast.updateFailed") : t("leaves.toast.createFailed"),
                 {
                     description: errorMessage,
                 },
@@ -149,7 +151,7 @@ export default function LeaveFormModal({
         return 0;
     }, [values.start_date, values.end_date]);
 
-    const title = isEdit ? "Edit Leave" : "Request Leave";
+    const title = isEdit ? t("leaves.modal.editTitle") : t("leaves.modal.createTitle");
 
     return (
         <Dialog.Root
@@ -165,7 +167,7 @@ export default function LeaveFormModal({
                         {title}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Manage employee leave request details and status.
+                        {t("leaves.modal.description")}
                     </Dialog.Description>
 
                     <form
@@ -175,7 +177,7 @@ export default function LeaveFormModal({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Employee{" "}
+                                    {t("leaves.fields.employee")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <SearchableSelect
@@ -194,11 +196,11 @@ export default function LeaveFormModal({
                                         return response.data;
                                     }}
                                     searchParam="search"
-                                    placeholder="Select Employee"
+                                    placeholder={t("leaves.placeholders.selectEmployee")}
                                     displayValue={(emp) =>
-                                        `${emp.employee_code} - ${emp.user?.name || "N/A"}`
+                                        `${emp.employee_code} - ${emp.user?.name || t("common.na")}`
                                     }
-                                    emptyMessage="No employees found."
+                                    emptyMessage={t("leaves.empty.employees")}
                                     disabled={isEdit}
                                 />
                                 {errors.employee_id && (
@@ -210,7 +212,7 @@ export default function LeaveFormModal({
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Leave Type{" "}
+                                    {t("leaves.fields.leaveType")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <SearchableSelect
@@ -229,9 +231,9 @@ export default function LeaveFormModal({
                                         return response.data;
                                     }}
                                     searchParam="search"
-                                    placeholder="Select Leave Type"
+                                    placeholder={t("leaves.placeholders.selectLeaveType")}
                                     displayValue={(lt) => lt.name}
-                                    emptyMessage="No leave types found."
+                                    emptyMessage={t("leaves.empty.leaveTypes")}
                                     disabled={isEdit && !canEditStatus}
                                 />
                                 {errors.leave_type_id && (
@@ -243,7 +245,7 @@ export default function LeaveFormModal({
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Start Date{" "}
+                                    {t("leaves.fields.startDate")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -264,7 +266,7 @@ export default function LeaveFormModal({
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    End Date{" "}
+                                    {t("leaves.fields.endDate")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -279,8 +281,7 @@ export default function LeaveFormModal({
                                 />
                                 {calculatedDays > 0 && (
                                     <p className="mt-1 text-sm text-gray-500">
-                                        {calculatedDays} day
-                                        {calculatedDays !== 1 ? "s" : ""}
+                                        {t("leaves.days", { count: calculatedDays })}
                                     </p>
                                 )}
                                 {errors.end_date && (
@@ -293,7 +294,7 @@ export default function LeaveFormModal({
                             {canEditStatus && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Status
+                                        {t("leaves.fields.status")}
                                     </label>
                                     <SearchableSelect
                                         value={values.status}
@@ -309,9 +310,11 @@ export default function LeaveFormModal({
                                             LEAVE_STATUS_LABELS,
                                         ).map(([value, label]) => ({
                                             value,
-                                            label,
+                                            label: t(`leaves.status.${value}`, {
+                                                defaultValue: label,
+                                            }),
                                         }))}
-                                        placeholder="Select status"
+                                        placeholder={t("leaves.placeholders.selectStatus")}
                                     />
                                     {errors.status && (
                                         <p className="mt-1 text-sm text-red-600">
@@ -325,7 +328,7 @@ export default function LeaveFormModal({
                                 values.status === LEAVE_STATUS.REJECTED && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Rejection Reason
+                                            {t("leaves.fields.rejectionReason")}
                                         </label>
                                         <textarea
                                             name="rejection_reason"
@@ -341,7 +344,7 @@ export default function LeaveFormModal({
 
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Reason
+                                    {t("leaves.fields.reason")}
                                 </label>
                                 <textarea
                                     name="reason"
@@ -372,7 +375,7 @@ export default function LeaveFormModal({
                                     className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
                                     onClick={onClose}
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -381,10 +384,10 @@ export default function LeaveFormModal({
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting
-                                    ? "Saving..."
+                                    ? t("common.saving")
                                     : isEdit
-                                      ? "Update Leave"
-                                      : "Request Leave"}
+                                      ? t("leaves.actions.update")
+                                      : t("leaves.actions.request")}
                             </button>
                         </div>
                     </form>

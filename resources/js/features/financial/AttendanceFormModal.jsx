@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useForm } from "../../hooks/useForm";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -16,6 +17,7 @@ export default function AttendanceFormModal({
 }) {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const isEdit = mode === "edit";
 
     const { data: employeesData } = useQuery({
@@ -69,21 +71,21 @@ export default function AttendanceFormModal({
 
             if (isEdit) {
                 await api.put(`/attendance/${attendanceId}`, submitData);
-                toast.success("Attendance updated successfully");
+                toast.success(t("attendance.toast.updated"));
             } else {
                 await api.post("/attendance", submitData);
-                toast.success("Attendance created successfully");
+                toast.success(t("attendance.toast.created"));
             }
 
             queryClient.invalidateQueries({ queryKey: ["attendance"] });
             onClose();
         } catch (error) {
             const errorMessage =
-                error.response?.data?.message || "An error occurred";
+                error.response?.data?.message || t("common.genericError");
             toast.error(
                 isEdit
-                    ? "Failed to update attendance"
-                    : "Failed to create attendance",
+                    ? t("attendance.toast.updateFailed")
+                    : t("attendance.toast.createFailed"),
                 {
                     description: errorMessage,
                 },
@@ -124,7 +126,9 @@ export default function AttendanceFormModal({
         return null;
     }
 
-    const title = isEdit ? "Edit Attendance" : "Create Attendance";
+    const title = isEdit
+        ? t("attendance.modal.editTitle")
+        : t("attendance.modal.createTitle");
 
     return (
         <Dialog.Root
@@ -140,8 +144,7 @@ export default function AttendanceFormModal({
                         {title}
                     </Dialog.Title>
                     <Dialog.Description className="text-sm text-gray-500 mb-4">
-                        Manage attendance record for the selected employee and
-                        date.
+                        {t("attendance.modal.description")}
                     </Dialog.Description>
 
                     <form
@@ -151,7 +154,7 @@ export default function AttendanceFormModal({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Employee{" "}
+                                    {t("attendance.fields.employee")}{" "}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <SearchableSelect
@@ -170,11 +173,11 @@ export default function AttendanceFormModal({
                                         return response.data;
                                     }}
                                     searchParam="search"
-                                    placeholder="Select Employee"
+                                    placeholder={t("attendance.placeholders.selectEmployee")}
                                     displayValue={(emp) =>
-                                        `${emp.employee_code} - ${emp.user?.name || "N/A"}`
+                                        `${emp.employee_code} - ${emp.user?.name || t("common.na")}`
                                     }
-                                    emptyMessage="No employees found."
+                                    emptyMessage={t("attendance.empty.employees")}
                                 />
                                 {errors.employee_id && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -185,7 +188,8 @@ export default function AttendanceFormModal({
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Date <span className="text-red-500">*</span>
+                                    {t("attendance.fields.date")}{" "}
+                                    <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="date"
@@ -204,7 +208,7 @@ export default function AttendanceFormModal({
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Clock In Time
+                                    {t("attendance.fields.clockIn")}
                                 </label>
                                 <input
                                     type="time"
@@ -222,7 +226,7 @@ export default function AttendanceFormModal({
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Clock Out Time
+                                    {t("attendance.fields.clockOut")}
                                 </label>
                                 <input
                                     type="time"
@@ -240,7 +244,7 @@ export default function AttendanceFormModal({
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Status
+                                    {t("attendance.fields.status")}
                                 </label>
                                 <SearchableSelect
                                     value={values.status}
@@ -256,9 +260,11 @@ export default function AttendanceFormModal({
                                         ATTENDANCE_STATUS_LABELS,
                                     ).map(([value, label]) => ({
                                         value,
-                                        label,
+                                        label: t(`attendance.status.${value}`, {
+                                            defaultValue: label,
+                                        }),
                                     }))}
-                                    placeholder="Select status"
+                                    placeholder={t("attendance.placeholders.selectStatus")}
                                 />
                                 {errors.status && (
                                     <p className="mt-1 text-sm text-red-600">
@@ -269,7 +275,7 @@ export default function AttendanceFormModal({
 
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Notes
+                                    {t("attendance.fields.notes")}
                                 </label>
                                 <textarea
                                     name="notes"
@@ -299,7 +305,7 @@ export default function AttendanceFormModal({
                                     className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
                                     onClick={onClose}
                                 >
-                                    Cancel
+                                    {t("common.cancel")}
                                 </button>
                             </Dialog.Close>
                             <button
@@ -308,10 +314,10 @@ export default function AttendanceFormModal({
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting
-                                    ? "Saving..."
+                                    ? t("common.saving")
                                     : isEdit
-                                      ? "Update Attendance"
-                                      : "Create Attendance"}
+                                      ? t("attendance.actions.update")
+                                      : t("attendance.actions.create")}
                             </button>
                         </div>
                     </form>

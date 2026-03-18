@@ -13,6 +13,7 @@ import {
     Legend,
     ResponsiveContainer,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import SearchableSelect from "../../components/SearchableSelect";
 import { formatCurrency, formatDate } from "../../utils/formatters";
@@ -29,6 +30,7 @@ const COLORS = [
 ];
 
 export default function CostReports() {
+    const { t } = useTranslation();
     const [dateFrom, setDateFrom] = useState(
         new Date(new Date().getFullYear(), new Date().getMonth(), 1)
             .toISOString()
@@ -88,33 +90,44 @@ export default function CostReports() {
             const doc = new jsPDF();
 
             doc.setFontSize(18);
-            doc.text("Cost Report", 14, 22);
+            doc.text(t("costReports.export.pdf.title"), 14, 22);
             doc.setFontSize(12);
             doc.text(
-                `Period: ${formatDate(dateFrom)} - ${formatDate(dateTo)}`,
+                t("costReports.export.period", {
+                    from: formatDate(dateFrom),
+                    to: formatDate(dateTo),
+                }),
                 14,
                 30,
             );
 
             if (dashboardData?.summary) {
                 doc.setFontSize(14);
-                doc.text("Summary", 14, 45);
+                doc.text(t("costReports.export.summary"), 14, 45);
                 doc.setFontSize(10);
                 let yPos = 52;
                 doc.text(
-                    `Total Expenses: ${formatCurrency(dashboardData.summary.total_expenses)}`,
+                    t("costReports.export.totalExpenses", {
+                        value: formatCurrency(
+                            dashboardData.summary.total_expenses,
+                        ),
+                    }),
                     14,
                     yPos,
                 );
                 yPos += 7;
                 doc.text(
-                    `Total Income: ${formatCurrency(dashboardData.summary.total_income)}`,
+                    t("costReports.export.totalIncome", {
+                        value: formatCurrency(dashboardData.summary.total_income),
+                    }),
                     14,
                     yPos,
                 );
                 yPos += 7;
                 doc.text(
-                    `Net: ${formatCurrency(dashboardData.summary.net_profit)}`,
+                    t("costReports.export.net", {
+                        value: formatCurrency(dashboardData.summary.net_profit),
+                    }),
                     14,
                     yPos,
                 );
@@ -125,17 +138,17 @@ export default function CostReports() {
                         startY: yPos,
                         head: [
                             [
-                                "Invoice #",
-                                "Supplier",
-                                "Category",
-                                "Date",
-                                "Amount",
+                                t("costReports.export.table.invoiceNumber"),
+                                t("costReports.export.table.supplier"),
+                                t("costReports.export.table.category"),
+                                t("costReports.export.table.date"),
+                                t("costReports.export.table.amount"),
                             ],
                         ],
                         body: invoicesData.data.map((inv) => [
                             inv.invoice_number,
-                            inv.supplier?.name || "N/A",
-                            inv.category || "N/A",
+                            inv.supplier?.name || t("common.na"),
+                            inv.category || t("common.na"),
                             formatDate(inv.issue_date),
                             formatCurrency(inv.total_amount),
                         ]),
@@ -143,7 +156,9 @@ export default function CostReports() {
                 }
             }
 
-            doc.save(`cost-report-${dateFrom}-${dateTo}.pdf`);
+            doc.save(
+                `${t("costReports.export.filePrefix")}-${dateFrom}-${dateTo}.pdf`,
+            );
         } catch (error) {
             console.error("Export error:", error);
         }
@@ -169,15 +184,22 @@ export default function CostReports() {
             );
 
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Cost Report");
-            XLSX.writeFile(workbook, `cost-report-${dateFrom}-${dateTo}.xlsx`);
+            XLSX.utils.book_append_sheet(
+                workbook,
+                worksheet,
+                t("costReports.export.excel.sheetName"),
+            );
+            XLSX.writeFile(
+                workbook,
+                `${t("costReports.export.filePrefix")}-${dateFrom}-${dateTo}.xlsx`,
+            );
         } catch (error) {
             console.error("Export error:", error);
         }
     };
 
     if (isLoading) {
-        return <div>Loading cost reports...</div>;
+        return <div>{t("costReports.loading")}</div>;
     }
 
     const summary = dashboardData?.summary || {};
@@ -187,7 +209,7 @@ export default function CostReports() {
     return (
         <div>
             <PageHeader
-                title="Cost Reports"
+                title={t("costReports.title")}
                 actions={
                     <div className="flex space-x-2">
                         <button
@@ -195,14 +217,14 @@ export default function CostReports() {
                             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                         >
                             <Download className="inline mr-2" size={16} />
-                            Export PDF
+                            {t("costReports.actions.exportPdf")}
                         </button>
                         <button
                             onClick={handleExportExcel}
                             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                         >
                             <Download className="inline mr-2" size={16} />
-                            Export Excel
+                            {t("costReports.actions.exportExcel")}
                         </button>
                     </div>
                 }
@@ -213,7 +235,7 @@ export default function CostReports() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date From
+                            {t("costReports.filters.dateFrom")}
                         </label>
                         <input
                             type="date"
@@ -224,7 +246,7 @@ export default function CostReports() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Date To
+                            {t("costReports.filters.dateTo")}
                         </label>
                         <input
                             type="date"
@@ -235,26 +257,26 @@ export default function CostReports() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Supplier
+                            {t("costReports.filters.supplier")}
                         </label>
                         <SearchableSelect
                             value={supplierId}
                             onChange={(v) => setSupplierId(v || "")}
                             fetchOptions={fetchSuppliers}
                             displayValue={(sup) => sup?.name}
-                            placeholder="All Suppliers"
+                            placeholder={t("costReports.filters.allSuppliers")}
                             cacheKey="cost-reports-suppliers"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Category
+                            {t("costReports.filters.category")}
                         </label>
                         <input
                             type="text"
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
-                            placeholder="Filter by category"
+                            placeholder={t("costReports.filters.categoryPlaceholder")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
                     </div>
@@ -264,19 +286,25 @@ export default function CostReports() {
             {/* Summary */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="bg-white shadow-md rounded-lg p-6">
-                    <p className="text-sm text-gray-600">Total Expenses</p>
+                    <p className="text-sm text-gray-600">
+                        {t("costReports.cards.totalExpenses")}
+                    </p>
                     <p className="text-2xl font-bold text-red-600">
                         {formatCurrency(summary.total_expenses || 0)}
                     </p>
                 </div>
                 <div className="bg-white shadow-md rounded-lg p-6">
-                    <p className="text-sm text-gray-600">Total Income</p>
+                    <p className="text-sm text-gray-600">
+                        {t("costReports.cards.totalIncome")}
+                    </p>
                     <p className="text-2xl font-bold text-green-600">
                         {formatCurrency(summary.total_income || 0)}
                     </p>
                 </div>
                 <div className="bg-white shadow-md rounded-lg p-6">
-                    <p className="text-sm text-gray-600">Net Profit/Loss</p>
+                    <p className="text-sm text-gray-600">
+                        {t("costReports.cards.netProfitLoss")}
+                    </p>
                     <p
                         className={`text-2xl font-bold ${(summary.net_profit || 0) >= 0 ? "text-green-600" : "text-red-600"}`}
                     >
@@ -289,7 +317,7 @@ export default function CostReports() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <h3 className="text-lg font-semibold mb-4">
-                        Expenses by Category
+                        {t("costReports.charts.expensesByCategory")}
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
@@ -321,7 +349,7 @@ export default function CostReports() {
 
                 <div className="bg-white shadow-md rounded-lg p-6">
                     <h3 className="text-lg font-semibold mb-4">
-                        Expenses by Month
+                        {t("costReports.charts.expensesByMonth")}
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={charts.expenses_by_month || []}>
@@ -340,28 +368,30 @@ export default function CostReports() {
 
             {/* Expense Invoices Table */}
             <div className="bg-white shadow-md rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Expense Invoices</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                    {t("costReports.expenseInvoices.title")}
+                </h3>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Invoice #
+                                    {t("costReports.expenseInvoices.table.invoiceNumber")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Supplier
+                                    {t("costReports.expenseInvoices.table.supplier")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Category
+                                    {t("costReports.expenseInvoices.table.category")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Date
+                                    {t("costReports.expenseInvoices.table.date")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Status
+                                    {t("costReports.expenseInvoices.table.status")}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                    Amount
+                                    {t("costReports.expenseInvoices.table.amount")}
                                 </th>
                             </tr>
                         </thead>
@@ -373,10 +403,10 @@ export default function CostReports() {
                                             {inv.invoice_number}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {inv.supplier?.name || "N/A"}
+                                            {inv.supplier?.name || t("common.na")}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {inv.category || "N/A"}
+                                            {inv.category || t("common.na")}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {formatDate(inv.issue_date)}
@@ -392,7 +422,9 @@ export default function CostReports() {
                                                           : "bg-gray-100 text-gray-800"
                                                 }`}
                                             >
-                                                {inv.status.toUpperCase()}
+                                                {t(`invoices.status.${inv.status}`, {
+                                                    defaultValue: inv.status.toUpperCase(),
+                                                })}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -408,7 +440,7 @@ export default function CostReports() {
                                         colSpan="6"
                                         className="px-6 py-4 text-center text-gray-500"
                                     >
-                                        No expense invoices found
+                                        {t("costReports.expenseInvoices.empty")}
                                     </td>
                                 </tr>
                             )}

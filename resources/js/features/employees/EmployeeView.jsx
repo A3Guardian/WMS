@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
     User,
     Mail,
@@ -21,6 +22,7 @@ import { formatDate } from "../../utils/formatters";
 export default function EmployeeView() {
     const { id } = useParams();
     const employeeId = id;
+    const { t } = useTranslation();
 
     const {
         data: employee,
@@ -87,7 +89,7 @@ export default function EmployeeView() {
     if (employeeError) {
         return (
             <div className="p-4 bg-red-50 text-red-800 rounded">
-                Failed to load employee: {employeeError.message}
+                {t("employees.errors.loadOneFailed")}: {employeeError.message}
             </div>
         );
     }
@@ -109,13 +111,17 @@ export default function EmployeeView() {
     return (
         <div>
             <PageHeader
-                title={employee?.user?.name || employee?.employee_code || "Employee details"}
+                title={
+                    employee?.user?.name ||
+                    employee?.employee_code ||
+                    t("employees.view.title")
+                }
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <div className="lg:col-span-2 bg-white shadow-md rounded-lg p-6">
                     {loadingEmployee ? (
-                        <div className="text-gray-500">Loading employee...</div>
+                        <div className="text-gray-500">{t("common.loading")}</div>
                     ) : (
                         <div className="space-y-6">
                             <div className="flex items-center gap-3">
@@ -124,11 +130,14 @@ export default function EmployeeView() {
                                 </span>
                                 <div>
                                     <h2 className="text-xl font-semibold text-gray-900">
-                                        {employee?.user?.name || "Employee profile"}
+                                        {employee?.user?.name ||
+                                            t("employees.view.profileTitle")}
                                     </h2>
                                     <p className="text-sm text-gray-500">
-                                        Cod: {employee?.employee_code || "-"} ·{" "}
-                                        {employee?.department?.name || "No department"}
+                                        {t("employees.view.code")}:{" "}
+                                        {employee?.employee_code || t("common.dash")} ·{" "}
+                                        {employee?.department?.name ||
+                                            t("employees.view.noDepartment")}
                                     </p>
                                 </div>
                             </div>
@@ -139,10 +148,10 @@ export default function EmployeeView() {
                                         <Mail className="w-4 h-4 text-emerald-500 mt-1" />
                                         <div>
                                             <div className="text-xs font-medium text-gray-500">
-                                                Email
+                                                {t("employees.view.fields.email")}
                                             </div>
                                             <div className="text-sm text-gray-900">
-                                                {employee?.user?.email || "-"}
+                                                {employee?.user?.email || t("common.dash")}
                                             </div>
                                         </div>
                                     </div>
@@ -151,10 +160,10 @@ export default function EmployeeView() {
                                         <Phone className="w-4 h-4 text-orange-500 mt-1" />
                                         <div>
                                             <div className="text-xs font-medium text-gray-500">
-                                                Phone
+                                                {t("employees.view.fields.phone")}
                                             </div>
                                             <div className="text-sm text-gray-900">
-                                                {employee?.phone || "-"}
+                                                {employee?.phone || t("common.dash")}
                                             </div>
                                         </div>
                                     </div>
@@ -163,10 +172,10 @@ export default function EmployeeView() {
                                         <MapPin className="w-4 h-4 text-blue-500 mt-1" />
                                         <div>
                                             <div className="text-xs font-medium text-gray-500">
-                                                Address
+                                                {t("employees.view.fields.address")}
                                             </div>
                                             <div className="text-sm text-gray-900 whitespace-pre-line">
-                                                {employee?.address || "-"}
+                                                {employee?.address || t("common.dash")}
                                             </div>
                                         </div>
                                     </div>
@@ -177,13 +186,14 @@ export default function EmployeeView() {
                                         <Briefcase className="w-4 h-4 text-indigo-500 mt-1" />
                                         <div>
                                             <div className="text-xs font-medium text-gray-500">
-                                                Position & Department
+                                                {t("employees.view.fields.positionDepartment")}
                                             </div>
                                             <div className="text-sm text-gray-900">
-                                                {employee?.position || "-"}
+                                                {employee?.position || t("common.dash")}
                                             </div>
                                             <div className="text-xs text-gray-600">
-                                                {employee?.department?.name || "-"}
+                                                {employee?.department?.name ||
+                                                    t("common.dash")}
                                             </div>
                                         </div>
                                     </div>
@@ -192,12 +202,12 @@ export default function EmployeeView() {
                                         <CalendarDays className="w-4 h-4 text-amber-500 mt-1" />
                                         <div>
                                             <div className="text-xs font-medium text-gray-500">
-                                                Hire date
+                                                {t("employees.view.fields.hireDate")}
                                             </div>
                                             <div className="text-sm text-gray-900">
                                                 {employee?.hire_date
                                                     ? formatDate(employee.hire_date)
-                                                    : "-"}
+                                                    : t("common.dash")}
                                             </div>
                                         </div>
                                     </div>
@@ -206,13 +216,17 @@ export default function EmployeeView() {
                                         <ClipboardList className="w-4 h-4 text-purple-500 mt-1" />
                                         <div>
                                             <div className="text-xs font-medium text-gray-500">
-                                                Employment type / Status
+                                                {t("employees.view.fields.employmentTypeStatus")}
                                             </div>
                                             <div className="text-sm text-gray-900">
-                                                {employee?.employment_type || "-"}
+                                                {employee?.employment_type ||
+                                                    t("common.dash")}
                                             </div>
                                             <div className="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800">
-                                                {employee?.status || "inactive"}
+                                                {t(`employees.status.${employee?.status || "inactive"}`, {
+                                                    defaultValue:
+                                                        employee?.status || "inactive",
+                                                })}
                                             </div>
                                         </div>
                                     </div>
@@ -222,16 +236,17 @@ export default function EmployeeView() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-3">
                                     <h3 className="text-sm font-semibold text-gray-900">
-                                        Emergency contact
+                                        {t("employees.view.emergency.title")}
                                     </h3>
                                     <div className="flex items-start gap-3">
                                         <User className="w-4 h-4 text-red-500 mt-1" />
                                         <div>
                                             <div className="text-xs font-medium text-gray-500">
-                                                Name
+                                                {t("employees.view.emergency.name")}
                                             </div>
                                             <div className="text-sm text-gray-900">
-                                                {employee?.emergency_contact_name || "-"}
+                                                {employee?.emergency_contact_name ||
+                                                    t("common.dash")}
                                             </div>
                                         </div>
                                     </div>
@@ -239,10 +254,11 @@ export default function EmployeeView() {
                                         <Phone className="w-4 h-4 text-red-500 mt-1" />
                                         <div>
                                             <div className="text-xs font-medium text-gray-500">
-                                                Phone
+                                                {t("employees.view.emergency.phone")}
                                             </div>
                                             <div className="text-sm text-gray-900">
-                                                {employee?.emergency_contact_phone || "-"}
+                                                {employee?.emergency_contact_phone ||
+                                                    t("common.dash")}
                                             </div>
                                         </div>
                                     </div>
@@ -250,14 +266,14 @@ export default function EmployeeView() {
 
                                 <div className="space-y-3">
                                     <h3 className="text-sm font-semibold text-gray-900">
-                                        Linked user
+                                        {t("employees.view.linkedUser.title")}
                                     </h3>
                                     {employee?.user ? (
                                         <div className="flex items-start gap-3">
                                             <User className="w-4 h-4 text-green-500 mt-1" />
                                             <div>
                                                 <div className="text-xs font-medium text-gray-500">
-                                                    User account
+                                                    {t("employees.view.linkedUser.account")}
                                                 </div>
                                                 <div className="text-sm text-gray-900">
                                                     {employee.user.name}
@@ -269,7 +285,7 @@ export default function EmployeeView() {
                                         </div>
                                     ) : (
                                         <p className="text-sm text-gray-500">
-                                            This employee is not linked to an application user.
+                                            {t("employees.view.linkedUser.none")}
                                         </p>
                                     )}
                                 </div>
@@ -281,13 +297,13 @@ export default function EmployeeView() {
                 <div className="space-y-4">
                     <div className="bg-white shadow-md rounded-lg p-4">
                         <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                            Task overview
+                            {t("employees.view.taskOverview.title")}
                         </h3>
                         <div className="space-y-3 text-sm">
                             <div className="flex items-center justify-between">
                                 <span className="flex items-center gap-2 text-gray-600">
                                     <ClipboardList className="w-4 h-4 text-blue-500" />
-                                    Total tasks
+                                    {t("employees.view.taskOverview.total")}
                                 </span>
                                 <span className="font-semibold text-gray-900">
                                     {tasks.length}
@@ -296,7 +312,7 @@ export default function EmployeeView() {
                             <div className="flex items-center justify-between">
                                 <span className="flex items-center gap-2 text-gray-600">
                                     <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                    Completed
+                                    {t("employees.view.taskOverview.completed")}
                                 </span>
                                 <span className="font-semibold text-green-700">
                                     {completedTasks.length}
@@ -305,7 +321,7 @@ export default function EmployeeView() {
                             <div className="flex items-center justify-between">
                                 <span className="flex items-center gap-2 text-gray-600">
                                     <Clock className="w-4 h-4 text-amber-500" />
-                                    Open
+                                    {t("employees.view.taskOverview.open")}
                                 </span>
                                 <span className="font-semibold text-amber-700">
                                     {openTasks.length}
@@ -317,20 +333,20 @@ export default function EmployeeView() {
                                 to="/tasks"
                                 className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
                             >
-                                View all tasks →
+                                {t("employees.view.taskOverview.viewAll")} →
                             </Link>
                         </div>
                     </div>
 
                     <div className="bg-white shadow-md rounded-lg p-4">
                         <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                            Attendance (this month)
+                            {t("employees.view.attendance.title")}
                         </h3>
                         <div className="space-y-2 text-sm">
                             <div className="flex items-center justify-between">
                                 <span className="flex items-center gap-2 text-gray-600">
                                     <CalendarDays className="w-4 h-4 text-indigo-500" />
-                                    Present days
+                                    {t("employees.view.attendance.presentDays")}
                                 </span>
                                 <span className="font-semibold text-gray-900">
                                     {totalDaysThisMonth}
@@ -342,21 +358,21 @@ export default function EmployeeView() {
                                 to="/attendance"
                                 className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
                             >
-                                View attendance →
+                                {t("employees.view.attendance.view")} →
                             </Link>
                         </div>
                     </div>
 
                     <div className="bg-white shadow-md rounded-lg p-4">
                         <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                            Salary
+                            {t("employees.view.salary.title")}
                         </h3>
                         {latestSalary ? (
                             <div className="space-y-2 text-sm">
                                 <div className="flex items-center justify-between">
                                     <span className="flex items-center gap-2 text-gray-600">
                                         <DollarSign className="w-4 h-4 text-emerald-500" />
-                                        Current amount
+                                        {t("employees.view.salary.currentAmount")}
                                     </span>
                                     <span className="font-semibold text-emerald-700">
                                         {latestSalary.amount}
@@ -365,18 +381,18 @@ export default function EmployeeView() {
                                 <div className="flex items-center justify-between">
                                     <span className="flex items-center gap-2 text-gray-600">
                                         <CalendarDays className="w-4 h-4 text-gray-500" />
-                                        Effective from
+                                        {t("employees.view.salary.effectiveFrom")}
                                     </span>
                                     <span className="text-gray-900">
                                         {latestSalary.effective_date
                                             ? formatDate(latestSalary.effective_date)
-                                            : "-"}
+                                            : t("common.dash")}
                                     </span>
                                 </div>
                             </div>
                         ) : (
                             <p className="text-sm text-gray-500">
-                                No salary records found for this employee.
+                                {t("employees.view.salary.empty")}
                             </p>
                         )}
                         <div className="mt-3">
@@ -384,7 +400,7 @@ export default function EmployeeView() {
                                 to="/salaries"
                                 className="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800"
                             >
-                                View salary history →
+                                {t("employees.view.salary.viewHistory")} →
                             </Link>
                         </div>
                     </div>
@@ -393,11 +409,11 @@ export default function EmployeeView() {
 
             <div className="bg-white shadow-md rounded-lg p-6">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                    Recent tasks
+                    {t("employees.view.recentTasks.title")}
                 </h3>
                 {tasks.length === 0 ? (
                     <p className="text-sm text-gray-500">
-                        This employee has no tasks assigned yet.
+                        {t("employees.view.recentTasks.empty")}
                     </p>
                 ) : (
                     <ul className="divide-y divide-gray-100 text-sm">
@@ -409,7 +425,8 @@ export default function EmployeeView() {
                                     </p>
                                     {task.due_date && (
                                         <p className="text-xs text-gray-500">
-                                            Due: {formatDate(task.due_date)}
+                                            {t("employees.view.recentTasks.due")}:{" "}
+                                            {formatDate(task.due_date)}
                                         </p>
                                     )}
                                 </div>
@@ -422,7 +439,9 @@ export default function EmployeeView() {
                                               : "bg-amber-50 text-amber-700"
                                     }`}
                                 >
-                                    {task.status}
+                                    {t(`tasks.status.${task.status}`, {
+                                        defaultValue: task.status,
+                                    })}
                                 </span>
                             </li>
                         ))}

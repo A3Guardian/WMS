@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { useForm } from '../../hooks/useForm';
-import api from '../../utils/api';
-import { usePermissions } from '../../hooks/usePermissions';
-import SearchableSelect from '../../components/SearchableSelect';
+import React, { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { useForm } from "../../hooks/useForm";
+import api from "../../utils/api";
+import { usePermissions } from "../../hooks/usePermissions";
+import SearchableSelect from "../../components/SearchableSelect";
 
 export default function EmployeeForm() {
     const { id } = useParams();
@@ -13,25 +14,26 @@ export default function EmployeeForm() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const isEdit = !!id;
+    const { t } = useTranslation();
 
     const { data: departmentsData } = useQuery({
-        queryKey: ['departments'],
+        queryKey: ["departments"],
         queryFn: async () => {
-            const response = await api.get('/departments?per_page=100');
+            const response = await api.get("/departments?per_page=100");
             return response.data;
         },
     });
 
     const { data: usersData } = useQuery({
-        queryKey: ['users'],
+        queryKey: ["users"],
         queryFn: async () => {
-            const response = await api.get('/admin/users?per_page=100');
+            const response = await api.get("/admin/users?per_page=100");
             return response.data;
         },
     });
 
     const { data: employeeData } = useQuery({
-        queryKey: ['employee', id],
+        queryKey: ["employee", id],
         queryFn: async () => {
             const response = await api.get(`/employees/${id}`);
             return response.data;
@@ -40,18 +42,18 @@ export default function EmployeeForm() {
     });
 
     const initialValues = {
-        user_id: '',
-        employee_code: '',
-        department_id: '',
-        position: '',
-        hire_date: '',
-        employment_type: 'full-time',
-        salary: '',
-        phone: '',
-        address: '',
-        emergency_contact_name: '',
-        emergency_contact_phone: '',
-        status: 'active',
+        user_id: "",
+        employee_code: "",
+        department_id: "",
+        position: "",
+        hire_date: "",
+        employment_type: "full-time",
+        salary: "",
+        phone: "",
+        address: "",
+        emergency_contact_name: "",
+        emergency_contact_phone: "",
+        status: "active",
     };
 
     const { values, errors, isSubmitting, handleChange, handleSubmit, setValues } = useForm(
@@ -67,17 +69,18 @@ export default function EmployeeForm() {
 
                 if (isEdit) {
                     await api.put(`/employees/${id}`, submitData);
-                    toast.success('Employee updated successfully');
+                    toast.success(t("employees.toast.updated"));
                 } else {
-                    await api.post('/employees', submitData);
-                    toast.success('Employee created successfully');
+                    await api.post("/employees", submitData);
+                    toast.success(t("employees.toast.created"));
                 }
 
-                queryClient.invalidateQueries({ queryKey: ['employees'] });
-                navigate('/employees');
+                queryClient.invalidateQueries({ queryKey: ["employees"] });
+                navigate("/employees");
             } catch (error) {
-                const errorMessage = error.response?.data?.message || 'An error occurred';
-                toast.error(isEdit ? 'Failed to update employee' : 'Failed to create employee', {
+                const errorMessage =
+                    error.response?.data?.message || t("common.genericError");
+                toast.error(isEdit ? t("employees.toast.updateFailed") : t("employees.toast.createFailed"), {
                     description: errorMessage,
                 });
                 throw error;
@@ -87,23 +90,25 @@ export default function EmployeeForm() {
 
     useEffect(() => {
         if (employeeData) {
-            const hireDate = employeeData.hire_date 
-                ? new Date(employeeData.hire_date).toISOString().split('T')[0]
-                : '';
+            const hireDate = employeeData.hire_date
+                ? new Date(employeeData.hire_date).toISOString().split("T")[0]
+                : "";
             
             setValues({
-                user_id: employeeData.user_id || '',
-                employee_code: employeeData.employee_code || '',
-                department_id: employeeData.department_id || '',
-                position: employeeData.position || '',
+                user_id: employeeData.user_id || "",
+                employee_code: employeeData.employee_code || "",
+                department_id: employeeData.department_id || "",
+                position: employeeData.position || "",
                 hire_date: hireDate,
-                employment_type: employeeData.employment_type || 'full-time',
-                salary: employeeData.salary || '',
-                phone: employeeData.phone || '',
-                address: employeeData.address || '',
-                emergency_contact_name: employeeData.emergency_contact_name || '',
-                emergency_contact_phone: employeeData.emergency_contact_phone || '',
-                status: employeeData.status || 'active',
+                employment_type: employeeData.employment_type || "full-time",
+                salary: employeeData.salary || "",
+                phone: employeeData.phone || "",
+                address: employeeData.address || "",
+                emergency_contact_name:
+                    employeeData.emergency_contact_name || "",
+                emergency_contact_phone:
+                    employeeData.emergency_contact_phone || "",
+                status: employeeData.status || "active",
             });
         }
     }, [employeeData, setValues]);
@@ -111,18 +116,18 @@ export default function EmployeeForm() {
     const departments = departmentsData?.data || [];
     const users = usersData?.data || [];
 
-    if (isEdit && !hasPermission('edit employees')) {
+    if (isEdit && !hasPermission("edit employees")) {
         return (
             <div className="text-red-500 p-4">
-                You don't have permission to edit employees.
+                {t("employees.errors.noPermissionEdit")}
             </div>
         );
     }
 
-    if (!isEdit && !hasPermission('create employees')) {
+    if (!isEdit && !hasPermission("create employees")) {
         return (
             <div className="text-red-500 p-4">
-                You don't have permission to create employees.
+                {t("employees.errors.noPermissionCreate")}
             </div>
         );
     }
@@ -130,14 +135,17 @@ export default function EmployeeForm() {
     return (
         <div className="max-w-4xl mx-auto p-6">
             <h1 className="text-3xl font-bold mb-6">
-                {isEdit ? 'Edit Employee' : 'Create Employee'}
+                {isEdit
+                    ? t("employees.modal.editTitle")
+                    : t("employees.modal.createTitle")}
             </h1>
 
             <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label htmlFor="employee_code" className="block text-sm font-medium text-gray-700 mb-1">
-                            Employee Code <span className="text-red-500">*</span>
+                            {t("employees.fields.employeeCode")}{" "}
+                            <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -155,20 +163,22 @@ export default function EmployeeForm() {
 
                     <div>
                         <label htmlFor="user_id" className="block text-sm font-medium text-gray-700 mb-1">
-                            Link to User (Optional)
+                            {t("employees.fields.linkUserOptional")}
                         </label>
                         <SearchableSelect
                             cacheKey="employee-user"
                             value={values.user_id}
-                            onChange={(value) => setValues({ ...values, user_id: value || '' })}
+                            onChange={(value) =>
+                                setValues({ ...values, user_id: value || "" })
+                            }
                             fetchOptions={async (params) => {
                                 const response = await api.get(`/admin/users?${params}`);
                                 return response.data;
                             }}
                             searchParam="search"
-                            placeholder="Select User"
+                            placeholder={t("employees.placeholders.selectUser")}
                             displayValue={(user) => `${user.name} (${user.email})`}
-                            emptyMessage="No users found."
+                            emptyMessage={t("employees.empty.users")}
                         />
                         {errors.user_id && (
                             <p className="mt-1 text-sm text-red-600">{errors.user_id}</p>
@@ -177,20 +187,25 @@ export default function EmployeeForm() {
 
                     <div>
                         <label htmlFor="department_id" className="block text-sm font-medium text-gray-700 mb-1">
-                            Department
+                            {t("employees.fields.department")}
                         </label>
                         <SearchableSelect
                             cacheKey="employee-department"
                             value={values.department_id}
-                            onChange={(value) => setValues({ ...values, department_id: value || '' })}
+                            onChange={(value) =>
+                                setValues({
+                                    ...values,
+                                    department_id: value || "",
+                                })
+                            }
                             fetchOptions={async (params) => {
                                 const response = await api.get(`/departments?${params}`);
                                 return response.data;
                             }}
                             searchParam="search"
-                            placeholder="Select Department"
+                            placeholder={t("employees.placeholders.selectDepartment")}
                             displayValue={(dept) => dept.name}
-                            emptyMessage="No departments found."
+                            emptyMessage={t("employees.empty.departments")}
                         />
                         {errors.department_id && (
                             <p className="mt-1 text-sm text-red-600">{errors.department_id}</p>
@@ -199,7 +214,7 @@ export default function EmployeeForm() {
 
                     <div>
                         <label htmlFor="position" className="block text-sm font-medium text-gray-700 mb-1">
-                            Position
+                            {t("employees.fields.position")}
                         </label>
                         <input
                             type="text"

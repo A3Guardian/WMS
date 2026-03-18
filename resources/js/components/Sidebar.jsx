@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { usePermissions } from "../hooks/usePermissions";
 
 const icon = (path) => (
     <svg
-        className="w-5 h-5 flex-shrink-0"
+        className="w-5 h-5 shrink-0"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -64,52 +65,52 @@ const menuStructure = [
     {
         type: "link",
         path: "/",
-        label: "Dashboard",
+        labelKey: "menu.dashboard",
         iconKey: "dashboard",
         permission: null,
     },
     {
         type: "group",
         key: "warehouse",
-        label: "Depozit & Operațiuni",
+        labelKey: "menu.groups.warehouse",
         iconKey: "warehouse",
         items: [
             {
                 path: "/products",
-                label: "Produse",
+                labelKey: "menu.items.products",
                 iconKey: "products",
                 permission: "view products",
             },
             {
                 path: "/inventory",
-                label: "Inventar",
+                labelKey: "menu.items.inventory",
                 iconKey: "inventory",
                 permission: "view inventory",
             },
             {
                 path: "/orders",
-                label: "Comenzi",
+                labelKey: "menu.items.orders",
                 iconKey: "orders",
                 permission: "view orders",
                 hideForEmployee: true,
             },
             {
                 path: "/suppliers",
-                label: "Furnizori",
+                labelKey: "menu.items.suppliers",
                 iconKey: "suppliers",
                 permission: "view suppliers",
                 hideForEmployee: true,
             },
             {
                 path: "/customers",
-                label: "Clienți",
+                labelKey: "menu.items.customers",
                 iconKey: "customers",
                 permission: "view customers",
                 hideForEmployee: true,
             },
             {
                 path: "/deposits",
-                label: "Depozite",
+                labelKey: "menu.items.deposits",
                 iconKey: "deposits",
                 permission: "view deposits",
             },
@@ -118,12 +119,12 @@ const menuStructure = [
     {
         type: "group",
         key: "tasks",
-        label: "Task-uri",
+        labelKey: "menu.groups.tasks",
         iconKey: "tasks",
         items: [
             {
                 path: "/tasks",
-                label: "Lista task-uri",
+                labelKey: "menu.items.taskList",
                 iconKey: "tasks",
                 permission: "view tasks",
             },
@@ -132,48 +133,48 @@ const menuStructure = [
     {
         type: "group",
         key: "hr",
-        label: "Resurse umane",
+        labelKey: "menu.groups.hr",
         iconKey: "employees",
         items: [
             {
                 path: "/employees",
-                label: "Angajați",
+                labelKey: "menu.items.employees",
                 iconKey: "employees",
                 permission: "view employees",
             },
             {
                 path: "/departments",
-                label: "Departamente",
+                labelKey: "menu.items.departments",
                 iconKey: "departments",
                 permission: "view employees",
             },
             {
                 path: "/salaries",
-                label: "Salarii",
+                labelKey: "menu.items.salaries",
                 iconKey: "salaries",
                 permission: "view salaries",
             },
             {
                 path: "/payroll-records",
-                label: "Salarizare",
+                labelKey: "menu.items.payroll",
                 iconKey: "payroll",
                 permission: "view payroll",
             },
             {
                 path: "/leave-types",
-                label: "Tipuri concedii",
+                labelKey: "menu.items.leaveTypes",
                 iconKey: "leaveTypes",
                 permission: "view leave types",
             },
             {
                 path: "/leaves",
-                label: "Concedii",
+                labelKey: "menu.items.leaves",
                 iconKey: "leaves",
                 permission: "view leaves",
             },
             {
                 path: "/attendance",
-                label: "Prezență",
+                labelKey: "menu.items.attendance",
                 iconKey: "attendance",
                 permission: "view attendance",
             },
@@ -182,30 +183,30 @@ const menuStructure = [
     {
         type: "group",
         key: "financial",
-        label: "Finanțe",
+        labelKey: "menu.groups.financial",
         iconKey: "chart",
         items: [
             {
                 path: "/financial/dashboard",
-                label: "Dashboard financiar",
+                labelKey: "menu.items.financialDashboard",
                 iconKey: "chart",
                 permission: "view financial",
             },
             {
                 path: "/invoices",
-                label: "Facturi",
+                labelKey: "menu.items.invoices",
                 iconKey: "invoices",
                 permission: "view invoices",
             },
             {
                 path: "/cost-reports",
-                label: "Rapoarte costuri",
+                labelKey: "menu.items.costReports",
                 iconKey: "costReport",
                 permission: "view financial",
             },
             {
                 path: "/payments",
-                label: "Plăți",
+                labelKey: "menu.items.payments",
                 iconKey: "payments",
                 permission: "view payments",
             },
@@ -214,28 +215,28 @@ const menuStructure = [
     {
         type: "group",
         key: "settings",
-        label: "Setări",
+        labelKey: "menu.groups.settings",
         iconKey: "settings",
         adminOnly: true,
         bottom: true,
         items: [
             {
                 path: "/admin/settings",
-                label: "Setări aplicație",
+                labelKey: "menu.items.appSettings",
                 iconKey: "settings",
                 permission: null,
                 adminOnly: true,
             },
             {
                 path: "/admin/users",
-                label: "Utilizatori",
+                labelKey: "menu.items.users",
                 iconKey: "users",
                 permission: "view users",
                 adminOnly: true,
             },
             {
                 path: "/admin/roles",
-                label: "Roluri & permisiuni",
+                labelKey: "menu.items.rolesAndPermissions",
                 iconKey: "roles",
                 permission: "view roles",
                 adminOnly: true,
@@ -248,6 +249,7 @@ export default function Sidebar({ isOpen, onClose }) {
     const location = useLocation();
     const { hasPermission, hasRole, isAdmin } = usePermissions();
     const [openGroups, setOpenGroups] = useState(() => ({}));
+    const { t } = useTranslation();
 
     useEffect(() => {
         const toOpen = {};
@@ -309,7 +311,7 @@ export default function Sidebar({ isOpen, onClose }) {
     return (
         <aside
             className={`
-                flex-shrink-0 w-64 flex flex-col
+                shrink-0 w-64 flex flex-col
                 bg-white border-r border-gray-200
                 rounded-b-xl rounded-br-xl shadow-md
                 transition-all duration-300 ease-in-out hover:shadow-lg
@@ -319,12 +321,14 @@ export default function Sidebar({ isOpen, onClose }) {
             `}
         >
             <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200 lg:hidden">
-                <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                    {t("menu.mobile.title")}
+                </h2>
                 <button
                     type="button"
                     onClick={onClose}
                     className="p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors"
-                    aria-label="Închide meniul"
+                    aria-label={t("menu.mobile.close")}
                 >
                     <svg
                         className="h-6 w-6"
@@ -344,11 +348,11 @@ export default function Sidebar({ isOpen, onClose }) {
             <nav className="flex-1 overflow-y-auto p-4 flex flex-col min-h-0">
                 {visibleStructure.length === 0 ? (
                     <div className="text-center text-gray-500 py-8 text-sm">
-                        Nu aveți elemente în meniu.
+                        {t("menu.empty")}
                     </div>
                 ) : (
                     <>
-                        <ul className="space-y-1 flex-shrink-0">
+                        <ul className="space-y-1 shrink-0">
                             {mainMenuItems.map((entry) => {
                                 if (entry.type === "link") {
                                     return (
@@ -364,7 +368,9 @@ export default function Sidebar({ isOpen, onClose }) {
                                                     ICONS[entry.iconKey] ||
                                                         ICONS.dashboard,
                                                 )}
-                                                <span>{entry.label}</span>
+                                                <span>
+                                                    {t(entry.labelKey)}
+                                                </span>
                                             </Link>
                                         </li>
                                     );
@@ -389,7 +395,9 @@ export default function Sidebar({ isOpen, onClose }) {
                                         >
                                             <span className="flex items-center gap-3">
                                                 {icon(groupIcon)}
-                                                <span>{entry.label}</span>
+                                                <span>
+                                                    {t(entry.labelKey)}
+                                                </span>
                                             </span>
                                             <svg
                                                 className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isOpenGroup ? "rotate-180" : ""}`}
@@ -430,7 +438,7 @@ export default function Sidebar({ isOpen, onClose }) {
                                                             ] || ICONS.products,
                                                         )}
                                                         <span>
-                                                            {item.label}
+                                                            {t(item.labelKey)}
                                                         </span>
                                                     </Link>
                                                 </li>
@@ -441,7 +449,7 @@ export default function Sidebar({ isOpen, onClose }) {
                             })}
                         </ul>
                         {bottomMenuItems.length > 0 && (
-                            <div className="mt-auto pt-4 border-t border-gray-200 flex-shrink-0">
+                            <div className="mt-auto pt-4 border-t border-gray-200 shrink-0">
                                 <ul className="space-y-1">
                                     {bottomMenuItems.map((entry) => {
                                         if (entry.type === "link") {
@@ -463,7 +471,7 @@ export default function Sidebar({ isOpen, onClose }) {
                                                                 ICONS.dashboard,
                                                         )}
                                                         <span>
-                                                            {entry.label}
+                                                            {t(entry.labelKey)}
                                                         </span>
                                                     </Link>
                                                 </li>
@@ -490,7 +498,7 @@ export default function Sidebar({ isOpen, onClose }) {
                                                     <span className="flex items-center gap-3">
                                                         {icon(groupIcon)}
                                                         <span>
-                                                            {entry.label}
+                                                            {t(entry.labelKey)}
                                                         </span>
                                                     </span>
                                                     <svg
@@ -543,9 +551,9 @@ export default function Sidebar({ isOpen, onClose }) {
                                                                             ICONS.products,
                                                                     )}
                                                                     <span>
-                                                                        {
-                                                                            item.label
-                                                                        }
+                                                                        {t(
+                                                                            item.labelKey,
+                                                                        )}
                                                                     </span>
                                                                 </Link>
                                                             </li>

@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { useForm } from '../../hooks/useForm';
-import api from '../../utils/api';
-import { usePermissions } from '../../hooks/usePermissions';
+import React, { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { useForm } from "../../hooks/useForm";
+import api from "../../utils/api";
+import { usePermissions } from "../../hooks/usePermissions";
 
 export default function DepartmentForm() {
     const { id } = useParams();
@@ -12,9 +13,10 @@ export default function DepartmentForm() {
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
     const isEdit = !!id;
+    const { t } = useTranslation();
 
     const { data: departmentData } = useQuery({
-        queryKey: ['department', id],
+        queryKey: ["department", id],
         queryFn: async () => {
             const response = await api.get(`/departments/${id}`);
             return response.data;
@@ -23,8 +25,8 @@ export default function DepartmentForm() {
     });
 
     const initialValues = {
-        name: '',
-        description: '',
+        name: "",
+        description: "",
     };
 
     const { values, errors, isSubmitting, handleChange, handleSubmit, setValues } = useForm(
@@ -38,19 +40,25 @@ export default function DepartmentForm() {
 
                 if (isEdit) {
                     await api.put(`/departments/${id}`, submitData);
-                    toast.success('Department updated successfully');
+                    toast.success(t("departments.toast.updated"));
                 } else {
-                    await api.post('/departments', submitData);
-                    toast.success('Department created successfully');
+                    await api.post("/departments", submitData);
+                    toast.success(t("departments.toast.created"));
                 }
 
-                queryClient.invalidateQueries({ queryKey: ['departments'] });
-                navigate('/departments');
+                queryClient.invalidateQueries({ queryKey: ["departments"] });
+                navigate("/departments");
             } catch (error) {
-                const errorMessage = error.response?.data?.message || 'An error occurred';
-                toast.error(isEdit ? 'Failed to update department' : 'Failed to create department', {
+                const errorMessage =
+                    error.response?.data?.message || t("common.genericError");
+                toast.error(
+                    isEdit
+                        ? t("departments.toast.updateFailed")
+                        : t("departments.toast.createFailed"),
+                    {
                     description: errorMessage,
-                });
+                    },
+                );
                 throw error;
             }
         }
@@ -59,24 +67,24 @@ export default function DepartmentForm() {
     useEffect(() => {
         if (departmentData) {
             setValues({
-                name: departmentData.name || '',
-                description: departmentData.description || '',
+                name: departmentData.name || "",
+                description: departmentData.description || "",
             });
         }
     }, [departmentData, setValues]);
 
-    if (isEdit && !hasPermission('edit employees')) {
+    if (isEdit && !hasPermission("edit employees")) {
         return (
             <div className="text-red-500 p-4">
-                You don't have permission to edit departments.
+                {t("departments.errors.noPermissionEdit")}
             </div>
         );
     }
 
-    if (!isEdit && !hasPermission('create employees')) {
+    if (!isEdit && !hasPermission("create employees")) {
         return (
             <div className="text-red-500 p-4">
-                You don't have permission to create departments.
+                {t("departments.errors.noPermissionCreate")}
             </div>
         );
     }
@@ -84,14 +92,17 @@ export default function DepartmentForm() {
     return (
         <div className="max-w-4xl mx-auto p-6">
             <h1 className="text-3xl font-bold mb-6">
-                {isEdit ? 'Edit Department' : 'Create Department'}
+                {isEdit
+                    ? t("departments.modal.editTitle")
+                    : t("departments.modal.createTitle")}
             </h1>
 
             <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
                 <div className="grid grid-cols-1 gap-6">
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                            Name <span className="text-red-500">*</span>
+                            {t("departments.fields.name")}{" "}
+                            <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -109,7 +120,7 @@ export default function DepartmentForm() {
 
                     <div>
                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                            Description
+                            {t("departments.fields.description")}
                         </label>
                         <textarea
                             id="description"
@@ -137,14 +148,18 @@ export default function DepartmentForm() {
                         disabled={isSubmitting}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isSubmitting ? 'Saving...' : isEdit ? 'Update Department' : 'Create Department'}
+                        {isSubmitting
+                            ? t("common.saving")
+                            : isEdit
+                              ? t("departments.actions.update")
+                              : t("departments.actions.create")}
                     </button>
                     <button
                         type="button"
-                        onClick={() => navigate('/departments')}
+                        onClick={() => navigate("/departments")}
                         className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
                     >
-                        Cancel
+                        {t("common.cancel")}
                     </button>
                 </div>
             </form>

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -16,6 +17,7 @@ export default function RoleList() {
     const { id: routeRoleId } = useParams();
     const queryClient = useQueryClient();
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [perPage, setPerPage] = useState(20);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
@@ -45,11 +47,11 @@ export default function RoleList() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["roles"] });
-            toast.success("Role deleted successfully");
+            toast.success(t("roles.toast.deleted"));
         },
         onError: (error) => {
             toast.error(
-                error.response?.data?.message || "Failed to delete role",
+                error.response?.data?.message || t("roles.toast.deleteFailed"),
             );
         },
     });
@@ -104,7 +106,7 @@ export default function RoleList() {
     if (!hasPermission("view roles")) {
         return (
             <div className="text-red-500 p-4">
-                You don't have permission to view roles.
+                {t("roles.errors.noPermissionView")}
             </div>
         );
     }
@@ -124,20 +126,20 @@ export default function RoleList() {
     const lastPage = Math.max(1, Math.ceil(filteredData.length / perPage));
 
     const columns = [
-        { key: "id", label: "ID" },
-        { key: "name", label: "Role Name" },
+        { key: "id", label: t("roles.list.table.id") },
+        { key: "name", label: t("roles.list.table.name") },
         {
             key: "permissions",
-            label: "Permissions",
+            label: t("roles.list.table.permissions"),
             render: (permissions) => {
                 if (!permissions || permissions.length === 0)
-                    return "No permissions";
+                    return t("roles.list.noPermissions");
                 return permissions.map((p) => p.name).join(", ");
             },
         },
         {
             key: "actions",
-            label: "Actions",
+            label: t("roles.list.table.actions"),
             render: (_, row) => (
                 <div className="flex items-center justify-end gap-1">
                     {hasPermission("edit roles") && (
@@ -145,7 +147,7 @@ export default function RoleList() {
                             type="button"
                             onClick={() => handleOpenEdit(row)}
                             className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
-                            title="Edit"
+                            title={t("roles.actions.edit")}
                         >
                             <Pencil className="w-4 h-4" />
                         </button>
@@ -156,7 +158,7 @@ export default function RoleList() {
                             onClick={() => handleDeleteClick(row)}
                             disabled={deleteMutation.isPending}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                            title="Delete"
+                            title={t("roles.actions.delete")}
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -176,7 +178,9 @@ export default function RoleList() {
                 className={`p-4 rounded ${isPermissionError ? "bg-yellow-50 text-yellow-800" : "bg-red-50 text-red-800"}`}
             >
                 <p className="font-semibold">
-                    {isPermissionError ? "Permission Denied" : "Error"}
+                    {isPermissionError
+                        ? t("common.permissionDenied")
+                        : t("common.error")}
                 </p>
                 <p>{errorMessage}</p>
             </div>
@@ -186,7 +190,7 @@ export default function RoleList() {
     return (
         <div>
             <PageHeader
-                title="Roles & Permissions"
+                title={t("roles.list.title")}
                 actions={
                     hasPermission("create roles") && (
                         <button
@@ -195,7 +199,7 @@ export default function RoleList() {
                             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 inline-flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
-                            Create Role
+                            {t("roles.actions.create")}
                         </button>
                     )
                 }
@@ -209,28 +213,30 @@ export default function RoleList() {
                     onPerPageChange={handlePerPageChange}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search roles..."
+                    searchPlaceholder={t("roles.list.searchPlaceholder")}
                     pagination={{
                         currentPage: page,
                         lastPage,
                         total: filteredData.length,
                         onPageChange: setPage,
                     }}
-                    totalRecordName="roles"
+                    totalRecordName={t("roles.list.totalRecordName")}
                 />
             </div>
 
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete role"
+                title={t("roles.confirmDelete.title")}
                 description={
                     roleToDelete
-                        ? `Are you sure you want to delete "${roleToDelete.name}"?`
-                        : "Are you sure you want to delete this role?"
+                        ? t("roles.confirmDelete.descriptionWithName", {
+                              name: roleToDelete.name,
+                          })
+                        : t("roles.confirmDelete.description")
                 }
-                confirmText="Delete"
-                cancelText="Cancel"
+                confirmText={t("roles.confirmDelete.confirm")}
+                cancelText={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
                 loading={deleteMutation.isPending}
             />

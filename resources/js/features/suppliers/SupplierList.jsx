@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useFetch } from "../../hooks/useFetch";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import DataTable from "../../components/DataTable";
 import PageHeader from "../../components/PageHeader";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -16,6 +17,7 @@ export default function SupplierList() {
     const navigate = useNavigate();
     const { data, loading, error } = useFetch("suppliers", "/suppliers");
     const { hasPermission } = usePermissions();
+    const { t } = useTranslation();
     const [formModalOpen, setFormModalOpen] = useState(false);
     const [selectedSupplier, setSelectedSupplier] = useState(null);
     const [perPage, setPerPage] = useState(20);
@@ -48,12 +50,12 @@ export default function SupplierList() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["suppliers"] });
             queryClient.invalidateQueries({ queryKey: ["products"] });
-            toast.success("Supplier deleted");
+            toast.success(t("suppliers.toast.deleted"));
             setSelectedSupplier(null);
         },
         onError: (err) => {
             toast.error(
-                err.response?.data?.message || "Failed to delete supplier",
+                err.response?.data?.message || t("suppliers.toast.deleteFailed"),
             );
         },
     });
@@ -71,20 +73,20 @@ export default function SupplierList() {
     };
 
     const columns = [
-        { key: "name", label: "Name" },
-        { key: "email", label: "Email" },
-        { key: "phone", label: "Phone" },
-        { key: "contact_person", label: "Contact Person" },
+        { key: "name", label: t("suppliers.table.name") },
+        { key: "email", label: t("suppliers.table.email") },
+        { key: "phone", label: t("suppliers.table.phone") },
+        { key: "contact_person", label: t("suppliers.table.contactPerson") },
         {
             key: "actions",
-            label: "Actions",
+            label: t("suppliers.table.actions"),
             align: "right",
             render: (_, row) => (
                 <div className="flex items-center justify-end gap-1">
                     <button
                         onClick={() => navigate(`/suppliers/${row.id}`)}
                         className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="View"
+                        title={t("suppliers.actions.view")}
                     >
                         <Eye className="w-4 h-4" />
                     </button>
@@ -95,7 +97,7 @@ export default function SupplierList() {
                                 setFormModalOpen(true);
                             }}
                             className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
-                            title="Edit"
+                            title={t("suppliers.actions.edit")}
                         >
                             <Pencil className="w-4 h-4" />
                         </button>
@@ -104,7 +106,7 @@ export default function SupplierList() {
                         <button
                             onClick={() => handleDeleteClick(row)}
                             className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Delete"
+                            title={t("suppliers.actions.delete")}
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -116,7 +118,9 @@ export default function SupplierList() {
 
     if (error) {
         const errorMessage =
-            error?.response?.data?.message || error?.message || "Unknown error";
+            error?.response?.data?.message ||
+            error?.message ||
+            t("common.unknown");
         const isPermissionError = error?.response?.status === 403;
 
         return (
@@ -124,7 +128,9 @@ export default function SupplierList() {
                 className={`p-4 rounded ${isPermissionError ? "bg-yellow-50 text-yellow-800" : "bg-red-50 text-red-800"}`}
             >
                 <p className="font-semibold">
-                    {isPermissionError ? "Permission Denied" : "Error"}
+                    {isPermissionError
+                        ? t("suppliers.errors.permissionDenied")
+                        : t("suppliers.errors.error")}
                 </p>
                 <p>{errorMessage}</p>
             </div>
@@ -134,7 +140,7 @@ export default function SupplierList() {
     return (
         <div>
             <PageHeader
-                title="Suppliers"
+                title={t("suppliers.title")}
                 actions={
                     hasPermission("create suppliers") && (
                         <button
@@ -145,7 +151,7 @@ export default function SupplierList() {
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
                         >
                             <Plus className="w-5 h-5" />
-                            Add supplier
+                            {t("suppliers.actions.add")}
                         </button>
                     )
                 }
@@ -159,14 +165,14 @@ export default function SupplierList() {
                     onPerPageChange={handlePerPageChange}
                     searchValue={search}
                     onSearchChange={setSearch}
-                    searchPlaceholder="Search suppliers..."
+                    searchPlaceholder={t("suppliers.searchPlaceholder")}
                     pagination={{
                         currentPage: page,
                         lastPage,
                         total: filteredData.length,
                         onPageChange: setPage,
                     }}
-                    totalRecordName="suppliers"
+                    totalRecordName={t("suppliers.totalRecordName")}
                 />
             </div>
 
@@ -181,14 +187,16 @@ export default function SupplierList() {
             <ConfirmDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                title="Delete supplier?"
+                title={t("suppliers.confirmDelete.title")}
                 description={
                     supplierToDelete
-                        ? `Delete supplier "${supplierToDelete.name}"?`
+                        ? t("suppliers.confirmDelete.description", {
+                              name: supplierToDelete.name,
+                          })
                         : ""
                 }
-                confirmLabel="Yes, delete"
-                cancelLabel="Cancel"
+                confirmLabel={t("suppliers.confirmDelete.confirm")}
+                cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
         </div>

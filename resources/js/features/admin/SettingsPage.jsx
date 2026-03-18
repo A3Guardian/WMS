@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import { usePermissions } from "../../hooks/usePermissions";
 import SearchableSelect from "../../components/SearchableSelect";
@@ -11,6 +12,7 @@ export default function SettingsPage() {
     const queryClient = useQueryClient();
     const { isAdmin } = usePermissions();
     const logoInputRef = useRef(null);
+    const { t } = useTranslation();
 
     const { data: settings, isLoading } = useQuery({
         queryKey: ["settings"],
@@ -27,7 +29,7 @@ export default function SettingsPage() {
         },
         onSuccess: (data) => {
             queryClient.setQueryData(["settings"], data);
-            setGeneral({ locale: data?.app?.locale || "ro", _synced: true });
+            setGeneral({ locale: data?.app?.locale || "en", _synced: true });
             setCompany({
                 name: data?.company?.name ?? "",
                 cui: data?.company?.cui ?? "",
@@ -51,10 +53,11 @@ export default function SettingsPage() {
                 _synced: true,
             });
             queryClient.invalidateQueries({ queryKey: ["settings"] });
-            toast.success("Setările au fost salvate.");
+            toast.success(t("settings.toast.saved"));
         },
         onError: (err) => {
-            const message = err.response?.data?.message || "Eroare la salvare.";
+            const message =
+                err.response?.data?.message || t("settings.toast.saveError");
             const errors = err.response?.data?.errors;
             const details = errors
                 ? Object.values(errors).flat().filter(Boolean).join("\n")
@@ -77,16 +80,16 @@ export default function SettingsPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["settings"] });
-            toast.success("Logo încărcat.");
+            toast.success(t("settings.toast.logoUploaded"));
         },
         onError: (err) => {
             toast.error(
-                err.response?.data?.message || "Eroare la încărcare logo.",
+                err.response?.data?.message || t("settings.toast.logoUploadError"),
             );
         },
     });
 
-    const [general, setGeneral] = useState({ locale: "ro" });
+    const [general, setGeneral] = useState({ locale: "en" });
     const [company, setCompany] = useState({
         name: "",
         cui: "",
@@ -113,7 +116,7 @@ export default function SettingsPage() {
         setGeneral((g) =>
             g._synced
                 ? g
-                : { ...g, locale: settings.app?.locale || "ro", _synced: true },
+                : { ...g, locale: settings.app?.locale || "en", _synced: true },
         );
     }, [settings?.app?.locale]);
 
@@ -216,7 +219,7 @@ export default function SettingsPage() {
         return (
             <div>
                 <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4">
-                    Nu aveți permisiunea de a accesa setările.
+                    {t("settings.errors.noPermission")}
                 </div>
             </div>
         );
@@ -240,11 +243,10 @@ export default function SettingsPage() {
         <div>
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">
-                    Setări aplicație
+                    {t("settings.title")}
                 </h1>
                 <p className="mt-1 text-gray-600">
-                    Configurați parametrii generali, datele companiei și
-                    notificările prin email.
+                    {t("settings.subtitle")}
                 </p>
             </div>
 
@@ -252,12 +254,12 @@ export default function SettingsPage() {
                 {/* General */}
                 <section className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                        General
+                        {t("settings.sections.general")}
                     </h2>
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Logo aplicație
+                                {t("settings.general.logoLabel")}
                             </label>
                             <div className="flex items-center gap-4">
                                 {logoUrl ? (
@@ -268,7 +270,7 @@ export default function SettingsPage() {
                                     />
                                 ) : (
                                     <div className="h-16 w-24 rounded-lg border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-gray-400 text-xs">
-                                        Fără logo
+                                        {t("settings.general.noLogo")}
                                     </div>
                                 )}
                                 <div>
@@ -282,33 +284,19 @@ export default function SettingsPage() {
                                             type="file"
                                             accept="image/*"
                                             onChange={handleLogoChange}
-                                            onFocus={() =>
-                                                console.log(
-                                                    "[Setări Logo] input focus (ar trebui să se deschidă dialogul)",
-                                                )
-                                            }
-                                            onClick={(e) =>
-                                                console.log(
-                                                    "[Setări Logo] input click",
-                                                    {
-                                                        disabled:
-                                                            logoMutation.isPending,
-                                                    },
-                                                )
-                                            }
                                             className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
                                             disabled={logoMutation.isPending}
                                         />
                                         {logoMutation.isPending
-                                            ? "Se încarcă…"
-                                            : "Încarcă logo"}
+                                            ? t("settings.logo.uploading")
+                                            : t("settings.logo.upload")}
                                     </label>
                                 </div>
                             </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Limbă implicită
+                                {t("settings.general.defaultLanguage")}
                             </label>
                             <SearchableSelect
                                 value={general.locale}
@@ -319,10 +307,10 @@ export default function SettingsPage() {
                                     }))
                                 }
                                 options={[
-                                    { value: "ro", label: "Română" },
-                                    { value: "en", label: "English" },
+                                    { value: "ro", label: t("app.romanian") },
+                                    { value: "en", label: t("app.english") },
                                 ]}
-                                placeholder="Locale"
+                                placeholder={t("settings.general.localePlaceholder")}
                                 className="max-w-xs"
                             />
                         </div>
@@ -332,7 +320,7 @@ export default function SettingsPage() {
                             disabled={updateMutation.isPending}
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
                         >
-                            Salvează general
+                            {t("settings.general.save")}
                         </button>
                     </div>
                 </section>
@@ -340,16 +328,15 @@ export default function SettingsPage() {
                 {/* Company */}
                 <section className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                        Companie
+                        {t("settings.company.title")}
                     </h2>
                     <p className="text-gray-600 text-sm mb-4">
-                        Detalii companie pentru facturi: nume, CUI, adresă,
-                        oras, județ, email, bancă, IBAN.
+                        {t("settings.company.description")}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="sm:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Nume companie
+                                {t("settings.company.name")}
                             </label>
                             <input
                                 type="text"
@@ -361,12 +348,12 @@ export default function SettingsPage() {
                                     }))
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Ex: S.C. Exemplu S.R.L."
+                                placeholder={t("settings.company.namePlaceholder")}
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                CUI
+                                {t("settings.company.cui")}
                             </label>
                             <input
                                 type="text"
@@ -378,12 +365,12 @@ export default function SettingsPage() {
                                     }))
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Cod unic de identificare"
+                                placeholder={t("settings.company.cuiPlaceholder")}
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Telefon
+                                {t("settings.company.phone")}
                             </label>
                             <input
                                 type="text"
@@ -417,7 +404,7 @@ export default function SettingsPage() {
                         </div>
                         <div className="sm:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Adresă / Locație
+                                {t("settings.company.address")}
                             </label>
                             <textarea
                                 value={company.address}
@@ -429,12 +416,12 @@ export default function SettingsPage() {
                                 }
                                 rows={2}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Adresa sediului social"
+                                placeholder={t("settings.company.addressPlaceholder")}
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Oraș
+                                {t("settings.company.city")}
                             </label>
                             <input
                                 type="text"
@@ -446,12 +433,12 @@ export default function SettingsPage() {
                                     }))
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="București"
+                                placeholder={t("settings.company.cityPlaceholder")}
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Județ
+                                {t("settings.company.county")}
                             </label>
                             <input
                                 type="text"
@@ -463,12 +450,12 @@ export default function SettingsPage() {
                                     }))
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="București"
+                                placeholder={t("settings.company.countyPlaceholder")}
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Bancă
+                                {t("settings.company.bank")}
                             </label>
                             <input
                                 type="text"
@@ -507,26 +494,32 @@ export default function SettingsPage() {
                         disabled={updateMutation.isPending}
                         className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
                     >
-                        Salvează companie
+                        {t("settings.company.save")}
                     </button>
                 </section>
 
                 {/* Notificări - SMTP */}
                 <section className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                        Notificări – Email (SMTP)
+                        {t("settings.smtp.title")}
                     </h2>
                     <p className="text-gray-600 text-sm mb-4">
-                        Configurați serverul SMTP pentru trimiterea de emailuri
-                        (rapoarte, alerte, etc.).
+                        {t("settings.smtp.description")}
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            saveSmtp();
+                        }}
+                    >
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="sm:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Host SMTP
                             </label>
                             <input
                                 type="text"
+                                name="smtp_host"
                                 value={smtp.host}
                                 onChange={(e) =>
                                     setSmtp((s) => ({
@@ -544,6 +537,7 @@ export default function SettingsPage() {
                             </label>
                             <input
                                 type="text"
+                                name="smtp_port"
                                 value={smtp.port}
                                 onChange={(e) =>
                                     setSmtp((s) => ({
@@ -557,7 +551,7 @@ export default function SettingsPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Criptare
+                                {t("settings.smtp.encryption")}
                             </label>
                             <SearchableSelect
                                 value={smtp.encryption}
@@ -570,18 +564,23 @@ export default function SettingsPage() {
                                 options={[
                                     { value: "tls", label: "TLS" },
                                     { value: "ssl", label: "SSL" },
-                                    { value: "null", label: "Niciuna" },
+                                    {
+                                        value: "null",
+                                        label: t("settings.smtp.none"),
+                                    },
                                 ]}
-                                placeholder="Encryption"
+                                placeholder={t("settings.smtp.encryptionPlaceholder")}
                                 className="w-full"
                             />
                         </div>
                         <div className="sm:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Utilizator SMTP
+                                {t("settings.smtp.username")}
                             </label>
                             <input
                                 type="text"
+                                name="smtp_username"
+                                autoComplete="username"
                                 value={smtp.username}
                                 onChange={(e) =>
                                     setSmtp((s) => ({
@@ -595,10 +594,11 @@ export default function SettingsPage() {
                         </div>
                         <div className="sm:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Parolă SMTP
+                                {t("settings.smtp.password")}
                             </label>
                             <input
                                 type="password"
+                                name="smtp_password"
                                 value={smtp.password}
                                 onChange={(e) =>
                                     setSmtp((s) => ({
@@ -607,16 +607,17 @@ export default function SettingsPage() {
                                     }))
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Lăsați gol pentru a păstra parola existentă"
+                                placeholder={t("settings.smtp.passwordPlaceholder")}
                                 autoComplete="new-password"
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                De la (email)
+                                {t("settings.smtp.fromEmail")}
                             </label>
                             <input
                                 type="email"
+                                name="smtp_from_address"
                                 value={smtp.from_address}
                                 onChange={(e) =>
                                     setSmtp((s) => ({
@@ -630,10 +631,11 @@ export default function SettingsPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                De la (nume)
+                                {t("settings.smtp.fromName")}
                             </label>
                             <input
                                 type="text"
+                                name="smtp_from_name"
                                 value={smtp.from_name}
                                 onChange={(e) =>
                                     setSmtp((s) => ({
@@ -645,15 +647,15 @@ export default function SettingsPage() {
                                 placeholder="WMS"
                             />
                         </div>
-                    </div>
+                        </div>
                     <button
-                        type="button"
-                        onClick={saveSmtp}
+                        type="submit"
                         disabled={updateMutation.isPending}
                         className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
                     >
-                        Salvează SMTP
+                        {t("settings.smtp.save")}
                     </button>
+                    </form>
                 </section>
             </div>
 
@@ -663,14 +665,14 @@ export default function SettingsPage() {
                     onClick={() => navigate("/admin/users")}
                     className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium"
                 >
-                    Utilizatori
+                    {t("menu.items.users")}
                 </button>
                 <button
                     type="button"
                     onClick={() => navigate("/admin/roles")}
                     className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium"
                 >
-                    Roluri & permisiuni
+                    {t("menu.items.rolesAndPermissions")}
                 </button>
             </div>
         </div>
