@@ -60,8 +60,12 @@
       "fromName": "From (name)",
       "save": "Save SMTP"
     }
-  }
-  ,
+  },
+  "dataTable": {
+    "itemsPerPage": "Items per page:",
+    "itemsPerPagePlaceholder": "Items per page",
+    "showingRange": "Showing {{from}} to {{to}} of {{total}}"
+  },
   "invoicePdf": {
     "title": "INVOICE",
     "detailsTitle": "Details",

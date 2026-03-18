@@ -1,6 +1,7 @@
 import React from "react";
 import SearchableSelect from "./SearchableSelect";
 import Pagination from "./Pagination";
+import { useTranslation } from "react-i18next";
 
 const PER_PAGE_OPTIONS = [10, 20, 50, 100].map((n) => ({
     value: n,
@@ -23,6 +24,7 @@ export default function DataTable({
     searchPlaceholder,
     totalRecordName = "",
 }) {
+    const { t } = useTranslation();
     const effectivePerPage = perPage ?? pagination?.perPage;
     const effectiveOnPerPageChange =
         onPerPageChange ?? pagination?.onPerPageChange;
@@ -51,14 +53,14 @@ export default function DataTable({
                                 htmlFor="perPage"
                                 className="text-sm font-medium text-gray-700 shrink-0"
                             >
-                                Items per page:
+                                {t("dataTable.itemsPerPage")}
                             </label>
                             <SearchableSelect
                                 id="perPage"
                                 value={effectivePerPage}
                                 onChange={(v) => handlePerPageChange(Number(v))}
                                 options={PER_PAGE_OPTIONS}
-                                placeholder="Items per page"
+                                placeholder={t("dataTable.itemsPerPagePlaceholder")}
                                 className="min-w-[100px] sm:w-auto "
                             />
                         </>
@@ -71,7 +73,7 @@ export default function DataTable({
                             placeholder={searchPlaceholder || "Search..."}
                             value={searchValue}
                             onChange={(e) => onSearchChange?.(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base !bg-white"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white!"
                         />
                     </div>
                 )}
@@ -97,7 +99,7 @@ export default function DataTable({
         return (
             <div className={FOOTER_CLASSES}>
                 <div className="text-sm text-gray-700 text-center sm:text-left">
-                    Showing {from} to {to} of {total}
+                    {t("dataTable.showingRange", { from, to, total })}
                     {recordLabel}
                 </div>
                 {(lastPage ?? 1) > 1 && (
