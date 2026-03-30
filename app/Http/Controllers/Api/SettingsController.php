@@ -7,7 +7,9 @@ use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class SettingsController extends Controller
 {
@@ -188,6 +190,70 @@ class SettingsController extends Controller
                 'iban' => $raw['company.iban'] ?? '',
             ],
             'logo_url' => $logoUrl,
+        ]);
+    }
+
+    public function sendSmtpTestEmail(Request $request): JsonResponse
+    {
+        $this->authorizeAdmin();
+        $locale = Setting::get('app.locale', config('app.locale'));
+        if (in_array($locale, ['en', 'ro'], true)) {
+            app()->setLocale($locale);
+        }
+
+        $validated = $request->validate([
+            'email' => 'required|string|email|max:255',
+        ]);
+
+        $smtp = [
+            'host' => trim((string) (Setting::get('smtp.host') ?? '')),
+            'port' => trim((string) (Setting::get('smtp.port') ?? '')),
+            'username' => trim((string) (Setting::get('smtp.username') ?? '')),
+            'password' => (string) (Setting::get('smtp.password') ?? ''),
+            'encryption' => trim((string) (Setting::get('smtp.encryption') ?? 'tls')),
+            'from_address' => trim((string) (Setting::get('smtp.from_address') ?? '')),
+            'from_name' => trim((string) (Setting::get('smtp.from_name') ?? config('app.name', 'WMS'))),
+        ];
+
+        Validator::make($smtp, [
+            'host' => 'required|string|max:255',
+            'port' => 'required|string|max:10',
+            'username' => 'required|string|max:255',
+            'password' => 'required|string|max:255',
+            'encryption' => 'nullable|string|in:tls,ssl,null',
+            'from_address' => 'required|string|email|max:255',
+            'from_name' => 'nullable|string|max:255',
+        ])->validate();
+
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.transport' => 'smtp',
+            'mail.mailers.smtp.host' => $smtp['host'],
+            'mail.mailers.smtp.port' => (int) $smtp['port'],
+            'mail.mailers.smtp.encryption' => $smtp['encryption'] === 'null' ? null : $smtp['encryption'],
+            'mail.mailers.smtp.username' => $smtp['username'],
+            'mail.mailers.smtp.password' => $smtp['password'],
+            'mail.from.address' => $smtp['from_address'],
+            'mail.from.name' => $smtp['from_name'] ?: config('app.name', 'WMS'),
+        ]);
+
+        try {
+            Mail::raw(__('This is a test email sent from WMS SMTP settings.'), function ($message) use ($validated) {
+                $message
+                    ->to($validated['email'])
+                    ->subject(__('WMS - SMTP Test'));
+            });
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => __('Could not send test email.'),
+                'errors' => [
+                    'smtp' => [$e->getMessage()],
+                ],
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => __('Test email sent successfully.'),
         ]);
     }
 }

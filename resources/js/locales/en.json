@@ -58,7 +58,15 @@
       "passwordPlaceholder": "Leave empty to keep existing password",
       "fromEmail": "From (email)",
       "fromName": "From (name)",
-      "save": "Save SMTP"
+      "save": "Save SMTP",
+      "test": "Test",
+      "testEmail": "Test email address",
+      "testEmailPlaceholder": "example@domain.com",
+      "sendTest": "Send test email",
+      "testSent": "Test email sent.",
+      "testSendError": "Could not send test email.",
+      "validationRequired": "Complete required SMTP fields (host, port, username, sender email) before testing.",
+      "validationTestEmail": "Enter a valid test email address."
     }
   },
   "dataTable": {

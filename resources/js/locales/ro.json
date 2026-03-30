@@ -58,7 +58,15 @@
       "passwordPlaceholder": "Lăsați gol pentru a păstra parola existentă",
       "fromEmail": "De la (email)",
       "fromName": "De la (nume)",
-      "save": "Salvează SMTP"
+      "save": "Salvează SMTP",
+      "test": "Testează",
+      "testEmail": "Email pentru test",
+      "testEmailPlaceholder": "exemplu@domeniu.ro",
+      "sendTest": "Trimite email test",
+      "testSent": "Emailul de test a fost trimis.",
+      "testSendError": "Nu s-a putut trimite emailul de test.",
+      "validationRequired": "Completează câmpurile obligatorii SMTP (host, port, utilizator, email expeditor) înainte de test.",
+      "validationTestEmail": "Introdu o adresă de email validă pentru test."
     }
   },
   "dataTable": {

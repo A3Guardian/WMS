@@ -52,6 +52,8 @@ export default function SettingsPage() {
                 from_name: data?.smtp?.from_name ?? "",
                 _synced: true,
             });
+            setShowSmtpTestInput(false);
+            setTestEmail("");
             queryClient.invalidateQueries({ queryKey: ["settings"] });
             toast.success(t("settings.toast.saved"));
         },
@@ -84,7 +86,8 @@ export default function SettingsPage() {
         },
         onError: (err) => {
             toast.error(
-                err.response?.data?.message || t("settings.toast.logoUploadError"),
+                err.response?.data?.message ||
+                    t("settings.toast.logoUploadError"),
             );
         },
     });
@@ -110,6 +113,8 @@ export default function SettingsPage() {
         from_address: "",
         from_name: "",
     });
+    const [showSmtpTestInput, setShowSmtpTestInput] = useState(false);
+    const [testEmail, setTestEmail] = useState("");
 
     useEffect(() => {
         if (!settings) return;
@@ -215,6 +220,61 @@ export default function SettingsPage() {
         updateMutation.mutate(payload);
     };
 
+    const smtpTestMutation = useMutation({
+        mutationFn: async (email) => {
+            const res = await api.post("/settings/smtp/test", { email });
+            return res.data;
+        },
+        onSuccess: (data) => {
+            toast.success(data?.message || t("settings.smtp.testSent"));
+        },
+        onError: (err) => {
+            const message =
+                err.response?.data?.message || t("settings.smtp.testSendError");
+            const errors = err.response?.data?.errors;
+            const details = errors
+                ? Object.values(errors).flat().filter(Boolean).join("\n")
+                : null;
+            toast.error(
+                message,
+                details ? { description: details } : undefined,
+            );
+        },
+    });
+
+    const prepareSmtpTest = () => {
+        if (!smtp.host || !smtp.port || !smtp.username || !smtp.from_address) {
+            toast.error(t("settings.smtp.validationRequired"));
+            return;
+        }
+
+        const payload = {
+            smtp: {
+                host: smtp.host,
+                port: smtp.port,
+                username: smtp.username,
+                encryption: smtp.encryption,
+                from_address: smtp.from_address,
+                from_name: smtp.from_name,
+            },
+        };
+        if (smtp.password) payload.smtp.password = smtp.password;
+        updateMutation.mutate(payload, {
+            onSuccess: () => {
+                setShowSmtpTestInput(true);
+            },
+        });
+    };
+
+    const sendSmtpTest = () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(testEmail)) {
+            toast.error(t("settings.smtp.validationTestEmail"));
+            return;
+        }
+        smtpTestMutation.mutate(testEmail);
+    };
+
     if (!isAdmin()) {
         return (
             <div>
@@ -245,9 +305,7 @@ export default function SettingsPage() {
                 <h1 className="text-3xl font-bold text-gray-900">
                     {t("settings.title")}
                 </h1>
-                <p className="mt-1 text-gray-600">
-                    {t("settings.subtitle")}
-                </p>
+                <p className="mt-1 text-gray-600">{t("settings.subtitle")}</p>
             </div>
 
             <div className="space-y-6 ">
@@ -310,7 +368,9 @@ export default function SettingsPage() {
                                     { value: "ro", label: t("app.romanian") },
                                     { value: "en", label: t("app.english") },
                                 ]}
-                                placeholder={t("settings.general.localePlaceholder")}
+                                placeholder={t(
+                                    "settings.general.localePlaceholder",
+                                )}
                                 className="max-w-xs"
                             />
                         </div>
@@ -348,7 +408,9 @@ export default function SettingsPage() {
                                     }))
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder={t("settings.company.namePlaceholder")}
+                                placeholder={t(
+                                    "settings.company.namePlaceholder",
+                                )}
                             />
                         </div>
                         <div>
@@ -365,7 +427,9 @@ export default function SettingsPage() {
                                     }))
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder={t("settings.company.cuiPlaceholder")}
+                                placeholder={t(
+                                    "settings.company.cuiPlaceholder",
+                                )}
                             />
                         </div>
                         <div>
@@ -416,7 +480,9 @@ export default function SettingsPage() {
                                 }
                                 rows={2}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder={t("settings.company.addressPlaceholder")}
+                                placeholder={t(
+                                    "settings.company.addressPlaceholder",
+                                )}
                             />
                         </div>
                         <div>
@@ -433,7 +499,9 @@ export default function SettingsPage() {
                                     }))
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder={t("settings.company.cityPlaceholder")}
+                                placeholder={t(
+                                    "settings.company.cityPlaceholder",
+                                )}
                             />
                         </div>
                         <div>
@@ -450,7 +518,9 @@ export default function SettingsPage() {
                                     }))
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder={t("settings.company.countyPlaceholder")}
+                                placeholder={t(
+                                    "settings.company.countyPlaceholder",
+                                )}
                             />
                         </div>
                         <div>
@@ -513,148 +583,200 @@ export default function SettingsPage() {
                         }}
                     >
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="sm:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Host SMTP
-                            </label>
-                            <input
-                                type="text"
-                                name="smtp_host"
-                                value={smtp.host}
-                                onChange={(e) =>
-                                    setSmtp((s) => ({
-                                        ...s,
-                                        host: e.target.value,
-                                    }))
+                            <div className="sm:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Host SMTP
+                                </label>
+                                <input
+                                    type="text"
+                                    name="smtp_host"
+                                    value={smtp.host}
+                                    onChange={(e) =>
+                                        setSmtp((s) => ({
+                                            ...s,
+                                            host: e.target.value,
+                                        }))
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="smtp.example.com"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Port
+                                </label>
+                                <input
+                                    type="text"
+                                    name="smtp_port"
+                                    value={smtp.port}
+                                    onChange={(e) =>
+                                        setSmtp((s) => ({
+                                            ...s,
+                                            port: e.target.value,
+                                        }))
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="587"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {t("settings.smtp.encryption")}
+                                </label>
+                                <SearchableSelect
+                                    value={smtp.encryption}
+                                    onChange={(v) =>
+                                        setSmtp((s) => ({
+                                            ...s,
+                                            encryption: v,
+                                        }))
+                                    }
+                                    options={[
+                                        { value: "tls", label: "TLS" },
+                                        { value: "ssl", label: "SSL" },
+                                        {
+                                            value: "null",
+                                            label: t("settings.smtp.none"),
+                                        },
+                                    ]}
+                                    placeholder={t(
+                                        "settings.smtp.encryptionPlaceholder",
+                                    )}
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {t("settings.smtp.username")}
+                                </label>
+                                <input
+                                    type="text"
+                                    name="smtp_username"
+                                    autoComplete="username"
+                                    value={smtp.username}
+                                    onChange={(e) =>
+                                        setSmtp((s) => ({
+                                            ...s,
+                                            username: e.target.value,
+                                        }))
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="user@example.com"
+                                />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {t("settings.smtp.password")}
+                                </label>
+                                <input
+                                    type="password"
+                                    name="smtp_password"
+                                    value={smtp.password}
+                                    onChange={(e) =>
+                                        setSmtp((s) => ({
+                                            ...s,
+                                            password: e.target.value,
+                                        }))
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder={t(
+                                        "settings.smtp.passwordPlaceholder",
+                                    )}
+                                    autoComplete="new-password"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {t("settings.smtp.fromEmail")}
+                                </label>
+                                <input
+                                    type="email"
+                                    name="smtp_from_address"
+                                    value={smtp.from_address}
+                                    onChange={(e) =>
+                                        setSmtp((s) => ({
+                                            ...s,
+                                            from_address: e.target.value,
+                                        }))
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="noreply@example.com"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {t("settings.smtp.fromName")}
+                                </label>
+                                <input
+                                    type="text"
+                                    name="smtp_from_name"
+                                    value={smtp.from_name}
+                                    onChange={(e) =>
+                                        setSmtp((s) => ({
+                                            ...s,
+                                            from_name: e.target.value,
+                                        }))
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="WMS"
+                                />
+                            </div>
+                        </div>
+                        <div className="mt-4 flex flex-wrap items-center gap-3">
+                            <button
+                                type="submit"
+                                disabled={
+                                    updateMutation.isPending ||
+                                    smtpTestMutation.isPending
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="smtp.example.com"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Port
-                            </label>
-                            <input
-                                type="text"
-                                name="smtp_port"
-                                value={smtp.port}
-                                onChange={(e) =>
-                                    setSmtp((s) => ({
-                                        ...s,
-                                        port: e.target.value,
-                                    }))
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
+                            >
+                                {t("settings.smtp.save")}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={prepareSmtpTest}
+                                disabled={
+                                    updateMutation.isPending ||
+                                    smtpTestMutation.isPending
                                 }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="587"
-                            />
+                                className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium disabled:opacity-50"
+                            >
+                                {t("settings.smtp.test")}
+                            </button>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {t("settings.smtp.encryption")}
-                            </label>
-                            <SearchableSelect
-                                value={smtp.encryption}
-                                onChange={(v) =>
-                                    setSmtp((s) => ({
-                                        ...s,
-                                        encryption: v,
-                                    }))
-                                }
-                                options={[
-                                    { value: "tls", label: "TLS" },
-                                    { value: "ssl", label: "SSL" },
-                                    {
-                                        value: "null",
-                                        label: t("settings.smtp.none"),
-                                    },
-                                ]}
-                                placeholder={t("settings.smtp.encryptionPlaceholder")}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="sm:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {t("settings.smtp.username")}
-                            </label>
-                            <input
-                                type="text"
-                                name="smtp_username"
-                                autoComplete="username"
-                                value={smtp.username}
-                                onChange={(e) =>
-                                    setSmtp((s) => ({
-                                        ...s,
-                                        username: e.target.value,
-                                    }))
-                                }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="user@example.com"
-                            />
-                        </div>
-                        <div className="sm:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {t("settings.smtp.password")}
-                            </label>
-                            <input
-                                type="password"
-                                name="smtp_password"
-                                value={smtp.password}
-                                onChange={(e) =>
-                                    setSmtp((s) => ({
-                                        ...s,
-                                        password: e.target.value,
-                                    }))
-                                }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder={t("settings.smtp.passwordPlaceholder")}
-                                autoComplete="new-password"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {t("settings.smtp.fromEmail")}
-                            </label>
-                            <input
-                                type="email"
-                                name="smtp_from_address"
-                                value={smtp.from_address}
-                                onChange={(e) =>
-                                    setSmtp((s) => ({
-                                        ...s,
-                                        from_address: e.target.value,
-                                    }))
-                                }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="noreply@example.com"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {t("settings.smtp.fromName")}
-                            </label>
-                            <input
-                                type="text"
-                                name="smtp_from_name"
-                                value={smtp.from_name}
-                                onChange={(e) =>
-                                    setSmtp((s) => ({
-                                        ...s,
-                                        from_name: e.target.value,
-                                    }))
-                                }
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="WMS"
-                            />
-                        </div>
-                        </div>
-                    <button
-                        type="submit"
-                        disabled={updateMutation.isPending}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
-                    >
-                        {t("settings.smtp.save")}
-                    </button>
+                        {showSmtpTestInput ? (
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-end">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        {t("settings.smtp.testEmail")}
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={testEmail}
+                                        onChange={(e) =>
+                                            setTestEmail(e.target.value)
+                                        }
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder={t(
+                                            "settings.smtp.testEmailPlaceholder",
+                                        )}
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={sendSmtpTest}
+                                    disabled={
+                                        updateMutation.isPending ||
+                                        smtpTestMutation.isPending ||
+                                        !testEmail
+                                    }
+                                    className="px-4 py-2 mb-0.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium disabled:opacity-50"
+                                >
+                                    {t("settings.smtp.sendTest")}
+                                </button>
+                            </div>
+                        ) : null}
                     </form>
                 </section>
             </div>

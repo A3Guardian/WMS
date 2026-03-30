@@ -187,6 +187,7 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index']);
     Route::put('/settings', [SettingsController::class, 'update']);
     Route::post('/settings/logo', [SettingsController::class, 'uploadLogo']);
+    Route::post('/settings/smtp/test', [SettingsController::class, 'sendSmtpTestEmail']);
     Route::get('/settings/invoice-data', [SettingsController::class, 'invoiceData']);
 
     Route::prefix('admin')->middleware('permission:view roles|view permissions|view users,web')->group(function () {
