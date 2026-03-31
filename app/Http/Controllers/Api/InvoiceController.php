@@ -113,17 +113,17 @@ class InvoiceController extends Controller
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'items.*.discount_rate' => 'nullable|numeric|min:0|max:100',
         ]);
-
-        if (!isset($validated['invoice_number'])) {
-            $prefix = $validated['type'] === 'income' ? 'INV-IN' : 'INV-EX';
-            $validated['invoice_number'] = $prefix . '-' . strtoupper(Str::random(8));
-        }
+        $validated['invoice_number'] = 'TMP-' . strtoupper(Str::random(10));
 
         $itemsInput = $validated['items'] ?? [];
         unset($validated['items']);
 
         return DB::transaction(function () use ($validated, $itemsInput) {
             $invoice = Invoice::create($validated);
+
+            $typePrefix = $invoice->type === 'income' ? 'IN' : 'EX';
+            $invoice->invoice_number = 'INV-' . $typePrefix . '-' . str_pad((string) $invoice->id, 6, '0', STR_PAD_LEFT);
+            $invoice->save();
 
             $this->syncItems($invoice, $itemsInput);
 
