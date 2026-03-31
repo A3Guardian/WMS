@@ -13,6 +13,29 @@ use Illuminate\Support\Str;
 
 class InvoiceController extends Controller
 {
+    public function uploadAttachments(Request $request, Invoice $invoice)
+    {
+        $validated = $request->validate([
+            'attachments' => 'required|array|min:1',
+            'attachments.*' => 'file|max:10240',
+        ]);
+
+        $existing = is_array($invoice->attachments) ? $invoice->attachments : [];
+        $stored = [];
+        foreach ($request->file('attachments') as $file) {
+            $stored[] = $file->store('invoices/' . $invoice->id, 'public');
+        }
+        $invoice->attachments = array_values(array_merge($existing, $stored));
+        $invoice->save();
+
+        return response()->json($invoice->load([
+            'supplier',
+            'customer',
+            'transactions',
+            'items.product',
+        ]));
+    }
+
     public function index(Request $request)
     {
         $query = Invoice::with(['supplier', 'customer']);
@@ -125,9 +148,12 @@ class InvoiceController extends Controller
 
     public function update(Request $request, Invoice $invoice)
     {
-        $immutableAllowedKeys = ['status', 'paid_date'];
+        $immutableAllowedKeys = ['status', 'paid_date', 'attachments'];
         if ($invoice->status !== 'draft') {
             $attempted = array_keys($request->all());
+            if ($request->hasFile('attachments')) {
+                $attempted[] = 'attachments';
+            }
             $disallowed = array_values(array_diff($attempted, $immutableAllowedKeys));
             if (!empty($disallowed)) {
                 return response()->json([
@@ -162,18 +188,31 @@ class InvoiceController extends Controller
             'items.*.unit_price' => 'required_with:items|numeric|min:0',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'items.*.discount_rate' => 'nullable|numeric|min:0|max:100',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:10240',
         ]);
 
         $itemsInput = $validated['items'] ?? null;
         unset($validated['items']);
+        unset($validated['attachments']);
 
-        return DB::transaction(function () use ($invoice, $validated, $itemsInput) {
+        return DB::transaction(function () use ($request, $invoice, $validated, $itemsInput) {
             $oldValues = $invoice->only(array_keys($validated));
             $invoice->update($validated);
             $newValues = $invoice->only(array_keys($validated));
 
             if (is_array($itemsInput)) {
                 $this->syncItems($invoice, $itemsInput);
+            }
+
+            if ($request->hasFile('attachments')) {
+                $existing = is_array($invoice->attachments) ? $invoice->attachments : [];
+                $stored = [];
+                foreach ($request->file('attachments') as $file) {
+                    $stored[] = $file->store('invoices/' . $invoice->id, 'public');
+                }
+                $invoice->attachments = array_values(array_merge($existing, $stored));
+                $invoice->save();
             }
 
             ActivityLogService::logUpdated($invoice, $oldValues, $newValues);

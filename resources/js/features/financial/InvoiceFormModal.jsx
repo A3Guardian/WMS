@@ -632,7 +632,7 @@ export default function InvoiceFormModal({
                                                 };
                                                 return (
                                                     <tr key={idx}>
-                                                        <td className="px-3 py-2 align-top w-[260px]">
+                                                        <td className="px-3 py-2 align-top w-[220px]">
                                                             <div className="space-y-2">
                                                                 <SearchableSelect
                                                                     value={it.item_type}
@@ -742,7 +742,7 @@ export default function InvoiceFormModal({
                                                                 )}
                                                             </div>
                                                         </td>
-                                                        <td className="px-3 py-2 align-top">
+                                                        <td className="px-3 py-2 align-top min-w-[360px]">
                                                             <input
                                                                 type="text"
                                                                 value={it.name}

@@ -28,6 +28,7 @@ class Invoice extends Model
         'category',
         'description',
         'notes',
+        'attachments',
     ];
 
     protected $casts = [
@@ -38,6 +39,7 @@ class Invoice extends Model
         'tax_amount' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'attachments' => 'array',
     ];
 
     public function supplier(): BelongsTo

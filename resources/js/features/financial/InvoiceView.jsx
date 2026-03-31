@@ -13,6 +13,7 @@ import {
     Calendar,
     ClipboardList,
     Download,
+    FileText,
     Hash,
     Package,
     Plus,
@@ -88,6 +89,9 @@ export default function InvoiceView() {
     const isDraft = (invoice?.status || "").toLowerCase() === "draft";
     const isIncome = (invoice?.type || "").toLowerCase() === "income";
     const isExpense = (invoice?.type || "").toLowerCase() === "expense";
+    const attachments = Array.isArray(invoice?.attachments)
+        ? invoice.attachments
+        : [];
 
     const company = invoiceSettings?.company ?? {};
     const companyConfigured = Boolean(
@@ -332,6 +336,47 @@ export default function InvoiceView() {
         },
     });
 
+    const [newAttachments, setNewAttachments] = useState([]);
+
+    const getAttachmentUrl = (attachmentPath) => {
+        if (!attachmentPath) return "";
+        if (attachmentPath.startsWith("http")) return attachmentPath;
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+        const cleanPath = attachmentPath.startsWith("/")
+            ? attachmentPath
+            : `/${attachmentPath}`;
+        if (cleanPath.startsWith("/storage/")) {
+            return `${apiUrl}${cleanPath}`;
+        }
+        return `${apiUrl}/storage${cleanPath}`;
+    };
+
+    const uploadAttachmentsMutation = useMutation({
+        mutationFn: async () => {
+            if (!invoice?.id) return;
+            if (!newAttachments?.length) return;
+            const form = new FormData();
+            newAttachments.forEach((f) => form.append("attachments[]", f));
+            const res = await api.post(`/invoices/${id}/attachments`, form, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["invoice", id] });
+            toast.success(t("invoices.view.toast.attachmentsUploaded", { defaultValue: "Attachments uploaded" }));
+            setNewAttachments([]);
+        },
+        onError: (e) => {
+            toast.error(
+                e.response?.data?.message ||
+                    t("invoices.view.toast.attachmentsUploadFailed", {
+                        defaultValue: "Failed to upload attachments",
+                    }),
+            );
+        },
+    });
+
     const handleDownload = async () => {
         if (!invoice?.id) return;
         try {
@@ -500,6 +545,99 @@ export default function InvoiceView() {
                                 )}
                             </div>
                         )}
+                    </div>
+
+                    <div className="bg-white shadow-md rounded-lg p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-slate-600" />
+                            {t("invoices.view.attachments.title", {
+                                defaultValue: "Attachments",
+                            })}
+                        </h2>
+
+                        {attachments.length === 0 ? (
+                            <div className="text-sm text-gray-500">
+                                {t("invoices.view.attachments.empty", {
+                                    defaultValue: "No attachments.",
+                                })}
+                            </div>
+                        ) : (
+                            <ul className="space-y-2">
+                                {attachments.map((p, idx) => {
+                                    const fileName = String(p || "")
+                                        .split("/")
+                                        .filter(Boolean)
+                                        .pop();
+                                    return (
+                                        <li
+                                            key={`${p}-${idx}`}
+                                            className="flex items-center justify-between gap-3"
+                                        >
+                                            <div className="min-w-0">
+                                                <div className="text-sm font-medium text-gray-900 truncate">
+                                                    {fileName || `File ${idx + 1}`}
+                                                </div>
+                                                <div className="text-xs text-gray-500 truncate">
+                                                    {p}
+                                                </div>
+                                            </div>
+                                            <a
+                                                href={getAttachmentUrl(p)}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="shrink-0 inline-flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700"
+                                            >
+                                                <Download className="w-4 h-4" />
+                                                {t("invoices.view.attachments.download", {
+                                                    defaultValue: "Download",
+                                                })}
+                                            </a>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        )}
+
+                        <div className="mt-4 pt-4 border-t">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                <input
+                                    type="file"
+                                    multiple
+                                    onChange={(e) => {
+                                        const files = Array.from(
+                                            e.target.files || [],
+                                        );
+                                        setNewAttachments(files);
+                                    }}
+                                    className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        uploadAttachmentsMutation.mutate()
+                                    }
+                                    disabled={
+                                        uploadAttachmentsMutation.isPending ||
+                                        !newAttachments.length ||
+                                        !invoice?.id
+                                    }
+                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    {t("invoices.view.attachments.upload", {
+                                        defaultValue: "Upload",
+                                    })}
+                                </button>
+                            </div>
+                            {newAttachments.length > 0 && (
+                                <div className="mt-2 text-xs text-gray-500">
+                                    {t("invoices.view.attachments.selected", {
+                                        defaultValue:
+                                            "Selected: {{count}} file(s)",
+                                        count: newAttachments.length,
+                                    })}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

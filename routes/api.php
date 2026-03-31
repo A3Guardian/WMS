@@ -142,6 +142,7 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->middleware('permission:view invoices,web');
     Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->middleware('permission:edit invoices,web');
     Route::patch('/invoices/{invoice}', [InvoiceController::class, 'update'])->middleware('permission:edit invoices,web');
+    Route::post('/invoices/{invoice}/attachments', [InvoiceController::class, 'uploadAttachments'])->middleware('permission:edit invoices,web');
     Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])->middleware('permission:delete invoices,web');
 
     Route::get('/payments', [PaymentController::class, 'index'])->middleware('permission:view payments,web');

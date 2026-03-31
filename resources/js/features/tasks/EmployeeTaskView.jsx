@@ -83,11 +83,6 @@ export default function EmployeeTaskView() {
         );
     }
 
-    const tasks = data?.data || [];
-    const pendingTasks = tasks.filter(t => t.status === TASK_STATUS.PENDING);
-    const inProgressTasks = tasks.filter(t => t.status === TASK_STATUS.IN_PROGRESS);
-    const completedTasks = tasks.filter(t => t.status === TASK_STATUS.COMPLETED);
-    
     const isOverdue = (dueDate) => {
         if (!dueDate) return false;
         const due = new Date(dueDate);
@@ -95,6 +90,15 @@ export default function EmployeeTaskView() {
         today.setHours(23, 59, 59, 999);
         return due < today;
     };
+    
+    const tasks = data?.data || [];
+    const pendingTasks = tasks.filter(
+        (t) => t.status === TASK_STATUS.PENDING && !isOverdue(t.due_date),
+    );
+    const inProgressTasks = tasks.filter(
+        (t) => t.status === TASK_STATUS.IN_PROGRESS && !isOverdue(t.due_date),
+    );
+    const completedTasks = tasks.filter((t) => t.status === TASK_STATUS.COMPLETED);
     
     const overdueTasks = tasks.filter(t => {
         return isOverdue(t.due_date) && t.status !== TASK_STATUS.COMPLETED;
