@@ -9,6 +9,7 @@ use App\Models\Deposit;
 use App\Models\Door;
 use App\Models\Employee;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Inventory;
 use App\Models\Leave;
 use App\Models\LeaveType;
@@ -25,6 +26,8 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wall;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class DemoDataSeeder extends Seeder
 {
@@ -32,16 +35,53 @@ class DemoDataSeeder extends Seeder
     {
         $this->command->info('Seeding demo data...');
 
-        $users = User::all()->keyBy('email');
-        $userList = $users->values()->all();
-        if ($userList === []) {
-            $this->command->warn('Run RoleSeeder and UserSeeder first.');
+        $roles = [
+            'Admin' => Role::where('name', 'Admin')->first(),
+            'Employee' => Role::where('name', 'Employee')->first(),
+            'Financial' => Role::where('name', 'Financial')->first(),
+        ];
+        if (!$roles['Admin'] || !$roles['Employee'] || !$roles['Financial']) {
+            $this->command->warn('Run RoleSeeder first.');
             return;
         }
 
-        $admin = $users->get('admin@wms.com') ?? $userList[0];
-        $employeeUser = $users->get('employee@wms.com') ?? $userList[1] ?? $userList[0];
-        $financialUser = $users->get('financial@wms.com') ?? $userList[2] ?? $userList[0];
+        $demoUsersByRole = [
+            'Admin' => [
+                ['name' => 'Admin User 1', 'email' => 'admin1@wms.com'],
+                ['name' => 'Admin User 2', 'email' => 'admin2@wms.com'],
+                ['name' => 'Admin User 3', 'email' => 'admin3@wms.com'],
+            ],
+            'Employee' => [
+                ['name' => 'Employee User 1', 'email' => 'employee1@wms.com'],
+                ['name' => 'Employee User 2', 'email' => 'employee2@wms.com'],
+                ['name' => 'Employee User 3', 'email' => 'employee3@wms.com'],
+            ],
+            'Financial' => [
+                ['name' => 'Financial User 1', 'email' => 'financial1@wms.com'],
+                ['name' => 'Financial User 2', 'email' => 'financial2@wms.com'],
+                ['name' => 'Financial User 3', 'email' => 'financial3@wms.com'],
+            ],
+        ];
+
+        $usersByRole = [];
+        foreach ($demoUsersByRole as $roleName => $usersConfig) {
+            foreach ($usersConfig as $userConfig) {
+                $user = User::updateOrCreate(
+                    ['email' => $userConfig['email']],
+                    [
+                        'name' => $userConfig['name'],
+                        'password' => Hash::make('password'),
+                        'email_verified_at' => now(),
+                    ]
+                );
+                $user->syncRoles([$roleName]);
+                $usersByRole[$roleName][] = $user;
+            }
+        }
+
+        $admin = $usersByRole['Admin'][0];
+        $employeeUser = $usersByRole['Employee'][0];
+        $financialUser = $usersByRole['Financial'][0];
 
         // Departments
         $departments = [];
@@ -54,9 +94,9 @@ class DemoDataSeeder extends Seeder
 
         // Employees
         $employees = [];
-        $codes = ['EMP001', 'EMP002', 'EMP003', 'EMP004', 'EMP005'];
-        $positions = ['Warehouse Operator', 'Forklift Driver', 'Procurement Specialist', 'Accountant', 'Logistics Coordinator'];
-        foreach (array_slice($userList, 0, 5) as $i => $u) {
+        $codes = ['EMP001', 'EMP002', 'EMP003'];
+        $positions = ['Warehouse Operator', 'Forklift Driver', 'Logistics Coordinator'];
+        foreach ($usersByRole['Employee'] as $i => $u) {
             $employees[] = Employee::firstOrCreate(
                 ['employee_code' => $codes[$i]],
                 [
@@ -169,28 +209,43 @@ class DemoDataSeeder extends Seeder
             Wall::firstOrCreate(
                 ['deposit_id' => $d->id, 'name' => 'Perete Nord'],
                 [
-                    'x_start' => 0, 'y_start' => 0, 'x_end' => 50, 'y_end' => 0,
-                    'thickness' => 0.2, 'description' => 'Perete nord',
+                    'x_start' => 0,
+                    'y_start' => 0,
+                    'x_end' => 50,
+                    'y_end' => 0,
+                    'thickness' => 0.2,
+                    'description' => 'Perete nord',
                 ]
             );
             Wall::firstOrCreate(
                 ['deposit_id' => $d->id, 'name' => 'Perete Sud'],
                 [
-                    'x_start' => 0, 'y_start' => 30, 'x_end' => 50, 'y_end' => 30,
-                    'thickness' => 0.2, 'description' => 'Perete sud',
+                    'x_start' => 0,
+                    'y_start' => 30,
+                    'x_end' => 50,
+                    'y_end' => 30,
+                    'thickness' => 0.2,
+                    'description' => 'Perete sud',
                 ]
             );
         }
-        $wall1 = Wall::where('deposit_id', $deposit1->id)->first();
-
         // Doors
-        if ($wall1) {
+        foreach ($deposits as $d) {
+            $northWall = Wall::where('deposit_id', $d->id)
+                ->where('name', 'Perete Nord')
+                ->first();
+            if (!$northWall) {
+                continue;
+            }
+
             Door::firstOrCreate(
-                ['deposit_id' => $deposit1->id, 'wall_id' => $wall1->id],
+                ['deposit_id' => $d->id, 'wall_id' => $northWall->id],
                 [
-                    'name' => 'Intrare principală',
-                    'x_position' => 25, 'y_position' => 0,
-                    'width' => 2, 'orientation' => 'horizontal',
+                    'name' => 'Intrare principală ' . $d->name,
+                    'x_position' => 25,
+                    'y_position' => 0,
+                    'width' => 2,
+                    'orientation' => 'horizontal',
                 ]
             );
         }
@@ -237,9 +292,8 @@ class DemoDataSeeder extends Seeder
         }
 
         // Orders + Order items
-        $orderNumber = 'ORD-' . str_pad((string) (Order::count() + 1), 5, '0', STR_PAD_LEFT);
-        $order = Order::firstOrCreate(
-            ['order_number' => $orderNumber],
+        $order = Order::updateOrCreate(
+            ['order_number' => 'ORD-00001'],
             [
                 'customer_id' => Customer::first()?->id,
                 'status' => 'completed',
@@ -257,9 +311,8 @@ class DemoDataSeeder extends Seeder
         }
         $order->update(['total_amount' => $total]);
 
-        $order2Number = 'ORD-' . str_pad((string) (Order::count() + 2), 5, '0', STR_PAD_LEFT);
-        $order2 = Order::firstOrCreate(
-            ['order_number' => $order2Number],
+        $order2 = Order::updateOrCreate(
+            ['order_number' => 'ORD-00002'],
             [
                 'customer_id' => Customer::skip(1)->first()?->id,
                 'status' => 'pending',
@@ -400,11 +453,11 @@ class DemoDataSeeder extends Seeder
         }
 
         // Invoices
-        $invNum = 'INV-' . str_pad((string) (Invoice::count() + 1), 6, '0', STR_PAD_LEFT);
-        $invoice = Invoice::firstOrCreate(
-            ['invoice_number' => $invNum],
+        $invoice = Invoice::updateOrCreate(
+            ['invoice_number' => 'INV-EX-900001'],
             [
                 'supplier_id' => $supplier1->id,
+                'customer_id' => null,
                 'type' => 'expense',
                 'status' => 'paid',
                 'issue_date' => now()->subDays(15),
@@ -419,12 +472,69 @@ class DemoDataSeeder extends Seeder
             ]
         );
 
+        $invoice2 = Invoice::updateOrCreate(
+            ['invoice_number' => 'INV-IN-900002'],
+            [
+                'supplier_id' => null,
+                'customer_id' => Customer::first()?->id,
+                'type' => 'income',
+                'status' => 'sent',
+                'issue_date' => now()->subDays(3),
+                'due_date' => now()->addDays(10),
+                'paid_date' => null,
+                'subtotal' => 2500,
+                'tax_amount' => 475,
+                'discount_amount' => 0,
+                'total_amount' => 2975,
+                'category' => 'sales',
+                'description' => 'Factură client A',
+            ]
+        );
+
+        // Invoice items
+        InvoiceItem::updateOrCreate(
+            ['invoice_id' => $invoice->id, 'position' => 0],
+            [
+                'item_type' => 'product',
+                'product_id' => $product1->id,
+                'name' => $product1->name,
+                'sku' => $product1->sku,
+                'description' => $product1->description,
+                'quantity' => 10,
+                'unit' => 'buc',
+                'unit_price' => 100,
+                'tax_rate' => 19,
+                'discount_rate' => 0,
+                'line_subtotal' => 1000,
+                'line_tax' => 190,
+                'line_total' => 1190,
+            ]
+        );
+        InvoiceItem::updateOrCreate(
+            ['invoice_id' => $invoice2->id, 'position' => 0],
+            [
+                'item_type' => 'service',
+                'product_id' => null,
+                'name' => 'Servicii logistică',
+                'sku' => null,
+                'description' => 'Servicii manipulare și livrare',
+                'quantity' => 5,
+                'unit' => 'ore',
+                'unit_price' => 500,
+                'tax_rate' => 19,
+                'discount_rate' => 0,
+                'line_subtotal' => 2500,
+                'line_tax' => 475,
+                'line_total' => 2975,
+            ]
+        );
+
         // Transactions
-        $txNum = 'TXN-' . str_pad((string) (Transaction::count() + 1), 8, '0', STR_PAD_LEFT);
-        Transaction::firstOrCreate(
-            ['transaction_number' => $txNum],
+        Transaction::updateOrCreate(
+            ['transaction_number' => 'TXN-00000001'],
             [
                 'supplier_id' => $supplier1->id,
+                'customer_id' => null,
                 'invoice_id' => $invoice->id,
                 'type' => 'payment',
                 'category' => 'supplier_payment',
@@ -432,6 +542,20 @@ class DemoDataSeeder extends Seeder
                 'payment_method' => 'bank_transfer',
                 'transaction_date' => now()->subDays(3),
                 'description' => 'Plată factură ' . $invoice->invoice_number,
+            ]
+        );
+        Transaction::updateOrCreate(
+            ['transaction_number' => 'TXN-00000002'],
+            [
+                'supplier_id' => null,
+                'customer_id' => Customer::first()?->id,
+                'invoice_id' => $invoice2->id,
+                'type' => 'receipt',
+                'category' => 'customer_payment',
+                'amount' => 1000,
+                'payment_method' => 'bank_transfer',
+                'transaction_date' => now()->subDay(),
+                'description' => 'Încasare parțială factură ' . $invoice2->invoice_number,
             ]
         );
 
