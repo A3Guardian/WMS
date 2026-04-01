@@ -393,6 +393,18 @@ export default function OrderView() {
         }
         setCustomerModalOpen(false);
     };
+    const downloadBarcode = (svgContent, fileName) => {
+        if (!svgContent) return;
+        const blob = new Blob([svgContent], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
 
     if (orderError) {
         return (
@@ -518,6 +530,30 @@ export default function OrderView() {
                                 <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">
                                     {order.notes}
                                 </p>
+                            </div>
+                        )}
+                        {order?.barcode_svg && (
+                            <div className="mt-4 pt-4 border-t text-center">
+                                <div className="text-xs font-medium text-gray-500 mb-2">
+                                    {t("orders.barcode.orderNumberLabel")}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        downloadBarcode(
+                                            order.barcode_svg,
+                                            `barcode-order-${order.order_number || order.id}.svg`,
+                                        )
+                                    }
+                                    className="border rounded-md p-3 inline-block bg-white hover:bg-gray-50"
+                                    title={t("barcode.downloadHint")}
+                                >
+                                    <div
+                                        dangerouslySetInnerHTML={{
+                                            __html: order.barcode_svg,
+                                        }}
+                                    />
+                                </button>
                             </div>
                         )}
                     </div>

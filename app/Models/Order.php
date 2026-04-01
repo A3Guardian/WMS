@@ -29,6 +29,10 @@ class Order extends Model
         'shipping_amount' => 'decimal:2',
     ];
 
+    protected $appends = [
+        'barcode_svg',
+    ];
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
@@ -52,6 +56,19 @@ class Order extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function getBarcodeSvgAttribute(): ?string
+    {
+        if (empty($this->order_number)) {
+            return null;
+        }
+
+        try {
+            return \app('DNS1D')->getBarcodeSVG((string) $this->order_number, 'C128', 2, 60, 'black', true);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }
 

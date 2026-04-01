@@ -263,6 +263,12 @@
       "december": "December"
     }
   },
+  "barcode": {
+    "productTitle": "Product barcode",
+    "downloadHint": "Click to download",
+    "notAvailable": "No barcode available.",
+    "viewProduct": "View barcode"
+  },
   "suppliers": {
     "title": "Suppliers",
     "totalRecordName": "suppliers",
@@ -1964,6 +1970,9 @@
       "edit": "Edit",
       "delete": "Delete"
     },
+    "barcode": {
+      "skuLabel": "Barcode (SKU)"
+    },
     "toast": {
       "genericError": "An error occurred",
       "created": "Product created successfully",
@@ -2272,6 +2281,9 @@
         "upload": "Upload",
         "empty": "No attached documents."
       }
+    },
+    "barcode": {
+      "orderNumberLabel": "Barcode (Order Number)"
     },
     "documents": {
       "type": {

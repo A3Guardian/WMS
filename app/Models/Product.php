@@ -28,6 +28,7 @@ class Product extends Model
 
     protected $appends = [
         'total_inventory_quantity',
+        'barcode_svg',
     ];
 
     public function getImagesAttribute($value): array
@@ -72,6 +73,19 @@ class Product extends Model
         }
         
         return $this->inventories()->sum('quantity');
+    }
+
+    public function getBarcodeSvgAttribute(): ?string
+    {
+        if (empty($this->sku)) {
+            return null;
+        }
+
+        try {
+            return \app('DNS1D')->getBarcodeSVG((string) $this->sku, 'C128', 2, 60, 'black', true);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }
 

@@ -3,6 +3,7 @@ import { useFetch } from "../../hooks/useFetch";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import * as Dialog from "@radix-ui/react-dialog";
 import DataTable from "../../components/DataTable";
 import PageHeader from "../../components/PageHeader";
 import InventoryActivityModal from "./InventoryActivityModal";
@@ -10,7 +11,7 @@ import InventoryFormModal from "./InventoryFormModal";
 import ProductMapModal from "../products/ProductMapModal";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
-import { History, Plus, Pencil, Trash2, MapPin } from "lucide-react";
+import { History, Plus, Pencil, Trash2, MapPin, Barcode } from "lucide-react";
 import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function InventoryPage() {
@@ -28,6 +29,8 @@ export default function InventoryPage() {
     const [search, setSearch] = useState("");
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [inventoryToDelete, setInventoryToDelete] = useState(null);
+    const [barcodeModalOpen, setBarcodeModalOpen] = useState(false);
+    const [barcodeProduct, setBarcodeProduct] = useState(null);
 
     const productIdForMap =
         inventoryForMap?.product_id ?? inventoryForMap?.product?.id ?? null;
@@ -72,6 +75,18 @@ export default function InventoryPage() {
         deleteMutation.mutate(inventoryToDelete.id, {
             onSettled: () => setInventoryToDelete(null),
         });
+    };
+    const downloadBarcode = (svgContent, fileName) => {
+        if (!svgContent) return;
+        const blob = new Blob([svgContent], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     };
 
     const columns = [
@@ -129,6 +144,18 @@ export default function InventoryPage() {
                             title={t("inventory.actions.viewLocation")}
                         >
                             <MapPin className="w-4 h-4" />
+                        </button>
+                    )}
+                    {row.product?.barcode_svg && (
+                        <button
+                            onClick={() => {
+                                setBarcodeProduct(row.product);
+                                setBarcodeModalOpen(true);
+                            }}
+                            className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                            title={t("barcode.viewProduct")}
+                        >
+                            <Barcode className="w-4 h-4" />
                         </button>
                     )}
                     {hasPermission("manage inventory") && (
@@ -282,6 +309,61 @@ export default function InventoryPage() {
                 cancelLabel={t("common.cancel")}
                 onConfirm={handleConfirmDelete}
             />
+
+            <Dialog.Root
+                open={barcodeModalOpen}
+                onOpenChange={(open) => {
+                    setBarcodeModalOpen(open);
+                    if (!open) setBarcodeProduct(null);
+                }}
+            >
+                <Dialog.Portal>
+                    <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
+                    <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-md z-50">
+                        <Dialog.Title className="text-lg font-semibold text-gray-900">
+                            {t("barcode.productTitle")}
+                        </Dialog.Title>
+                        <div className="mt-4 text-center">
+                            <p className="text-sm text-gray-600 mb-2">
+                                {barcodeProduct?.name}{" "}
+                                {barcodeProduct?.sku
+                                    ? `(${barcodeProduct.sku})`
+                                    : ""}
+                            </p>
+                            {barcodeProduct?.barcode_svg ? (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        downloadBarcode(
+                                            barcodeProduct.barcode_svg,
+                                            `barcode-product-${barcodeProduct.sku || barcodeProduct.id}.svg`,
+                                        )
+                                    }
+                                    className="border rounded-md p-3 inline-block hover:bg-gray-50"
+                                    title={t("barcode.downloadHint")}
+                                >
+                                    <div
+                                        dangerouslySetInnerHTML={{
+                                            __html: barcodeProduct.barcode_svg,
+                                        }}
+                                    />
+                                </button>
+                            ) : (
+                                <p className="text-sm text-gray-500">
+                                    {t("barcode.notAvailable")}
+                                </p>
+                            )}
+                        </div>
+                        <div className="mt-6 flex justify-end">
+                            <Dialog.Close asChild>
+                                <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                                    {t("common.close")}
+                                </button>
+                            </Dialog.Close>
+                        </div>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
         </div>
     );
 }

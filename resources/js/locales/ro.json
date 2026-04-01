@@ -263,6 +263,12 @@
       "december": "Decembrie"
     }
   },
+  "barcode": {
+    "productTitle": "Cod de bare produs",
+    "downloadHint": "Click pentru descarcare",
+    "notAvailable": "Nu exista cod de bare.",
+    "viewProduct": "Vezi cod de bare"
+  },
   "suppliers": {
     "title": "Furnizori",
     "totalRecordName": "furnizori",
@@ -1964,6 +1970,9 @@
       "edit": "Editează",
       "delete": "Șterge"
     },
+    "barcode": {
+      "skuLabel": "Cod de bare (SKU)"
+    },
     "toast": {
       "genericError": "A apărut o eroare",
       "created": "Produs creat cu succes",
@@ -2272,6 +2281,9 @@
         "upload": "Încarcă",
         "empty": "Nu există documente atașate."
       }
+    },
+    "barcode": {
+      "orderNumberLabel": "Cod de bare (Numar comandă)"
     },
     "documents": {
       "type": {

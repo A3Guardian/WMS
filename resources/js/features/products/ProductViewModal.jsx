@@ -31,6 +31,18 @@ export default function ProductViewModal({
     const depositKeys = Object.keys(byDeposit);
     const currentDepositId = selectedDepositId ?? depositKeys[0] ?? null;
     const currentGroup = currentDepositId ? byDeposit[currentDepositId] : null;
+    const downloadBarcode = (svgContent, fileName) => {
+        if (!svgContent) return;
+        const blob = new Blob([svgContent], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
@@ -253,6 +265,32 @@ export default function ProductViewModal({
                                     </button>
                                 </div>
                             )}
+
+                        {product.barcode_svg && (
+                            <div className="border-t pt-4 mt-4 text-center">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    {t("products.barcode.skuLabel")}
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        downloadBarcode(
+                                            product.barcode_svg,
+                                            `barcode-product-${product.sku || product.id}.svg`,
+                                        )
+                                    }
+                                    className="bg-white border rounded-md p-3 inline-block hover:bg-gray-50"
+                                    title={t("barcode.downloadHint")}
+                                >
+                                    <div
+                                        className="w-full"
+                                        dangerouslySetInnerHTML={{
+                                            __html: product.barcode_svg,
+                                        }}
+                                    />
+                                </button>
+                            </div>
+                        )}
                     </div>
                     <div className="flex justify-end mt-6">
                         <Dialog.Close asChild>
