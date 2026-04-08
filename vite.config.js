@@ -1,38 +1,38 @@
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
-import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from "vite";
+import laravel from "laravel-vite-plugin";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
     plugins: [
         react({
-            jsxRuntime: 'automatic',
+            jsxRuntime: "automatic",
         }),
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.jsx'],
+            input: ["resources/css/app.css", "resources/js/App.jsx"],
             refresh: true,
         }),
         tailwindcss(),
     ],
     resolve: {
-        extensions: ['.js', '.jsx', '.json'],
+        extensions: [".js", ".jsx", ".json"],
     },
     optimizeDeps: {
         force: true,
     },
     build: {
         manifest: true,
-        outDir: 'public/build',
+        outDir: "public/build",
     },
     server: {
-        host: '0.0.0.0',
+        host: "0.0.0.0",
         port: 5173,
         cors: {
-            origin: 'http://localhost:8000',
+            origin: "http://localhost:8000",
             credentials: true,
         },
         hmr: {
-            host: process.env.VITE_HMR_HOST || 'localhost',
+            host: process.env.VITE_HMR_HOST || "localhost",
             port: 5173,
         },
         watch: {
