@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\BiometricDevice;
 use App\Models\BiometricEvent;
 use App\Models\BiometricTemplate;
 use App\Models\Deposit;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -32,6 +35,8 @@ class BiometricController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:255|unique:biometric_devices,code',
+            'purpose' => 'sometimes|in:access,attendance',
+            'service_url' => 'nullable|url|max:500',
             'deposit_id' => 'nullable|exists:deposits,id',
             'is_active' => 'sometimes|boolean',
             'meta' => 'nullable|array',
@@ -39,6 +44,7 @@ class BiometricController extends Controller
 
         $device = BiometricDevice::create([
             ...$validated,
+            'purpose' => $validated['purpose'] ?? 'access',
             'is_active' => $validated['is_active'] ?? true,
             'api_key' => Str::random(64),
         ]);
@@ -53,6 +59,8 @@ class BiometricController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'code' => 'sometimes|required|string|max:255|unique:biometric_devices,code,' . $device->id,
+            'purpose' => 'sometimes|in:access,attendance',
+            'service_url' => 'nullable|url|max:500',
             'deposit_id' => 'nullable|exists:deposits,id',
             'is_active' => 'sometimes|boolean',
             'meta' => 'nullable|array',
@@ -66,6 +74,92 @@ class BiometricController extends Controller
         $device->update($validated);
 
         return response()->json($device->fresh()->load('deposit'));
+    }
+
+    public function enrollUserFromDevice(Request $request, User $user): JsonResponse
+    {
+        $this->ensureCanManageUsers($request);
+
+        $validated = $request->validate([
+            'biometric_device_id' => 'required|exists:biometric_devices,id',
+            'finger_index' => 'nullable|integer|min:0|max:10',
+            'label' => 'nullable|string|max:255',
+            'include_image' => 'sometimes|boolean',
+        ]);
+
+        $device = BiometricDevice::query()
+            ->whereKey($validated['biometric_device_id'])
+            ->where('is_active', true)
+            ->first();
+
+        if (! $device) {
+            throw new HttpResponseException(response()->json(['message' => 'Device is inactive or missing'], 422));
+        }
+
+        if (blank($device->service_url)) {
+            throw new HttpResponseException(response()->json([
+                'message' => 'Device service URL is not configured. Edit the device and set service URL first.',
+            ], 422));
+        }
+
+        $serviceUrl = rtrim((string) $device->service_url, '/');
+        $response = Http::timeout(30)->post($serviceUrl . '/enroll', [
+            'include_image' => $validated['include_image'] ?? true,
+        ]);
+
+        if ($response->failed()) {
+            throw new HttpResponseException(response()->json([
+                'message' => 'Device enrollment failed',
+                'details' => $response->json('detail') ?? $response->body(),
+            ], 422));
+        }
+
+        $payload = $response->json();
+        $position = $payload['position'] ?? null;
+        if ($position === null) {
+            throw new HttpResponseException(response()->json([
+                'message' => 'Device did not return a fingerprint position',
+            ], 422));
+        }
+
+        $fingerprintUid = (string) $position;
+
+        $template = BiometricTemplate::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'biometric_device_id' => $device->id,
+                'fingerprint_uid' => $fingerprintUid,
+            ],
+            [
+                'finger_index' => $validated['finger_index'] ?? null,
+                'label' => $validated['label'] ?? null,
+                'is_active' => true,
+            ]
+        );
+
+        $imagePath = $this->storeFingerprintImage(
+            $payload['fingerprint_image_base64'] ?? null,
+            $payload['fingerprint_image_mime'] ?? null
+        );
+
+        BiometricEvent::create([
+            'biometric_device_id' => $device->id,
+            'user_id' => $user->id,
+            'deposit_id' => $device->deposit_id,
+            'event_type' => 'enroll',
+            'fingerprint_uid' => $fingerprintUid,
+            'fingerprint_image_path' => $imagePath,
+            'access_granted' => true,
+            'match_score' => $payload['accuracy_score'] ?? null,
+            'payload' => $payload,
+            'occurred_at' => now(),
+        ]);
+
+        return response()->json([
+            'template' => $template->load('device', 'user'),
+            'fingerprint_uid' => $fingerprintUid,
+            'fingerprint_image_url' => $imagePath ? asset('storage/' . $imagePath) : null,
+        ], 201);
     }
 
     public function indexUserTemplates(Request $request, User $user): JsonResponse
@@ -188,25 +282,14 @@ class BiometricController extends Controller
                 ->exists();
         }
 
-        $imagePath = null;
-        if (! empty($validated['fingerprint_image_base64'])) {
-            $decodedImage = base64_decode($validated['fingerprint_image_base64'], true);
-            if ($decodedImage === false) {
-                throw new HttpResponseException(
-                    response()->json(['message' => 'Invalid fingerprint image payload'], 422)
-                );
-            }
+        $imagePath = $this->storeFingerprintImage(
+            $validated['fingerprint_image_base64'] ?? null,
+            $validated['fingerprint_image_mime'] ?? null
+        );
 
-            $mime = $validated['fingerprint_image_mime'] ?? 'image/png';
-            $extension = match ($mime) {
-                'image/jpeg' => 'jpg',
-                'image/webp' => 'webp',
-                default => 'png',
-            };
-
-            $imagePath = 'biometric-scans/' . now()->format('Y/m/d') . '/' . Str::uuid() . '.' . $extension;
-            Storage::disk('public')->put($imagePath, $decodedImage);
-        }
+        $occurredAt = isset($validated['occurred_at'])
+            ? Carbon::parse($validated['occurred_at'])
+            : now();
 
         $event = BiometricEvent::create([
             'biometric_device_id' => $device->id,
@@ -218,8 +301,12 @@ class BiometricController extends Controller
             'access_granted' => $hasDepositAccess && $userId !== null,
             'match_score' => $validated['match_score'] ?? null,
             'payload' => $validated['payload'] ?? null,
-            'occurred_at' => $validated['occurred_at'] ?? now(),
+            'occurred_at' => $occurredAt,
         ]);
+
+        if ($device->purpose === 'attendance' && $userId) {
+            $this->syncAttendanceFromBiometricEvent($userId, $validated['event_type'], $occurredAt);
+        }
 
         $device->update(['last_seen_at' => now()]);
 
@@ -274,5 +361,71 @@ class BiometricController extends Controller
         if (! $request->user() || ! $request->user()->can('edit users')) {
             throw new HttpResponseException(response()->json(['message' => 'Unauthorized'], 403));
         }
+    }
+
+    private function storeFingerprintImage(?string $base64Image, ?string $mime): ?string
+    {
+        if (blank($base64Image)) {
+            return null;
+        }
+
+        $decodedImage = base64_decode($base64Image, true);
+        if ($decodedImage === false) {
+            throw new HttpResponseException(
+                response()->json(['message' => 'Invalid fingerprint image payload'], 422)
+            );
+        }
+
+        $resolvedMime = $mime ?? 'image/png';
+        $extension = match ($resolvedMime) {
+            'image/jpeg' => 'jpg',
+            'image/webp' => 'webp',
+            default => 'png',
+        };
+
+        $imagePath = 'biometric-scans/' . now()->format('Y/m/d') . '/' . Str::uuid() . '.' . $extension;
+        Storage::disk('public')->put($imagePath, $decodedImage);
+
+        return $imagePath;
+    }
+
+    private function syncAttendanceFromBiometricEvent(int $userId, string $eventType, Carbon $occurredAt): void
+    {
+        $user = User::query()->with('employee')->find($userId);
+        if (! $user || ! $user->employee) {
+            return;
+        }
+
+        $attendance = Attendance::query()->firstOrCreate(
+            [
+                'employee_id' => $user->employee->id,
+                'date' => $occurredAt->toDateString(),
+            ],
+            [
+                'status' => 'present',
+            ]
+        );
+
+        $normalizedType = strtolower($eventType);
+        $isExplicitClockIn = in_array($normalizedType, ['check_in', 'clock_in', 'entry'], true);
+        $isExplicitClockOut = in_array($normalizedType, ['check_out', 'clock_out', 'exit'], true);
+
+        if ($isExplicitClockIn || (! $isExplicitClockOut && ! $attendance->clock_in)) {
+            $attendance->clock_in = $occurredAt;
+        } elseif ($attendance->clock_in && ! $attendance->clock_out) {
+            $attendance->clock_out = $occurredAt;
+        } elseif ($isExplicitClockOut) {
+            $attendance->clock_out = $occurredAt;
+        }
+
+        if ($attendance->clock_in && $attendance->clock_out && $attendance->clock_out->greaterThan($attendance->clock_in)) {
+            $minutes = $attendance->clock_in->diffInMinutes($attendance->clock_out);
+            $hours = round($minutes / 60, 2);
+            $attendance->total_hours = $hours;
+            $attendance->overtime_hours = max(0, round($hours - 8, 2));
+        }
+
+        $attendance->status = 'present';
+        $attendance->save();
     }
 }

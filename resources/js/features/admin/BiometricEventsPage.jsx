@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Cpu } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import api from "../../utils/api";
 
 export default function BiometricEventsPage() {
+    const navigate = useNavigate();
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
 
@@ -79,7 +82,19 @@ export default function BiometricEventsPage() {
 
     return (
         <div>
-            <PageHeader title="Biometric Events" />
+            <PageHeader
+                title="Biometric Events"
+                actions={
+                    <button
+                        type="button"
+                        onClick={() => navigate("/admin/biometric-devices")}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 inline-flex items-center gap-2"
+                    >
+                        <Cpu className="w-4 h-4" />
+                        Devices
+                    </button>
+                }
+            />
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
                 <DataTable
                     columns={columns}

@@ -227,6 +227,7 @@
       "payments": "Payments",
       "appSettings": "Application settings",
       "users": "Users",
+      "biometricDevices": "Biometric devices",
       "rolesAndPermissions": "Roles & permissions",
       "biometricEvents": "Biometric events"
     }

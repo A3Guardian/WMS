@@ -227,6 +227,7 @@
       "payments": "Plăți",
       "appSettings": "Setări aplicație",
       "users": "Utilizatori",
+      "biometricDevices": "Dispozitive biometrice",
       "rolesAndPermissions": "Roluri & permisiuni",
       "biometricEvents": "Evenimente biometrice"
     }

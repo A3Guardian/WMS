@@ -14,6 +14,8 @@ class BiometricDevice extends Model
     protected $fillable = [
         'name',
         'code',
+        'purpose',
+        'service_url',
         'deposit_id',
         'api_key',
         'is_active',

@@ -244,6 +244,13 @@ const menuStructure = [
                 adminOnly: true,
             },
             {
+                path: "/admin/biometric-devices",
+                labelKey: "menu.items.biometricDevices",
+                iconKey: "biometric",
+                permission: "edit users",
+                adminOnly: true,
+            },
+            {
                 path: "/admin/biometric-events",
                 labelKey: "menu.items.biometricEvents",
                 iconKey: "biometric",

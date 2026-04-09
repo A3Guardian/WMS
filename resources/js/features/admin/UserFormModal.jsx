@@ -23,6 +23,7 @@ export default function UserFormModal({
         finger_index: "",
         label: "",
     });
+    const [enrollResult, setEnrollResult] = useState(null);
     const [selectedDepositIds, setSelectedDepositIds] = useState([]);
 
     const { data: rolesData } = useQuery({
@@ -150,6 +151,33 @@ export default function UserFormModal({
         },
     });
 
+    const enrollWizardMutation = useMutation({
+        mutationFn: async (payload) => {
+            const response = await api.post(
+                `/biometric/users/${userId}/enroll`,
+                payload,
+            );
+            return response.data;
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({
+                queryKey: ["biometric-templates", userId],
+            });
+            setTemplateForm((prev) => ({
+                ...prev,
+                fingerprint_uid: data?.fingerprint_uid || prev.fingerprint_uid,
+            }));
+            setEnrollResult(data);
+            toast.success(
+                `Fingerprint enrolled successfully. UID: ${data?.fingerprint_uid || "-"}`,
+            );
+        },
+        onError: (error) => {
+            const msg = error?.response?.data?.message || "Enroll wizard failed.";
+            toast.error(msg);
+        },
+    });
+
     const deleteTemplateMutation = useMutation({
         mutationFn: async (templateId) => {
             await api.delete(`/biometric/templates/${templateId}`);
@@ -210,6 +238,9 @@ export default function UserFormModal({
     const devices = devicesData || [];
     const deposits = depositsData || [];
     const templates = templatesData || [];
+    const selectedDevice = devices.find(
+        (device) => String(device.id) === String(templateForm.biometric_device_id),
+    );
 
     const selectedDepositsText = useMemo(() => {
         if (!selectedDepositIds.length) return "No deposit access selected.";
@@ -241,6 +272,7 @@ export default function UserFormModal({
 
     const handleEnrollTemplate = (e) => {
         e.preventDefault();
+        setEnrollResult(null);
         templateMutation.mutate({
             biometric_device_id: Number(templateForm.biometric_device_id),
             fingerprint_uid: templateForm.fingerprint_uid.trim(),
@@ -249,6 +281,23 @@ export default function UserFormModal({
                     ? null
                     : Number(templateForm.finger_index),
             label: templateForm.label.trim() || null,
+        });
+    };
+
+    const handleEnrollWizard = () => {
+        if (!templateForm.biometric_device_id) {
+            toast.error("Please select a device first.");
+            return;
+        }
+        setEnrollResult(null);
+        enrollWizardMutation.mutate({
+            biometric_device_id: Number(templateForm.biometric_device_id),
+            finger_index:
+                templateForm.finger_index === ""
+                    ? null
+                    : Number(templateForm.finger_index),
+            label: templateForm.label.trim() || null,
+            include_image: true,
         });
     };
 
@@ -396,6 +445,11 @@ export default function UserFormModal({
                                     <h4 className="text-sm font-semibold">
                                         Enroll Fingerprint Template
                                     </h4>
+                                    <p className="text-xs text-gray-500">
+                                        Wizard mode calls the selected device and
+                                        auto-fills the fingerprint UID (sensor
+                                        position). Manual mode remains available.
+                                    </p>
                                     <form
                                         onSubmit={handleEnrollTemplate}
                                         className="grid grid-cols-1 md:grid-cols-2 gap-3"
@@ -421,6 +475,10 @@ export default function UserFormModal({
                                                     value={device.id}
                                                 >
                                                     {device.name} ({device.code})
+                                                    {device.purpose ===
+                                                    "attendance"
+                                                        ? " - attendance"
+                                                        : ""}
                                                 </option>
                                             ))}
                                         </select>
@@ -466,17 +524,53 @@ export default function UserFormModal({
                                             className="px-3 py-2 border border-gray-300 rounded-md"
                                         />
                                         <div className="md:col-span-2">
-                                            <button
-                                                type="submit"
-                                                disabled={
-                                                    templateMutation.isPending
-                                                }
-                                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
-                                            >
-                                                {templateMutation.isPending
-                                                    ? "Enrolling..."
-                                                    : "Enroll Template"}
-                                            </button>
+                                            <div className="flex flex-wrap gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleEnrollWizard}
+                                                    disabled={
+                                                        enrollWizardMutation.isPending ||
+                                                        !selectedDevice?.service_url
+                                                    }
+                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                                                >
+                                                    {enrollWizardMutation.isPending
+                                                        ? "Waiting for scan..."
+                                                        : "Start Enroll Wizard"}
+                                                </button>
+                                                {!selectedDevice?.service_url &&
+                                                    templateForm.biometric_device_id && (
+                                                        <span className="text-xs text-amber-700 self-center">
+                                                            Selected device has no
+                                                            service URL.
+                                                        </span>
+                                                    )}
+                                                <button
+                                                    type="submit"
+                                                    disabled={
+                                                        templateMutation.isPending
+                                                    }
+                                                    className="px-4 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-800 disabled:opacity-50"
+                                                >
+                                                    {templateMutation.isPending
+                                                        ? "Saving..."
+                                                        : "Save Manual Template"}
+                                                </button>
+                                            </div>
+                                            {enrollResult?.fingerprint_image_url && (
+                                                <div className="mt-3">
+                                                    <a
+                                                        href={
+                                                            enrollResult.fingerprint_image_url
+                                                        }
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="inline-flex items-center gap-2 text-sm text-indigo-700 hover:underline"
+                                                    >
+                                                        View captured scan image
+                                                    </a>
+                                                </div>
+                                            )}
                                         </div>
                                     </form>
                                 </div>
