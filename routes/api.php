@@ -25,9 +25,11 @@ use App\Http\Controllers\Api\DoorController;
 use App\Http\Controllers\Api\FinancialDashboardController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Api\BiometricController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/biometric/events', [BiometricController::class, 'storeEvent']);
 
 Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -190,6 +192,18 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::post('/settings/logo', [SettingsController::class, 'uploadLogo']);
     Route::post('/settings/smtp/test', [SettingsController::class, 'sendSmtpTestEmail']);
     Route::get('/settings/invoice-data', [SettingsController::class, 'invoiceData']);
+
+    Route::get('/biometric/devices', [BiometricController::class, 'indexDevices']);
+    Route::post('/biometric/devices', [BiometricController::class, 'storeDevice']);
+    Route::put('/biometric/devices/{device}', [BiometricController::class, 'updateDevice']);
+    Route::patch('/biometric/devices/{device}', [BiometricController::class, 'updateDevice']);
+    Route::get('/biometric/deposits', [BiometricController::class, 'indexDeposits']);
+    Route::get('/biometric/events', [BiometricController::class, 'listEvents']);
+    Route::get('/biometric/users/{user}/templates', [BiometricController::class, 'indexUserTemplates']);
+    Route::post('/biometric/users/{user}/templates', [BiometricController::class, 'storeUserTemplate']);
+    Route::delete('/biometric/templates/{template}', [BiometricController::class, 'destroyTemplate']);
+    Route::get('/biometric/users/{user}/access', [BiometricController::class, 'showUserAccess']);
+    Route::put('/biometric/users/{user}/access', [BiometricController::class, 'syncUserAccess']);
 
     Route::prefix('admin')->middleware('permission:view roles|view permissions|view users,web')->group(function () {
         Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:view roles,web');

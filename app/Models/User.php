@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -76,5 +77,21 @@ class User extends Authenticatable
     public function approvedLeaves(): HasMany
     {
         return $this->hasMany(Leave::class, 'approved_by');
+    }
+
+    public function biometricTemplates(): HasMany
+    {
+        return $this->hasMany(BiometricTemplate::class);
+    }
+
+    public function biometricEvents(): HasMany
+    {
+        return $this->hasMany(BiometricEvent::class);
+    }
+
+    public function accessibleDeposits(): BelongsToMany
+    {
+        return $this->belongsToMany(Deposit::class, 'deposit_user_accesses')
+            ->withTimestamps();
     }
 }

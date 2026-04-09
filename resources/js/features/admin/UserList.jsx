@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Fingerprint, Pencil, Plus, Trash2 } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import { usePermissions } from "../../hooks/usePermissions";
 import api from "../../utils/api";
@@ -209,16 +209,28 @@ export default function UserList() {
             <PageHeader
                 title={t("users.list.title")}
                 actions={
-                    hasPermission("create users") && (
-                        <button
-                            type="button"
-                            onClick={handleOpenCreate}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 inline-flex items-center gap-2"
-                        >
-                            <Plus className="w-4 h-4" />
-                            {t("users.actions.create")}
-                        </button>
-                    )
+                    <div className="flex items-center gap-2">
+                        {hasPermission("edit users") && (
+                            <button
+                                type="button"
+                                onClick={() => navigate("/admin/biometric-events")}
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 inline-flex items-center gap-2"
+                            >
+                                <Fingerprint className="w-4 h-4" />
+                                Biometric Events
+                            </button>
+                        )}
+                        {hasPermission("create users") && (
+                            <button
+                                type="button"
+                                onClick={handleOpenCreate}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 inline-flex items-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" />
+                                {t("users.actions.create")}
+                            </button>
+                        )}
+                    </div>
                 }
             />
 

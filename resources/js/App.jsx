@@ -25,6 +25,7 @@ import SupplierView from "./features/suppliers/SupplierView";
 import CustomerList from "./features/customers/CustomerList";
 import CustomerView from "./features/customers/CustomerView";
 import UserList from "./features/admin/UserList";
+import BiometricEventsPage from "./features/admin/BiometricEventsPage";
 import RoleList from "./features/admin/RoleList";
 import SettingsPage from "./features/admin/SettingsPage";
 import TaskList from "./features/tasks/TaskList";
@@ -151,6 +152,10 @@ const routes = createRoutesFromElements(
                 <Route path="/admin/users" element={<UserList />} />
                 <Route path="/admin/users/create" element={<UserList />} />
                 <Route path="/admin/users/:id/edit" element={<UserList />} />
+                <Route
+                    path="/admin/biometric-events"
+                    element={<BiometricEventsPage />}
+                />
                 <Route path="/admin/roles" element={<RoleList />} />
                 <Route path="/admin/roles/create" element={<RoleList />} />
                 <Route path="/admin/roles/:id/edit" element={<RoleList />} />
