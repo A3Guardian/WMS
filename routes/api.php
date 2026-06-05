@@ -202,6 +202,10 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::get('/biometric/users/{user}/templates', [BiometricController::class, 'indexUserTemplates']);
     Route::post('/biometric/users/{user}/templates', [BiometricController::class, 'storeUserTemplate']);
     Route::post('/biometric/users/{user}/enroll', [BiometricController::class, 'enrollUserFromDevice']);
+    Route::post('/biometric/users/{user}/enroll/start', [BiometricController::class, 'startEnrollSession']);
+    Route::post('/biometric/users/{user}/enroll/{session}/first-scan', [BiometricController::class, 'enrollFirstScan']);
+    Route::post('/biometric/users/{user}/enroll/{session}/second-scan', [BiometricController::class, 'enrollSecondScan']);
+    Route::delete('/biometric/users/{user}/enroll/{session}', [BiometricController::class, 'cancelEnrollSession']);
     Route::delete('/biometric/templates/{template}', [BiometricController::class, 'destroyTemplate']);
     Route::get('/biometric/users/{user}/access', [BiometricController::class, 'showUserAccess']);
     Route::put('/biometric/users/{user}/access', [BiometricController::class, 'syncUserAccess']);

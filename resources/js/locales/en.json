@@ -1869,6 +1869,59 @@
       "createTitle": "Create user",
       "editTitle": "Edit user",
       "description": "Manage user account and roles."
+    },
+    "biometric": {
+      "title": "Biometric access",
+      "description": "Manage fingerprint templates and warehouse access for this user.",
+      "enroll": {
+        "title": "Enroll fingerprint",
+        "description": "Wizard mode calls the selected device and auto-fills the fingerprint UID (sensor position). Manual mode remains available.",
+        "selectDevice": "Select device...",
+        "attendanceSuffix": " - attendance",
+        "fingerprintUid": "Fingerprint UID",
+        "fingerIndex": "Finger index (optional)",
+        "label": "Label (optional)",
+        "startWizard": "Start enroll wizard",
+        "inProgress": "Enrollment in progress...",
+        "noServiceUrl": "Selected device has no service URL configured.",
+        "saveManual": "Save manual template",
+        "saving": "Saving...",
+        "logTitle": "Enrollment log",
+        "viewImage": "View captured scan image",
+        "logs": {
+          "start": "Initializing sensor... Sensor ready. Scan fingerprint (first time)...",
+          "firstDone": "First scan successful. Scan the same fingerprint again...",
+          "success": "Fingerprint enrolled successfully — UID {{uid}}",
+          "alreadyExists": "Fingerprint already exists on sensor.",
+          "timeout": "Timeout — try again.",
+          "mismatch": "Scans do not match — try again.",
+          "failed": "Enrollment failed."
+        },
+        "toast": {
+          "success": "Fingerprint enrolled successfully. UID: {{uid}}",
+          "alreadyExists": "Fingerprint already exists on device.",
+          "failed": "Enroll wizard failed.",
+          "selectDevice": "Please select a device first.",
+          "manualSaved": "Fingerprint template enrolled."
+        }
+      },
+      "templates": {
+        "title": "Registered templates",
+        "loading": "Loading templates...",
+        "empty": "No templates registered.",
+        "removed": "Fingerprint template removed.",
+        "removeFailed": "Failed to remove template."
+      },
+      "access": {
+        "title": "Deposit access",
+        "selected": "Selected: {{list}}",
+        "noneSelected": "No deposit access selected.",
+        "save": "Save deposit access",
+        "saving": "Saving access...",
+        "updated": "Deposit access updated.",
+        "updateFailed": "Failed to update access."
+      },
+      "remove": "Remove"
     }
   },
   "roles": {

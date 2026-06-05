@@ -87,21 +87,7 @@ class BiometricController extends Controller
             'include_image' => 'sometimes|boolean',
         ]);
 
-        $device = BiometricDevice::query()
-            ->whereKey($validated['biometric_device_id'])
-            ->where('is_active', true)
-            ->first();
-
-        if (! $device) {
-            throw new HttpResponseException(response()->json(['message' => 'Device is inactive or missing'], 422));
-        }
-
-        if (blank($device->service_url)) {
-            throw new HttpResponseException(response()->json([
-                'message' => 'Device service URL is not configured. Edit the device and set service URL first.',
-            ], 422));
-        }
-
+        $device = $this->resolveActiveDevice((int) $validated['biometric_device_id']);
         $serviceUrl = rtrim((string) $device->service_url, '/');
         $response = Http::timeout(30)->post($serviceUrl . '/enroll', [
             'include_image' => $validated['include_image'] ?? true,
@@ -114,52 +100,122 @@ class BiometricController extends Controller
             ], 422));
         }
 
-        $payload = $response->json();
-        $position = $payload['position'] ?? null;
-        if ($position === null) {
+        return response()->json(
+            $this->persistEnrollResult($user, $device, $response->json(), $validated),
+            201
+        );
+    }
+
+    public function startEnrollSession(Request $request, User $user): JsonResponse
+    {
+        $this->ensureCanManageUsers($request);
+
+        $validated = $request->validate([
+            'biometric_device_id' => 'required|exists:biometric_devices,id',
+            'include_image' => 'sometimes|boolean',
+        ]);
+
+        $device = $this->resolveActiveDevice((int) $validated['biometric_device_id']);
+        $serviceUrl = rtrim((string) $device->service_url, '/');
+        $response = Http::timeout(15)->post($serviceUrl . '/enroll/session', [
+            'include_image' => $validated['include_image'] ?? true,
+        ]);
+
+        if ($response->failed()) {
             throw new HttpResponseException(response()->json([
-                'message' => 'Device did not return a fingerprint position',
+                'message' => 'Failed to start enrollment session',
+                'details' => $response->json('detail') ?? $response->body(),
             ], 422));
         }
 
-        $fingerprintUid = (string) $position;
-
-        $template = BiometricTemplate::updateOrCreate(
-            [
-                'user_id' => $user->id,
-                'biometric_device_id' => $device->id,
-                'fingerprint_uid' => $fingerprintUid,
-            ],
-            [
-                'finger_index' => $validated['finger_index'] ?? null,
-                'label' => $validated['label'] ?? null,
-                'is_active' => true,
-            ]
-        );
-
-        $imagePath = $this->storeFingerprintImage(
-            $payload['fingerprint_image_base64'] ?? null,
-            $payload['fingerprint_image_mime'] ?? null
-        );
-
-        BiometricEvent::create([
-            'biometric_device_id' => $device->id,
-            'user_id' => $user->id,
-            'deposit_id' => $device->deposit_id,
-            'event_type' => 'enroll',
-            'fingerprint_uid' => $fingerprintUid,
-            'fingerprint_image_path' => $imagePath,
-            'access_granted' => true,
-            'match_score' => $payload['accuracy_score'] ?? null,
-            'payload' => $payload,
-            'occurred_at' => now(),
-        ]);
+        $payload = $response->json();
 
         return response()->json([
-            'template' => $template->load('device', 'user'),
-            'fingerprint_uid' => $fingerprintUid,
-            'fingerprint_image_url' => $imagePath ? asset('storage/' . $imagePath) : null,
+            'session_id' => $payload['session_id'] ?? null,
+            'status' => $payload['status'] ?? 'ready',
+            'message' => $payload['message'] ?? 'Scan first fingerprint.',
+            'log' => 'Initializare senzor... Senzor gata. Scanati amprenta (prima data)...',
         ], 201);
+    }
+
+    public function enrollFirstScan(Request $request, User $user, string $session): JsonResponse
+    {
+        $this->ensureCanManageUsers($request);
+
+        $validated = $request->validate([
+            'biometric_device_id' => 'required|exists:biometric_devices,id',
+        ]);
+
+        $device = $this->resolveActiveDevice((int) $validated['biometric_device_id']);
+        $serviceUrl = rtrim((string) $device->service_url, '/');
+        $response = Http::timeout(30)->post($serviceUrl . '/enroll/session/' . $session . '/first-scan');
+
+        if ($response->failed()) {
+            throw new HttpResponseException(response()->json([
+                'message' => 'First scan failed',
+                'details' => $response->json('detail') ?? $response->body(),
+            ], $response->status() === 408 ? 408 : 422));
+        }
+
+        $payload = $response->json();
+        if (($payload['status'] ?? null) === 'already_exists') {
+            return response()->json([
+                'status' => 'already_exists',
+                'position' => $payload['position'] ?? null,
+                'accuracy_score' => $payload['accuracy_score'] ?? null,
+                'message' => 'Fingerprint already exists on device.',
+                'log' => 'Amprenta exista deja in senzor.',
+            ], 409);
+        }
+
+        return response()->json([
+            'status' => 'first_scan_done',
+            'message' => 'First scan completed. Scan the same finger again.',
+            'log' => 'Prima scanare OK. Rescanati aceeasi amprenta...',
+        ]);
+    }
+
+    public function enrollSecondScan(Request $request, User $user, string $session): JsonResponse
+    {
+        $this->ensureCanManageUsers($request);
+
+        $validated = $request->validate([
+            'biometric_device_id' => 'required|exists:biometric_devices,id',
+            'finger_index' => 'nullable|integer|min:0|max:10',
+            'label' => 'nullable|string|max:255',
+        ]);
+
+        $device = $this->resolveActiveDevice((int) $validated['biometric_device_id']);
+        $serviceUrl = rtrim((string) $device->service_url, '/');
+        $response = Http::timeout(30)->post($serviceUrl . '/enroll/session/' . $session . '/second-scan');
+
+        if ($response->failed()) {
+            throw new HttpResponseException(response()->json([
+                'message' => 'Second scan failed',
+                'details' => $response->json('detail') ?? $response->body(),
+            ], $response->status() === 408 ? 408 : 422));
+        }
+
+        $payload = $response->json();
+        $result = $this->persistEnrollResult($user, $device, $payload, $validated);
+        $result['log'] = 'Amprenta inrolata cu succes — UID ' . ($result['fingerprint_uid'] ?? '-');
+
+        return response()->json($result, 201);
+    }
+
+    public function cancelEnrollSession(Request $request, User $user, string $session): JsonResponse
+    {
+        $this->ensureCanManageUsers($request);
+
+        $validated = $request->validate([
+            'biometric_device_id' => 'required|exists:biometric_devices,id',
+        ]);
+
+        $device = $this->resolveActiveDevice((int) $validated['biometric_device_id']);
+        $serviceUrl = rtrim((string) $device->service_url, '/');
+        Http::timeout(10)->delete($serviceUrl . '/enroll/session/' . $session);
+
+        return response()->json(['status' => 'cancelled']);
     }
 
     public function indexUserTemplates(Request $request, User $user): JsonResponse
@@ -354,6 +410,76 @@ class BiometricController extends Controller
         $this->ensureCanManageUsers($request);
 
         return response()->json(Deposit::query()->select('id', 'name', 'code')->orderBy('name')->get());
+    }
+
+    private function resolveActiveDevice(int $deviceId): BiometricDevice
+    {
+        $device = BiometricDevice::query()
+            ->whereKey($deviceId)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $device) {
+            throw new HttpResponseException(response()->json(['message' => 'Device is inactive or missing'], 422));
+        }
+
+        if (blank($device->service_url)) {
+            throw new HttpResponseException(response()->json([
+                'message' => 'Device service URL is not configured. Edit the device and set service URL first.',
+            ], 422));
+        }
+
+        return $device;
+    }
+
+    private function persistEnrollResult(User $user, BiometricDevice $device, array $payload, array $validated): array
+    {
+        $position = $payload['position'] ?? null;
+        if ($position === null) {
+            throw new HttpResponseException(response()->json([
+                'message' => 'Device did not return a fingerprint position',
+            ], 422));
+        }
+
+        $fingerprintUid = (string) $position;
+
+        $template = BiometricTemplate::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'biometric_device_id' => $device->id,
+                'fingerprint_uid' => $fingerprintUid,
+            ],
+            [
+                'finger_index' => $validated['finger_index'] ?? null,
+                'label' => $validated['label'] ?? null,
+                'is_active' => true,
+            ]
+        );
+
+        $imagePath = $this->storeFingerprintImage(
+            $payload['fingerprint_image_base64'] ?? null,
+            $payload['fingerprint_image_mime'] ?? null
+        );
+
+        BiometricEvent::create([
+            'biometric_device_id' => $device->id,
+            'user_id' => $user->id,
+            'deposit_id' => $device->deposit_id,
+            'event_type' => 'enroll',
+            'fingerprint_uid' => $fingerprintUid,
+            'fingerprint_image_path' => $imagePath,
+            'access_granted' => true,
+            'match_score' => $payload['accuracy_score'] ?? null,
+            'payload' => $payload,
+            'occurred_at' => now(),
+        ]);
+
+        return [
+            'template' => $template->load('device', 'user'),
+            'fingerprint_uid' => $fingerprintUid,
+            'fingerprint_image_url' => $imagePath ? asset('storage/' . $imagePath) : null,
+            'status' => 'enrolled',
+        ];
     }
 
     private function ensureCanManageUsers(Request $request): void

@@ -24,6 +24,8 @@ export default function UserFormModal({
         label: "",
     });
     const [enrollResult, setEnrollResult] = useState(null);
+    const [enrollLogs, setEnrollLogs] = useState([]);
+    const [enrollInProgress, setEnrollInProgress] = useState(false);
     const [selectedDepositIds, setSelectedDepositIds] = useState([]);
 
     const { data: rolesData } = useQuery({
@@ -142,41 +144,19 @@ export default function UserFormModal({
                 finger_index: "",
                 label: "",
             });
-            toast.success("Fingerprint template enrolled.");
+            toast.success(t("users.biometric.enroll.toast.manualSaved"));
         },
         onError: (error) => {
             const msg =
-                error?.response?.data?.message || "Failed to enroll fingerprint.";
+                error?.response?.data?.message ||
+                t("users.biometric.enroll.toast.failed");
             toast.error(msg);
         },
     });
 
-    const enrollWizardMutation = useMutation({
-        mutationFn: async (payload) => {
-            const response = await api.post(
-                `/biometric/users/${userId}/enroll`,
-                payload,
-            );
-            return response.data;
-        },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({
-                queryKey: ["biometric-templates", userId],
-            });
-            setTemplateForm((prev) => ({
-                ...prev,
-                fingerprint_uid: data?.fingerprint_uid || prev.fingerprint_uid,
-            }));
-            setEnrollResult(data);
-            toast.success(
-                `Fingerprint enrolled successfully. UID: ${data?.fingerprint_uid || "-"}`,
-            );
-        },
-        onError: (error) => {
-            const msg = error?.response?.data?.message || "Enroll wizard failed.";
-            toast.error(msg);
-        },
-    });
+    const appendEnrollLog = (message) => {
+        setEnrollLogs((prev) => [...prev, message]);
+    };
 
     const deleteTemplateMutation = useMutation({
         mutationFn: async (templateId) => {
@@ -186,11 +166,12 @@ export default function UserFormModal({
             queryClient.invalidateQueries({
                 queryKey: ["biometric-templates", userId],
             });
-            toast.success("Fingerprint template removed.");
+            toast.success(t("users.biometric.templates.removed"));
         },
         onError: (error) => {
             const msg =
-                error?.response?.data?.message || "Failed to remove template.";
+                error?.response?.data?.message ||
+                t("users.biometric.templates.removeFailed");
             toast.error(msg);
         },
     });
@@ -206,10 +187,12 @@ export default function UserFormModal({
             queryClient.invalidateQueries({
                 queryKey: ["biometric-user-access", userId],
             });
-            toast.success("Deposit access updated.");
+            toast.success(t("users.biometric.access.updated"));
         },
         onError: (error) => {
-            const msg = error?.response?.data?.message || "Failed to update access.";
+            const msg =
+                error?.response?.data?.message ||
+                t("users.biometric.access.updateFailed");
             toast.error(msg);
         },
     });
@@ -243,13 +226,15 @@ export default function UserFormModal({
     );
 
     const selectedDepositsText = useMemo(() => {
-        if (!selectedDepositIds.length) return "No deposit access selected.";
+        if (!selectedDepositIds.length) {
+            return t("users.biometric.access.noneSelected");
+        }
         const selectedSet = new Set(selectedDepositIds);
         return deposits
             .filter((deposit) => selectedSet.has(deposit.id))
             .map((deposit) => deposit.name)
             .join(", ");
-    }, [deposits, selectedDepositIds]);
+    }, [deposits, selectedDepositIds, t]);
 
     if (isEdit && !hasPermission("edit users")) return null;
     if (!isEdit && !hasPermission("create users")) return null;
@@ -284,13 +269,13 @@ export default function UserFormModal({
         });
     };
 
-    const handleEnrollWizard = () => {
+    const handleEnrollWizard = async () => {
         if (!templateForm.biometric_device_id) {
-            toast.error("Please select a device first.");
+            toast.error(t("users.biometric.enroll.toast.selectDevice"));
             return;
         }
-        setEnrollResult(null);
-        enrollWizardMutation.mutate({
+
+        const payload = {
             biometric_device_id: Number(templateForm.biometric_device_id),
             finger_index:
                 templateForm.finger_index === ""
@@ -298,7 +283,94 @@ export default function UserFormModal({
                     : Number(templateForm.finger_index),
             label: templateForm.label.trim() || null,
             include_image: true,
-        });
+        };
+
+        setEnrollResult(null);
+        setEnrollLogs([]);
+        setEnrollInProgress(true);
+
+        let sessionId = null;
+
+        try {
+            const startResponse = await api.post(
+                `/biometric/users/${userId}/enroll/start`,
+                payload,
+            );
+            sessionId = startResponse.data?.session_id;
+            if (!sessionId) {
+                throw new Error("Enrollment session was not created.");
+            }
+            appendEnrollLog(t("users.biometric.enroll.logs.start"));
+
+            const firstResponse = await api.post(
+                `/biometric/users/${userId}/enroll/${sessionId}/first-scan`,
+                { biometric_device_id: payload.biometric_device_id },
+            );
+
+            if (firstResponse.data?.status === "already_exists") {
+                appendEnrollLog(t("users.biometric.enroll.logs.alreadyExists"));
+                toast.error(t("users.biometric.enroll.toast.alreadyExists"));
+                return;
+            }
+
+            appendEnrollLog(t("users.biometric.enroll.logs.firstDone"));
+
+            const secondResponse = await api.post(
+                `/biometric/users/${userId}/enroll/${sessionId}/second-scan`,
+                payload,
+            );
+            const data = secondResponse.data;
+
+            appendEnrollLog(
+                t("users.biometric.enroll.logs.success", {
+                    uid: data?.fingerprint_uid || "-",
+                }),
+            );
+
+            queryClient.invalidateQueries({
+                queryKey: ["biometric-templates", userId],
+            });
+            setTemplateForm((prev) => ({
+                ...prev,
+                fingerprint_uid: data?.fingerprint_uid || prev.fingerprint_uid,
+            }));
+            setEnrollResult(data);
+            toast.success(
+                t("users.biometric.enroll.toast.success", {
+                    uid: data?.fingerprint_uid || "-",
+                }),
+            );
+        } catch (error) {
+            const status = error?.response?.status;
+            const details = String(error?.response?.data?.details || "");
+            const msg =
+                error?.response?.data?.message ||
+                t("users.biometric.enroll.toast.failed");
+
+            if (status === 408) {
+                appendEnrollLog(t("users.biometric.enroll.logs.timeout"));
+            } else if (details.toLowerCase().includes("do not match")) {
+                appendEnrollLog(t("users.biometric.enroll.logs.mismatch"));
+            } else if (details) {
+                appendEnrollLog(details);
+            } else {
+                appendEnrollLog(t("users.biometric.enroll.logs.failed"));
+            }
+
+            if (sessionId) {
+                try {
+                    await api.delete(`/biometric/users/${userId}/enroll/${sessionId}`, {
+                        data: { biometric_device_id: payload.biometric_device_id },
+                    });
+                } catch {
+                    // ignore cleanup errors
+                }
+            }
+
+            toast.error(msg);
+        } finally {
+            setEnrollInProgress(false);
+        }
     };
 
     const title = isEdit ? t("users.modal.editTitle") : t("users.modal.createTitle");
@@ -434,21 +506,18 @@ export default function UserFormModal({
                         {isEdit && (
                             <div className="border rounded-md p-4 space-y-4">
                                 <h3 className="text-base font-semibold text-gray-900">
-                                    Biometric Access
+                                    {t("users.biometric.title")}
                                 </h3>
                                 <p className="text-sm text-gray-500">
-                                    Manage fingerprint templates and warehouse access
-                                    for this user.
+                                    {t("users.biometric.description")}
                                 </p>
 
                                 <div className="border rounded-md p-3 space-y-3">
                                     <h4 className="text-sm font-semibold">
-                                        Enroll Fingerprint Template
+                                        {t("users.biometric.enroll.title")}
                                     </h4>
                                     <p className="text-xs text-gray-500">
-                                        Wizard mode calls the selected device and
-                                        auto-fills the fingerprint UID (sensor
-                                        position). Manual mode remains available.
+                                        {t("users.biometric.enroll.description")}
                                     </p>
                                     <form
                                         onSubmit={handleEnrollTemplate}
@@ -467,7 +536,7 @@ export default function UserFormModal({
                                             className="px-3 py-2 border border-gray-300 rounded-md"
                                         >
                                             <option value="">
-                                                Select device...
+                                                {t("users.biometric.enroll.selectDevice")}
                                             </option>
                                             {devices.map((device) => (
                                                 <option
@@ -477,14 +546,14 @@ export default function UserFormModal({
                                                     {device.name} ({device.code})
                                                     {device.purpose ===
                                                     "attendance"
-                                                        ? " - attendance"
+                                                        ? t("users.biometric.enroll.attendanceSuffix")
                                                         : ""}
                                                 </option>
                                             ))}
                                         </select>
                                         <input
                                             type="text"
-                                            placeholder="Fingerprint UID"
+                                            placeholder={t("users.biometric.enroll.fingerprintUid")}
                                             value={templateForm.fingerprint_uid}
                                             onChange={(e) =>
                                                 setTemplateForm((prev) => ({
@@ -500,7 +569,7 @@ export default function UserFormModal({
                                             type="number"
                                             min="0"
                                             max="10"
-                                            placeholder="Finger index (optional)"
+                                            placeholder={t("users.biometric.enroll.fingerIndex")}
                                             value={templateForm.finger_index}
                                             onChange={(e) =>
                                                 setTemplateForm((prev) => ({
@@ -513,7 +582,7 @@ export default function UserFormModal({
                                         />
                                         <input
                                             type="text"
-                                            placeholder="Label (optional)"
+                                            placeholder={t("users.biometric.enroll.label")}
                                             value={templateForm.label}
                                             onChange={(e) =>
                                                 setTemplateForm((prev) => ({
@@ -529,20 +598,19 @@ export default function UserFormModal({
                                                     type="button"
                                                     onClick={handleEnrollWizard}
                                                     disabled={
-                                                        enrollWizardMutation.isPending ||
+                                                        enrollInProgress ||
                                                         !selectedDevice?.service_url
                                                     }
                                                     className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
                                                 >
-                                                    {enrollWizardMutation.isPending
-                                                        ? "Waiting for scan..."
-                                                        : "Start Enroll Wizard"}
+                                                    {enrollInProgress
+                                                        ? t("users.biometric.enroll.inProgress")
+                                                        : t("users.biometric.enroll.startWizard")}
                                                 </button>
                                                 {!selectedDevice?.service_url &&
                                                     templateForm.biometric_device_id && (
                                                         <span className="text-xs text-amber-700 self-center">
-                                                            Selected device has no
-                                                            service URL.
+                                                            {t("users.biometric.enroll.noServiceUrl")}
                                                         </span>
                                                     )}
                                                 <button
@@ -553,10 +621,24 @@ export default function UserFormModal({
                                                     className="px-4 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-800 disabled:opacity-50"
                                                 >
                                                     {templateMutation.isPending
-                                                        ? "Saving..."
-                                                        : "Save Manual Template"}
+                                                        ? t("users.biometric.enroll.saving")
+                                                        : t("users.biometric.enroll.saveManual")}
                                                 </button>
                                             </div>
+                                            {enrollLogs.length > 0 && (
+                                                <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                                                        {t("users.biometric.enroll.logTitle")}
+                                                    </p>
+                                                    <ul className="space-y-1 text-sm text-slate-700 font-mono">
+                                                        {enrollLogs.map((line, index) => (
+                                                            <li key={`${line}-${index}`}>
+                                                                {line}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
                                             {enrollResult?.fingerprint_image_url && (
                                                 <div className="mt-3">
                                                     <a
@@ -567,7 +649,7 @@ export default function UserFormModal({
                                                         rel="noreferrer"
                                                         className="inline-flex items-center gap-2 text-sm text-indigo-700 hover:underline"
                                                     >
-                                                        View captured scan image
+                                                        {t("users.biometric.enroll.viewImage")}
                                                     </a>
                                                 </div>
                                             )}
@@ -577,15 +659,15 @@ export default function UserFormModal({
 
                                 <div className="border rounded-md p-3 space-y-3">
                                     <h4 className="text-sm font-semibold">
-                                        Registered Templates
+                                        {t("users.biometric.templates.title")}
                                     </h4>
                                     {templatesLoading ? (
                                         <p className="text-sm text-gray-500">
-                                            Loading templates...
+                                            {t("users.biometric.templates.loading")}
                                         </p>
                                     ) : templates.length === 0 ? (
                                         <p className="text-sm text-gray-500">
-                                            No templates registered.
+                                            {t("users.biometric.templates.empty")}
                                         </p>
                                     ) : (
                                         <div className="space-y-2">
@@ -621,7 +703,7 @@ export default function UserFormModal({
                                                         }
                                                         className="text-sm text-red-600 hover:text-red-700"
                                                     >
-                                                        Remove
+                                                        {t("users.biometric.remove")}
                                                     </button>
                                                 </div>
                                             ))}
@@ -631,10 +713,12 @@ export default function UserFormModal({
 
                                 <div className="border rounded-md p-3 space-y-3">
                                     <h4 className="text-sm font-semibold">
-                                        Deposit Access
+                                        {t("users.biometric.access.title")}
                                     </h4>
                                     <p className="text-sm text-gray-500">
-                                        Selected: {selectedDepositsText}
+                                        {t("users.biometric.access.selected", {
+                                            list: selectedDepositsText,
+                                        })}
                                     </p>
                                     <div className="space-y-2 max-h-52 overflow-y-auto">
                                         {deposits.map((deposit) => (
@@ -673,8 +757,8 @@ export default function UserFormModal({
                                         className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
                                     >
                                         {syncAccessMutation.isPending
-                                            ? "Saving access..."
-                                            : "Save Deposit Access"}
+                                            ? t("users.biometric.access.saving")
+                                            : t("users.biometric.access.save")}
                                     </button>
                                 </div>
                             </div>

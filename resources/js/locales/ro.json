@@ -1869,6 +1869,59 @@
       "createTitle": "Creează utilizator",
       "editTitle": "Editează utilizator",
       "description": "Gestionează contul utilizatorului și rolurile."
+    },
+    "biometric": {
+      "title": "Acces biometric",
+      "description": "Gestionează șabloanele de amprentă și accesul la depozite pentru acest utilizator.",
+      "enroll": {
+        "title": "Înrolare amprentă",
+        "description": "Modul asistent apelează dispozitivul selectat și completează automat UID-ul (poziția din senzor). Modul manual rămâne disponibil.",
+        "selectDevice": "Selectează dispozitivul...",
+        "attendanceSuffix": " - prezență",
+        "fingerprintUid": "UID amprentă",
+        "fingerIndex": "Index deget (opțional)",
+        "label": "Etichetă (opțional)",
+        "startWizard": "Pornește asistentul de înrolare",
+        "inProgress": "Înrolare în curs...",
+        "noServiceUrl": "Dispozitivul selectat nu are URL de serviciu configurat.",
+        "saveManual": "Salvează șablon manual",
+        "saving": "Se salvează...",
+        "logTitle": "Jurnal înrolare",
+        "viewImage": "Vezi imaginea scanată",
+        "logs": {
+          "start": "Inițializare senzor... Senzor pregătit. Scanați amprenta (prima dată)...",
+          "firstDone": "Prima scanare reușită. Rescanați aceeași amprentă...",
+          "success": "Amprentă înrolată cu succes — UID {{uid}}",
+          "alreadyExists": "Amprenta există deja în senzor.",
+          "timeout": "Timeout — încercați din nou.",
+          "mismatch": "Scanările nu se potrivesc — încercați din nou.",
+          "failed": "Înrolarea a eșuat."
+        },
+        "toast": {
+          "success": "Amprentă înrolată cu succes. UID: {{uid}}",
+          "alreadyExists": "Amprenta există deja pe dispozitiv.",
+          "failed": "Asistentul de înrolare a eșuat.",
+          "selectDevice": "Selectați mai întâi un dispozitiv.",
+          "manualSaved": "Șablon de amprentă înregistrat."
+        }
+      },
+      "templates": {
+        "title": "Șabloane înregistrate",
+        "loading": "Se încarcă șabloanele...",
+        "empty": "Niciun șablon înregistrat.",
+        "removed": "Șablon de amprentă eliminat.",
+        "removeFailed": "Nu s-a putut elimina șablonul."
+      },
+      "access": {
+        "title": "Acces depozite",
+        "selected": "Selectate: {{list}}",
+        "noneSelected": "Niciun depozit selectat pentru acces.",
+        "save": "Salvează acces depozite",
+        "saving": "Se salvează accesul...",
+        "updated": "Accesul la depozite a fost actualizat.",
+        "updateFailed": "Nu s-a putut actualiza accesul."
+      },
+      "remove": "Elimină"
     }
   },
   "roles": {
