@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -100,8 +101,11 @@ class BiometricController extends Controller
             ], 422));
         }
 
+        $devicePayload = $response->json();
+        $this->logDeviceServiceResponse('enroll', $device, $devicePayload);
+
         return response()->json(
-            $this->persistEnrollResult($user, $device, $response->json(), $validated),
+            $this->persistEnrollResult($user, $device, $devicePayload, $validated),
             201
         );
     }
@@ -158,6 +162,11 @@ class BiometricController extends Controller
         }
 
         $payload = $response->json();
+        $this->logDeviceServiceResponse('enroll_first_scan', $device, $payload, [
+            'session_id' => $session,
+            'user_id' => $user->id,
+        ]);
+
         if (($payload['status'] ?? null) === 'already_exists') {
             return response()->json([
                 'status' => 'already_exists',
@@ -197,6 +206,11 @@ class BiometricController extends Controller
         }
 
         $payload = $response->json();
+        $this->logDeviceServiceResponse('enroll_second_scan', $device, $payload, [
+            'session_id' => $session,
+            'user_id' => $user->id,
+        ]);
+
         $result = $this->persistEnrollResult($user, $device, $payload, $validated);
         $result['log'] = 'Amprenta inrolata cu succes — UID ' . ($result['fingerprint_uid'] ?? '-');
 
@@ -301,6 +315,13 @@ class BiometricController extends Controller
 
     public function storeEvent(Request $request): JsonResponse
     {
+        Log::info('Biometric sensor raw request received', [
+            'ip' => $request->ip(),
+            'device_code' => $request->input('device_code'),
+            'event_type' => $request->input('event_type'),
+            'payload' => $this->sanitizePayloadForLog($request->all()),
+        ]);
+
         $validated = $request->validate([
             'device_code' => 'required|string|max:255',
             'event_type' => 'required|string|max:100',
@@ -314,16 +335,27 @@ class BiometricController extends Controller
             'payload' => 'nullable|array',
         ]);
 
+        Log::info('Biometric sensor payload validated', [
+            'payload' => $this->sanitizePayloadForLog($validated),
+        ]);
+
         $device = BiometricDevice::where('code', $validated['device_code'])
             ->where('is_active', true)
             ->first();
 
         if (! $device) {
+            Log::warning('Biometric sensor event rejected: unknown device', [
+                'device_code' => $validated['device_code'],
+            ]);
             throw new HttpResponseException(response()->json(['message' => 'Unknown device'], 403));
         }
 
         $providedKey = (string) $request->header('X-Device-Key', '');
         if ($providedKey === '' || ! hash_equals($device->api_key, $providedKey)) {
+            Log::warning('Biometric sensor event rejected: invalid device key', [
+                'device_id' => $device->id,
+                'device_code' => $device->code,
+            ]);
             throw new HttpResponseException(response()->json(['message' => 'Invalid device key'], 403));
         }
 
@@ -352,6 +384,22 @@ class BiometricController extends Controller
             ? Carbon::parse($validated['occurred_at'])
             : now();
 
+        $accessGranted = $hasDepositAccess && $userId !== null;
+
+        Log::info('Biometric sensor event resolved', [
+            'device_id' => $device->id,
+            'device_code' => $device->code,
+            'device_name' => $device->name,
+            'event_type' => $validated['event_type'],
+            'fingerprint_uid' => $validated['fingerprint_uid'] ?? null,
+            'match_score' => $validated['match_score'] ?? null,
+            'deposit_id' => $depositId,
+            'resolved_user_id' => $userId,
+            'has_deposit_access' => $hasDepositAccess,
+            'access_granted' => $accessGranted,
+            'has_image' => ! empty($validated['fingerprint_image_base64']),
+        ]);
+
         $event = BiometricEvent::create([
             'biometric_device_id' => $device->id,
             'user_id' => $userId,
@@ -359,7 +407,7 @@ class BiometricController extends Controller
             'event_type' => $validated['event_type'],
             'fingerprint_uid' => $validated['fingerprint_uid'] ?? null,
             'fingerprint_image_path' => $imagePath,
-            'access_granted' => $hasDepositAccess && $userId !== null,
+            'access_granted' => $accessGranted,
             'match_score' => $validated['match_score'] ?? null,
             'payload' => $validated['payload'] ?? null,
             'occurred_at' => $occurredAt,
@@ -370,6 +418,14 @@ class BiometricController extends Controller
         }
 
         $device->update(['last_seen_at' => now()]);
+
+        Log::info('Biometric sensor event stored', [
+            'event_id' => $event->id,
+            'device_code' => $device->code,
+            'event_type' => $event->event_type,
+            'user_id' => $event->user_id,
+            'access_granted' => $event->access_granted,
+        ]);
 
         return response()->json([
             'event_id' => $event->id,
@@ -487,6 +543,32 @@ class BiometricController extends Controller
             'fingerprint_image_url' => $imagePath ? asset('storage/' . $imagePath) : null,
             'status' => 'enrolled',
         ];
+    }
+
+    private function sanitizePayloadForLog(array $payload): array
+    {
+        if (! empty($payload['fingerprint_image_base64'])) {
+            $payload['fingerprint_image_base64'] = '[omitted base64: '
+                . strlen((string) $payload['fingerprint_image_base64'])
+                . ' chars]';
+        }
+
+        return $payload;
+    }
+
+    private function logDeviceServiceResponse(
+        string $action,
+        BiometricDevice $device,
+        array $payload,
+        array $context = [],
+    ): void {
+        Log::info('Biometric device service response', array_merge([
+            'action' => $action,
+            'device_id' => $device->id,
+            'device_code' => $device->code,
+            'service_url' => $device->service_url,
+            'payload' => $this->sanitizePayloadForLog($payload),
+        ], $context));
     }
 
     private function normalizeServiceUrl(?string $serviceUrl): ?string
