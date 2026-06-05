@@ -360,7 +360,7 @@ class BiometricController extends Controller
         }
 
         $userId = $validated['matched_user_id'] ?? null;
-        if (! $userId && ! empty($validated['fingerprint_uid'])) {
+        if (! $userId && filled($validated['fingerprint_uid'] ?? null)) {
             $userId = $this->resolveUserIdFromFingerprint(
                 $device,
                 (string) $validated['fingerprint_uid'],
