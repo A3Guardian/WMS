@@ -248,6 +248,16 @@ class BiometricController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
+        $device = BiometricDevice::query()->find($validated['biometric_device_id']);
+        if ($device) {
+            $this->syncTemplateToSharedSensorDevices(
+                $user,
+                $device,
+                (string) $validated['fingerprint_uid'],
+                $validated,
+            );
+        }
+
         return response()->json($template->load('device', 'user'), 201);
     }
 
@@ -319,15 +329,10 @@ class BiometricController extends Controller
 
         $userId = $validated['matched_user_id'] ?? null;
         if (! $userId && ! empty($validated['fingerprint_uid'])) {
-            $templateUserId = BiometricTemplate::query()
-                ->where('biometric_device_id', $device->id)
-                ->where('fingerprint_uid', $validated['fingerprint_uid'])
-                ->where('is_active', true)
-                ->value('user_id');
-
-            if ($templateUserId) {
-                $userId = (int) $templateUserId;
-            }
+            $userId = $this->resolveUserIdFromFingerprint(
+                $device,
+                (string) $validated['fingerprint_uid'],
+            );
         }
         $depositId = $validated['deposit_id'] ?? $device->deposit_id;
 
@@ -456,6 +461,8 @@ class BiometricController extends Controller
             ]
         );
 
+        $this->syncTemplateToSharedSensorDevices($user, $device, $fingerprintUid, $validated);
+
         $imagePath = $this->storeFingerprintImage(
             $payload['fingerprint_image_base64'] ?? null,
             $payload['fingerprint_image_mime'] ?? null
@@ -480,6 +487,87 @@ class BiometricController extends Controller
             'fingerprint_image_url' => $imagePath ? asset('storage/' . $imagePath) : null,
             'status' => 'enrolled',
         ];
+    }
+
+    private function normalizeServiceUrl(?string $serviceUrl): ?string
+    {
+        if (blank($serviceUrl)) {
+            return null;
+        }
+
+        return rtrim((string) $serviceUrl, '/');
+    }
+
+    private function peerDevicesForSharedSensor(BiometricDevice $device)
+    {
+        $normalizedUrl = $this->normalizeServiceUrl($device->service_url);
+        if ($normalizedUrl === null) {
+            return collect();
+        }
+
+        return BiometricDevice::query()
+            ->where('is_active', true)
+            ->where('id', '!=', $device->id)
+            ->whereNotNull('service_url')
+            ->get()
+            ->filter(
+                fn (BiometricDevice $peer) => $this->normalizeServiceUrl($peer->service_url) === $normalizedUrl
+            )
+            ->values();
+    }
+
+    private function resolveUserIdFromFingerprint(BiometricDevice $device, string $fingerprintUid): ?int
+    {
+        $userId = BiometricTemplate::query()
+            ->where('biometric_device_id', $device->id)
+            ->where('fingerprint_uid', $fingerprintUid)
+            ->where('is_active', true)
+            ->value('user_id');
+
+        if ($userId) {
+            return (int) $userId;
+        }
+
+        $peerDeviceIds = $this->peerDevicesForSharedSensor($device)->pluck('id');
+        if ($peerDeviceIds->isEmpty()) {
+            return null;
+        }
+
+        $matchedUserIds = BiometricTemplate::query()
+            ->whereIn('biometric_device_id', $peerDeviceIds)
+            ->where('fingerprint_uid', $fingerprintUid)
+            ->where('is_active', true)
+            ->pluck('user_id')
+            ->unique()
+            ->values();
+
+        if ($matchedUserIds->count() === 1) {
+            return (int) $matchedUserIds->first();
+        }
+
+        return null;
+    }
+
+    private function syncTemplateToSharedSensorDevices(
+        User $user,
+        BiometricDevice $device,
+        string $fingerprintUid,
+        array $validated,
+    ): void {
+        foreach ($this->peerDevicesForSharedSensor($device) as $peerDevice) {
+            BiometricTemplate::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'biometric_device_id' => $peerDevice->id,
+                    'fingerprint_uid' => $fingerprintUid,
+                ],
+                [
+                    'finger_index' => $validated['finger_index'] ?? null,
+                    'label' => $validated['label'] ?? null,
+                    'is_active' => true,
+                ]
+            );
+        }
     }
 
     private function ensureCanManageUsers(Request $request): void
