@@ -299,7 +299,7 @@ class BiometricController extends Controller
             'fingerprint_image_mime' => 'nullable|in:image/png,image/jpeg,image/webp',
             'matched_user_id' => 'nullable|integer|exists:users,id',
             'deposit_id' => 'nullable|integer|exists:deposits,id',
-            'match_score' => 'nullable|integer|min:0|max:100',
+            'match_score' => 'nullable|integer|min:0|max:65535',
             'occurred_at' => 'nullable|date',
             'payload' => 'nullable|array',
         ]);
