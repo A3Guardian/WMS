@@ -706,11 +706,13 @@ class BiometricController extends Controller
         $isExplicitClockIn = in_array($normalizedType, ['check_in', 'clock_in', 'entry'], true);
         $isExplicitClockOut = in_array($normalizedType, ['check_out', 'clock_out', 'exit'], true);
 
-        if ($isExplicitClockIn || (! $isExplicitClockOut && ! $attendance->clock_in)) {
+        if ($isExplicitClockIn) {
             $attendance->clock_in = $occurredAt;
-        } elseif ($attendance->clock_in && ! $attendance->clock_out) {
-            $attendance->clock_out = $occurredAt;
         } elseif ($isExplicitClockOut) {
+            $attendance->clock_out = $occurredAt;
+        } elseif (! $attendance->clock_in) {
+            $attendance->clock_in = $occurredAt;
+        } else {
             $attendance->clock_out = $occurredAt;
         }
 
