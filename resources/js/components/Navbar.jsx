@@ -1,13 +1,26 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Power, Maximize, Minimize } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../features/auth/useAuth";
+import api from "../utils/api";
 
 export default function Navbar({ onMenuClick = () => {} }) {
     const { user, logout } = useAuth();
     const [isFullscreen, setIsFullscreen] = React.useState(false);
     const { t, i18n } = useTranslation();
+
+    const { data: branding } = useQuery({
+        queryKey: ["settings", "invoice-data"],
+        queryFn: async () => {
+            const response = await api.get("/settings/invoice-data");
+            return response.data;
+        },
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const logoUrl = branding?.logo_url;
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -82,7 +95,19 @@ export default function Navbar({ onMenuClick = () => {} }) {
                                 />
                             </svg>
                         </button>
-                        <h1 className="text-xl font-bold text-gray-900">WMS</h1>
+                        <Link to="/" className="flex items-center">
+                            {logoUrl ? (
+                                <img
+                                    src={logoUrl}
+                                    alt={branding?.company?.name || "WMS"}
+                                    className="h-10 max-w-[160px] w-auto object-contain"
+                                />
+                            ) : (
+                                <h1 className="text-xl font-bold text-gray-900">
+                                    WMS
+                                </h1>
+                            )}
+                        </Link>
                     </div>
                     <div className="flex items-center gap-3">
                         <button

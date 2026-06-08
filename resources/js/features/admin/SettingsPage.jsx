@@ -82,6 +82,9 @@ export default function SettingsPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["settings"] });
+            queryClient.invalidateQueries({
+                queryKey: ["settings", "invoice-data"],
+            });
             toast.success(t("settings.toast.logoUploaded"));
         },
         onError: (err) => {
