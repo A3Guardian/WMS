@@ -1,59 +1,254 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# WMS — Warehouse Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A full-stack warehouse management platform for inventory, orders, employees, finance, and biometric access control.
 
-## About Laravel
+**Backend:** Laravel 12 (PHP 8.2), MySQL, Laravel Sanctum, Spatie Permissions  
+**Frontend:** React 19, Vite 7, Tailwind CSS 4, React Query, i18n (EN/RO)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Warehouse:** products, inventory, deposits (shelf layout), orders, suppliers, customers
+- **Operations:** tasks, employee dashboards
+- **HR & finance:** departments, employees, salaries, leave, attendance, payroll, invoices, payments, cost reports
+- **Administration:** users, roles, permissions, application settings
+- **Biometrics:** device management and event logging (requires the separate `wms-fingerprint-service` running on hardware such as a Raspberry Pi)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Prerequisites
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Tool | Version |
+|------|---------|
+| Docker & Docker Compose | latest |
+| PHP | 8.2+ (local setup only) |
+| Composer | 2.x (local setup only) |
+| Node.js | 20+ (local setup only) |
+| MySQL | 8.0 (local setup only) |
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Quick start (Docker — recommended)
 
-### Premium Partners
+### 1. Clone and configure environment
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+git clone <repository-url> wms
+cd wms
+cp .env.example .env
+```
 
-## Contributing
+Edit `.env` for Docker:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```env
+APP_URL=http://localhost:8000
 
-## Code of Conduct
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=wms
+DB_USERNAME=root
+DB_PASSWORD=root
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Generate the application key (once):
 
-## Security Vulnerabilities
+```bash
+# If PHP is installed locally:
+php artisan key:generate
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Or inside the container after the first start:
+docker exec wms_app php artisan key:generate
+```
+
+### 2. Start the stack
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+| Service | Container | Ports | Description |
+|---------|-----------|-------|-------------|
+| App | `wms_app` | `8000`, `5173` | Laravel API + Vite dev server |
+| MySQL | `wms_mysql` | `3307` → `3306` | Database |
+
+On startup the app container automatically runs migrations. **Seed the database** to create users and demo data:
+
+```bash
+docker exec wms_app php artisan db:seed
+```
+
+### 3. Open the application
+
+| URL | Purpose |
+|-----|---------|
+| http://localhost:8000 | Web application (login page) |
+| http://localhost:5173 | Vite dev server (HMR; used internally by Laravel) |
+
+---
+
+## Local development (without Docker)
+
+### 1. Install dependencies
+
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+```
+
+Configure `.env` for a local MySQL instance:
+
+```env
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=wms
+DB_USERNAME=root
+DB_PASSWORD=your_password
+```
+
+```bash
+npm install
+php artisan migrate
+php artisan db:seed
+```
+
+### 2. Run all services
+
+```bash
+composer dev
+```
+
+This starts Laravel (`:8000`), the queue worker, log tailing, and Vite (`:5173`) in parallel.
+
+Alternatively, run them in separate terminals:
+
+```bash
+php artisan serve
+php artisan queue:listen
+npm run dev
+```
+
+### 3. Production build
+
+```bash
+npm run build
+```
+
+---
+
+## Default login credentials
+
+All seeded accounts use the password **`password`**.
+
+### Primary accounts (`UserSeeder`)
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@wms.com` | `password` |
+| Employee | `employee@wms.com` | `password` |
+| Financial | `financial@wms.com` | `password` |
+
+### Additional demo accounts (`DemoDataSeeder`)
+
+| Role | Emails |
+|------|--------|
+| Admin | `admin1@wms.com`, `admin2@wms.com`, `admin3@wms.com` |
+| Employee | `employee1@wms.com`, `employee2@wms.com`, `employee3@wms.com` |
+| Financial | `financial1@wms.com`, `financial2@wms.com`, `financial3@wms.com` |
+
+Password for all: **`password`**
+
+> Use the **Admin** account for full access (user/role management, settings, biometrics).
+
+---
+
+## Database credentials (Docker)
+
+| Setting | Value |
+|---------|-------|
+| Host (from host machine) | `127.0.0.1` |
+| Port (from host machine) | `3307` |
+| Host (from app container) | `mysql` |
+| Port (from app container) | `3306` |
+| Database | `wms` |
+| Username | `root` |
+| Password | `root` |
+
+---
+
+## Project structure
+
+```
+wms/
+├── app/                  # Laravel backend (controllers, models, services)
+├── database/
+│   ├── migrations/       # Schema
+│   └── seeders/          # Roles, users, demo data
+├── resources/
+│   ├── js/               # React SPA (pages, components, API client)
+│   └── css/              # Tailwind entry
+├── routes/
+│   ├── api.php           # REST API (Sanctum-protected)
+│   └── web.php           # SPA fallback
+├── docker-compose.yml    # Dev environment (app + MySQL)
+├── Dockerfile.dev        # PHP 8.2 + Node 20 image
+└── vite.config.js        # Vite + React + Laravel plugin
+```
+
+---
+
+## Biometric integration
+
+Fingerprint scanning is handled by a **separate FastAPI service** (`wms-fingerprint-service`), deployed on edge hardware (e.g. Raspberry Pi). WMS communicates with it over HTTP using the `service_url` configured per biometric device in the admin panel.
+
+The fingerprint service is not part of the Docker stack. See its own README for setup and deployment.
+
+---
+
+## Useful commands
+
+```bash
+# Reset and reseed database
+php artisan migrate:fresh --seed
+
+# Run tests
+composer test
+
+# Clear caches
+php artisan config:clear && php artisan cache:clear
+
+# Docker: view app logs
+docker logs -f wms_app
+
+# Docker: run artisan inside container
+docker exec wms_app php artisan <command>
+```
+
+---
+
+## Troubleshooting
+
+**Blank page or assets not loading**  
+Ensure Vite is running (`npm run dev` or the Docker stack is up). `APP_URL` must match `http://localhost:8000`.
+
+**Database connection refused (Docker)**  
+Wait for the MySQL health check to pass before the app starts. Check with `docker compose ps`.
+
+**Cannot log in after first start**  
+Run `php artisan db:seed` — migrations alone do not create users.
+
+**Port already in use**  
+Change mapped ports in `docker-compose.yml` or stop conflicting services on `8000`, `5173`, or `3307`.
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
