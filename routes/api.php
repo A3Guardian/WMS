@@ -73,7 +73,7 @@ Route::middleware(['auth:sanctum', 'ensure.user'])->group(function () {
     Route::patch('/suppliers/{supplier}', [SupplierController::class, 'update'])->middleware('permission:edit suppliers,web');
     Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->middleware('permission:delete suppliers,web');
 
-    Route::get('/customers', [CustomerController::class, 'index'])->middleware('permission:view customers,web');
+    Route::get('/customers', [CustomerController::class, 'index'])->middleware('role_or_permission:view customers|view orders|view invoices,web');
     Route::post('/customers', [CustomerController::class, 'store'])->middleware('permission:create customers,web');
     Route::get('/customers/{customer}', [CustomerController::class, 'show'])->middleware('permission:view customers,web');
     Route::put('/customers/{customer}', [CustomerController::class, 'update'])->middleware('permission:edit customers,web');

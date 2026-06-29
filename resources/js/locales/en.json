@@ -2179,6 +2179,10 @@
         "updated": "Updated",
         "adjusted": "Stock adjusted",
         "deleted": "Deleted"
+      },
+      "fields": {
+        "quantity": "Quantity",
+        "adjustment": "Adjustment"
       }
     }
   }

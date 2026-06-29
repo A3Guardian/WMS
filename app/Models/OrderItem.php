@@ -23,6 +23,10 @@ class OrderItem extends Model
         'price' => 'decimal:2',
     ];
 
+    protected $appends = [
+        'effective_price',
+    ];
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
@@ -33,9 +37,24 @@ class OrderItem extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function getEffectivePriceAttribute(): float
+    {
+        $price = (float) $this->price;
+
+        if ($price > 0) {
+            return $price;
+        }
+
+        if ($this->relationLoaded('product') && $this->product) {
+            return (float) $this->product->price;
+        }
+
+        return $price;
+    }
+
     public function getTotalAttribute(): float
     {
-        return $this->quantity * $this->price;
+        return $this->quantity * $this->effective_price;
     }
 }
 

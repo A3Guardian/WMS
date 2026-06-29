@@ -4,6 +4,10 @@ import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
+import {
+    buildOrderItemsPayload,
+    mapOrderItemToEditRow,
+} from "../../utils/orderTotals";
 import SearchableSelect from "../../components/SearchableSelect";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -73,11 +77,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
         if (order) {
             const items =
                 order.items?.length > 0
-                    ? order.items.map((it) => ({
-                          product_id: String(it.product_id ?? it.product?.id ?? ""),
-                          quantity: String(it.quantity ?? ""),
-                          price: String(it.price ?? ""),
-                      }))
+                    ? order.items.map(mapOrderItemToEditRow)
                     : [emptyItemRow()];
             setFormData({
                 customer_id: order.customer_id ? String(order.customer_id) : "",
@@ -111,6 +111,20 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
         setFormData({ ...formData, items: next });
     };
 
+    const setItemProduct = (index, productId, product) => {
+        const next = [...formData.items];
+        const price =
+            product?.price != null
+                ? String(product.price)
+                : next[index]?.price || "";
+        next[index] = {
+            ...next[index],
+            product_id: productId != null ? String(productId) : "",
+            price,
+        };
+        setFormData({ ...formData, items: next });
+    };
+
     const addItemRow = () => {
         setFormData({
             ...formData,
@@ -128,18 +142,7 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const itemsPayload = formData.items
-            .filter(
-                (row) =>
-                    row.product_id &&
-                    Number(row.quantity) >= 1 &&
-                    Number(row.price) >= 0
-            )
-            .map((row) => ({
-                product_id: Number(row.product_id),
-                quantity: Number(row.quantity),
-                price: parseFloat(row.price) || 0,
-            }));
+        const itemsPayload = buildOrderItemsPayload(formData.items);
 
         if (itemsPayload.length === 0) {
             toast.error(t("orders.form.itemsRequired"));
@@ -268,11 +271,11 @@ export default function OrderFormModal({ isOpen, onClose, order = null }) {
                                         </label>
                                         <SearchableSelect
                                             value={row.product_id || ""}
-                                            onChange={(v) =>
-                                                updateItemRow(
+                                            onChange={(v, opt) =>
+                                                setItemProduct(
                                                     index,
-                                                    "product_id",
-                                                    v || ""
+                                                    v || "",
+                                                    opt,
                                                 )
                                             }
                                             fetchOptions={fetchProducts}

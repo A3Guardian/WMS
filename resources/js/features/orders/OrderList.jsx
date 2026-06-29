@@ -144,7 +144,8 @@ export default function OrderList() {
         {
             key: "total_amount",
             label: t("orders.table.total"),
-            render: (value) => formatCurrency(value),
+            render: (value, row) =>
+                formatCurrency(row.computed_total ?? value),
         },
         {
             key: "created_at",

@@ -108,6 +108,8 @@ class OrderController extends Controller
             }
         }
 
+        $order = $this->orderService->normalizeStoredPrices($order);
+
         return response()->json($order->load([
             'items.product',
             'customer',
@@ -132,13 +134,21 @@ class OrderController extends Controller
         ]);
 
         $payload = collect($validated)->only(['customer_id', 'status', 'notes', 'tax_rate', 'shipping_amount', 'items'])->all();
+        $previousStatus = $order->status;
+        $wasCompleted = $previousStatus === 'completed';
         $oldValues = $order->only(['customer_id', 'status', 'notes']);
         $order = $this->orderService->updateOrder($order, $payload);
         $newValues = $order->only(['customer_id', 'status', 'notes']);
         ActivityLogService::logUpdated($order, $oldValues, $newValues);
 
-        if (isset($validated['status']) && $validated['status'] === 'completed') {
-            $this->orderService->fulfillOrder($order);
+        if (isset($validated['status']) && $validated['status'] === 'completed' && ! $wasCompleted) {
+            try {
+                $this->orderService->fulfillOrder($order);
+            } catch (\InvalidArgumentException $e) {
+                $order->update(['status' => $previousStatus]);
+
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
         }
 
         return response()->json($order->load(['items.product', 'customer']));

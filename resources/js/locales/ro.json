@@ -2179,6 +2179,10 @@
         "updated": "Actualizat",
         "adjusted": "Stoc ajustat",
         "deleted": "Șters"
+      },
+      "fields": {
+        "quantity": "Cantitate",
+        "adjustment": "Modificare"
       }
     }
   }

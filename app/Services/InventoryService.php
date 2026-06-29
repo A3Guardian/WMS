@@ -21,7 +21,8 @@ class InventoryService
 
         ActivityLogService::log('adjusted', $inventory, [
             'quantity' => ['old' => $oldQuantity, 'new' => $inventory->quantity],
-        ], $reason ? "Stock adjustment: {$reason}" : 'Stock adjustment');
+            'adjustment' => $quantity,
+        ], $reason ?? 'Stock adjustment');
 
         return $inventory;
     }

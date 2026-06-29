@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
@@ -31,6 +32,8 @@ class Order extends Model
 
     protected $appends = [
         'barcode_svg',
+        'subtotal',
+        'computed_total',
     ];
 
     public function customer(): BelongsTo
@@ -69,6 +72,28 @@ class Order extends Model
         } catch (\Throwable $e) {
             return null;
         }
+    }
+
+    public function getSubtotalAttribute(): float
+    {
+        if ($this->relationLoaded('items')) {
+            return round((float) $this->items->sum(
+                fn (OrderItem $item) => (float) $item->quantity * $item->effective_price
+            ), 2);
+        }
+
+        return round((float) $this->items()->join('products', 'products.id', '=', 'order_items.product_id')
+            ->sum(DB::raw('order_items.quantity * CASE WHEN order_items.price > 0 THEN order_items.price ELSE products.price END')), 2);
+    }
+
+    public function getComputedTotalAttribute(): float
+    {
+        $subtotal = $this->subtotal;
+        $taxRate = (float) ($this->tax_rate ?? 0);
+        $taxAmount = $taxRate > 0 ? $subtotal * $taxRate / 100 : 0;
+        $shipping = (float) ($this->shipping_amount ?? 0);
+
+        return round($subtotal + $taxAmount + $shipping, 2);
     }
 }
 

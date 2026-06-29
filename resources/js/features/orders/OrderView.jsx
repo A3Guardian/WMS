@@ -1,9 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import api from "../../utils/api";
 import { formatCurrency, formatDate } from "../../utils/formatters";
+import {
+    resolveOrderTotals,
+    resolveLinePrice,
+    mapOrderItemToEditRow,
+    buildOrderItemsPayload,
+} from "../../utils/orderTotals";
 import {
     TASK_STATUS_LABELS,
     TASK_STATUS_COLORS,
@@ -86,17 +92,11 @@ export default function OrderView() {
 
     useEffect(() => {
         if (!order) return;
-        if (!order.items || order.items.length === 0) {
+        const items = Array.isArray(order.items) ? order.items : [];
+        if (items.length === 0) {
             setEditItems([]);
         } else {
-            setEditItems(
-                order.items.map((it) => ({
-                    product_id: String(it.product_id ?? it.product?.id ?? ""),
-                    product: it.product,
-                    quantity: String(it.quantity ?? ""),
-                    price: String(it.price ?? ""),
-                })),
-            );
+            setEditItems(items.map(mapOrderItemToEditRow));
         }
         setEditTaxRate(
             order.tax_rate != null && order.tax_rate !== ""
@@ -108,7 +108,27 @@ export default function OrderView() {
             ship != null && Number(ship) > 0 ? String(ship) : "",
         );
         setIncludeShipping(ship != null && Number(ship) > 0);
-    }, [order?.id, order?.items, order?.tax_rate, order?.shipping_amount]);
+    }, [order]);
+
+    const orderTotals = useMemo(
+        () =>
+            resolveOrderTotals({
+                order,
+                editItems,
+                isEmployee,
+                editTaxRate,
+                editShippingAmount,
+                includeShipping,
+            }),
+        [
+            order,
+            editItems,
+            isEmployee,
+            editTaxRate,
+            editShippingAmount,
+            includeShipping,
+        ],
+    );
 
     const { data: employeesData } = useQuery({
         queryKey: ["employees", "list"],
@@ -345,13 +365,10 @@ export default function OrderView() {
 
     const saveItemsMutation = useMutation({
         mutationFn: async () => {
-            const items = editItems
-                .filter((row) => row.product_id && row.quantity && row.price)
-                .map((row) => ({
-                    product_id: Number(row.product_id),
-                    quantity: Number(row.quantity),
-                    price: Number(row.price),
-                }));
+            const items = buildOrderItemsPayload(editItems);
+            if (items.length === 0) {
+                throw new Error("no_items");
+            }
             const payload = { items };
             const tax = parseFloat(editTaxRate);
             if (!Number.isNaN(tax)) payload.tax_rate = tax;
@@ -364,11 +381,15 @@ export default function OrderView() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["order", id] });
+            queryClient.invalidateQueries({ queryKey: ["orders"] });
             toast.success(t("orders.toast.itemsUpdated"));
         },
         onError: (e) => {
             toast.error(
-                e.response?.data?.message || t("orders.toast.itemsUpdateFailed"),
+                e.message === "no_items"
+                    ? t("orders.form.itemsRequired")
+                    : e.response?.data?.message ||
+                          t("orders.toast.itemsUpdateFailed"),
             );
         },
     });
@@ -517,7 +538,7 @@ export default function OrderView() {
                                     {t("orders.table.total")}
                                 </div>
                                 <div className="text-gray-900 font-semibold">
-                                    {formatCurrency(order?.total_amount)}
+                                    {formatCurrency(orderTotals.total)}
                                 </div>
                             </div>
                         </div>
@@ -870,7 +891,7 @@ export default function OrderView() {
                                         ? (order?.items ?? []).map((item) => {
                                               const q =
                                                   Number(item.quantity) || 0;
-                                              const p = Number(item.price) || 0;
+                                              const p = resolveLinePrice(item);
                                               const lineTotal = q * p;
                                               const taxPct =
                                                   Number(order?.tax_rate) || 0;
@@ -922,8 +943,7 @@ export default function OrderView() {
                                         : editItems.map((row, index) => {
                                               const q =
                                                   parseFloat(row.quantity) || 0;
-                                              const p =
-                                                  parseFloat(row.price) || 0;
+                                              const p = resolveLinePrice(row);
                                               const lineTotal = q * p;
                                               const taxPct =
                                                   parseFloat(editTaxRate) || 0;
@@ -1056,20 +1076,13 @@ export default function OrderView() {
                         )}
                         {isEmployee
                             ? (() => {
-                                  const items = order?.items ?? [];
-                                  const subtotal = items.reduce(
-                                      (sum, item) =>
-                                          sum +
-                                          (Number(item.quantity) || 0) *
-                                              (Number(item.price) || 0),
-                                      0,
-                                  );
-                                  const taxPct = Number(order?.tax_rate) || 0;
-                                  const taxAmount = (subtotal * taxPct) / 100;
-                                  const shippingAmount =
-                                      Number(order?.shipping_amount) || 0;
-                                  const total =
-                                      subtotal + taxAmount + shippingAmount;
+                                  const {
+                                      subtotal,
+                                      taxPct,
+                                      taxAmount,
+                                      shippingAmount,
+                                      total,
+                                  } = orderTotals;
                                   return (
                                       <div className="mt-6 pt-4 border-t border-gray-200 space-y-2 max-w-xs ml-auto text-sm">
                                           <div className="flex justify-between text-gray-700">
@@ -1107,30 +1120,19 @@ export default function OrderView() {
                                                   {t("orders.view.summary.total")}
                                               </span>
                                               <span>
-                                                  {formatCurrency(
-                                                      order?.total_amount ??
-                                                          total,
-                                                  )}
+                                                  {formatCurrency(total)}
                                               </span>
                                           </div>
                                       </div>
                                   );
                               })()
                             : (() => {
-                                  const subtotal = editItems.reduce(
-                                      (sum, row) =>
-                                          sum +
-                                          (parseFloat(row.quantity) || 0) *
-                                              (parseFloat(row.price) || 0),
-                                      0,
-                                  );
-                                  const taxPct = parseFloat(editTaxRate) || 0;
-                                  const taxAmount = (subtotal * taxPct) / 100;
-                                  const shippingAmount = includeShipping
-                                      ? parseFloat(editShippingAmount) || 0
-                                      : 0;
-                                  const total =
-                                      subtotal + taxAmount + shippingAmount;
+                                  const {
+                                      subtotal,
+                                      taxAmount,
+                                      shippingAmount,
+                                      computedTotal,
+                                  } = orderTotals;
                                   return (
                                       <div className="mt-6 pt-4 border-t border-gray-200 space-y-2 max-w-xs ml-auto text-sm">
                                           <div className="flex justify-between text-gray-700">
@@ -1216,7 +1218,7 @@ export default function OrderView() {
                                                   {t("orders.view.summary.total")}
                                               </span>
                                               <span>
-                                                  {formatCurrency(total)}
+                                                  {formatCurrency(computedTotal)}
                                               </span>
                                           </div>
                                           <div className="pt-3">

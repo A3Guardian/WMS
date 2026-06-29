@@ -15,13 +15,35 @@ function formatAction(action, t) {
     return labels[action] || action;
 }
 
-function formatChanges(changes) {
+function formatChanges(changes, t) {
     if (!changes || typeof changes !== "object") return null;
+
+    const labels = {
+        quantity: t("inventory.activity.fields.quantity"),
+        adjustment: t("inventory.activity.fields.adjustment"),
+    };
+
     return Object.entries(changes).map(([key, val]) => {
-        if (val && typeof val === "object" && "old" in val && "new" in val) {
+        if (key === "adjustment" && typeof val === "number") {
+            const sign = val > 0 ? "+" : "";
             return (
                 <span key={key} className="block text-sm text-gray-600 mt-0.5">
-                    {key}: <span className="line-through">{String(val.old)}</span> → <span className="font-medium">{String(val.new)}</span>
+                    {labels.adjustment}:{" "}
+                    <span className="font-medium">
+                        {sign}
+                        {val}
+                    </span>
+                </span>
+            );
+        }
+
+        if (val && typeof val === "object" && "old" in val && "new" in val) {
+            const label = labels[key] || key;
+            return (
+                <span key={key} className="block text-sm text-gray-600 mt-0.5">
+                    {label}:{" "}
+                    <span className="line-through">{String(val.old)}</span> →{" "}
+                    <span className="font-medium">{String(val.new)}</span>
                 </span>
             );
         }
@@ -119,7 +141,7 @@ export default function InventoryActivityModal({ isOpen, onClose, inventory }) {
                                             )}
                                             {log.changes && Object.keys(log.changes).length > 0 && (
                                                 <div className="mt-1 pl-2 border-l-2 border-gray-200">
-                                                    {formatChanges(log.changes)}
+                                                    {formatChanges(log.changes, t)}
                                                 </div>
                                             )}
                                         </div>
